@@ -1,0 +1,33 @@
+#!/usr/bin/perl -w
+
+use strict;
+use File::Find;
+use Getopt::Std;
+
+my %opts = ( orig => 0 );
+getopt('o', \%opts);
+
+my %dirs = ();
+my $cvsroot = $ARGV[0] || "$ENV{HOME}/.CVSROOT";
+find(\&wanted, $cvsroot);
+
+foreach my $dir (sort keys %dirs) {
+  if ($opts{orig}) {
+    print "$dir\n";
+  }
+  else {
+    print "$dir\n" if -d $dir;
+    if ($dir =~ s!software/perl5?!perl!) {
+      print "$dir\n" if -d $dir;
+    }
+  }
+}
+
+sub wanted {
+  return unless -d;
+  my $path = $File::Find::name;
+  $path =~ s!^\Q$cvsroot\E/?!!;
+  return if $path =~ /Attic$/;
+  $path =~ s!^((X|mutt)_)?rcs/?!! unless $opts{orig};
+  $dirs{$path}++ if $path;
+}
