@@ -79,6 +79,7 @@ sub usage {
 Usage: $0 [ <options> ]
   -a, --all       All, existing or missing
   -m, --missing   Only missing directories
+  -t, --tops      Only top directories; exclude subdirectories
 
 Defaults to just existing directories.
 EOF
