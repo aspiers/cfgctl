@@ -4,7 +4,7 @@
 cd ~
 
 if [ -z "$@" ]; then
-  cvsuq `list-cvs-files rcs | sed 's/^rcs\///'` `list-checked-out-dirs -t`
+  cvsuhq `list-cvs-files rcs | sed 's/^rcs\///'` `list-checked-out-dirs -t`
 else
-  cvsuq "$@"
+  cvsuhq "$@"
 fi
