@@ -1,0 +1,49 @@
+#!/usr/bin/perl -w
+
+# For comparing my repository with checked out bits,
+# see also list-checked-out-dirs
+
+use strict;
+use File::Find;
+use Getopt::Long;
+
+my %opts = ();
+GetOptions(\%opts, 'recurse|r', 'cvsroot|d=s');
+
+my $cvsroot = $opts{cvsroot} || "$ENV{HOME}/.CVSROOT";
+my @files = ();
+my @dirs = @ARGV ? @ARGV : ( '.' );
+my %dirs = map { $_ => 1 } @dirs;
+chdir $cvsroot or die "chdir($cvsroot): $!\n";
+find(\&wanted, @dirs);
+
+foreach my $file (sort @files) {
+  print "$file\n";
+}
+  
+sub wanted {
+  my $path = $File::Find::name;
+
+  unless ($opts{recurse}) {
+    $File::Find::prune = 1 if is_subdir($path);
+  }
+  
+  return unless -f;
+
+  $path =~ s!^\Q$cvsroot\E/?!!;
+  $path =~ s!,v$!!;
+  $path =~ s!Attic/!!;
+
+  return unless $path;
+  push @files, $path;
+}
+
+sub is_subdir {
+  my ($path) = @_;
+#  warn "p $path, ", (-d "$cvsroot/$path" ? 'dir' : 'files'), "\n";
+#  return 0 unless -d "$cvsroot/$path";
+  return 0 if $dirs{$path};
+  return 0 if $path eq '.';
+warn "$path is subdir\n";
+  return 1;
+}
