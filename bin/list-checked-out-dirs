@@ -9,7 +9,7 @@ use Getopt::Long;
 use Net::Domain qw(hostfqdn);
 
 my %opts = ();
-GetOptions(\%opts, 'help|h', 'missing|m', 'all|a');
+GetOptions(\%opts, 'help|h', 'missing|m', 'all|a', 'tops|t');
 
 usage() if $opts{help};
 
@@ -32,6 +32,9 @@ foreach my $dir (@repository_dirs) {
   $missing{$dir}++;
 }
 
+delete_subdirs() if $opts{tops};
+output();
+
 sub guessed {
   my ($dir, $guesser) = @_;
 
@@ -45,11 +48,34 @@ sub guessed {
   return 0;
 }
 
-foreach my $dir (sort (keys %existing, keys %missing)) {
-  print "$dir\n" if $existing{$dir} && ! $opts{missing};
-  if ($missing{$dir}) {
-    print "# " if $opts{all};
-    print "$dir\n" if $opts{all} || $opts{missing};
+sub delete_subdirs {
+  delete_parents(\%existing);
+  delete_parents(\%missing);
+}
+
+sub delete_parents {
+  my ($hash) = @_;
+
+  my @subdirs = ();
+  foreach my $dir (keys %$hash) {
+    my $parent = $dir;
+    next unless $parent =~ s!/[^/]+?$!!;
+    if ($existing{$parent}) {
+#      print "deleting $dir ($parent)\n";
+      push @subdirs, $dir;
+    }
+  }
+
+  delete @$hash{@subdirs};
+}
+
+sub output {
+  foreach my $dir (sort (keys %existing, keys %missing)) {
+    print "$dir\n" if $existing{$dir} && ! $opts{missing};
+    if ($missing{$dir}) {
+      print "# " if $opts{all};
+      print "$dir\n" if $opts{all} || $opts{missing};
+    }
   }
 }
 
