@@ -10,7 +10,13 @@ use Getopt::Long;
 
 sub usage {
   warn @_, "\n" if @_;
-  die "usage: FIXME";
+  die <<EOUSAGE;
+Usage: $0 [ options ] package
+Options:
+  -t, --target=DIR    Specify target directory
+  -d, --stow-dir=DIR  Specify stow directory (defaults to .)
+  -n, --dry-run
+EOUSAGE
 }
 
 my %opts;
