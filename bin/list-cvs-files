@@ -5,7 +5,11 @@
 
 use strict;
 use File::Find;
+use FindBin;
 use Getopt::Long;
+use Net::Domain qw(hostfqdn);
+
+require "$FindBin::Bin/on-cvs-host.pl";
 
 my %opts = ();
 GetOptions(\%opts, 'recurse|r', 'cvsroot|d=s');
