@@ -6,5 +6,5 @@ cd ~
 if [ -n "$@" ]; then
   cvsuq "$@"
 else
-  cvsuq `list-checked-out-dirs`
+  cvsuq `list-checked-out-dirs -t`
 fi
