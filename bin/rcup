@@ -3,8 +3,9 @@
 normalize-bookmarks
 cd ~
 
-if [ -n "$@" ]; then
-  cvsuq "$@"
-else
+if [ -z "$@" ]; then
+  cvsuq `list-cvs-files rcs | sed 's/^rcs\///'`
   cvsuq `list-checked-out-dirs -t`
+else
+  cvsuq "$@"
 fi
