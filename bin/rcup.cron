@@ -1,0 +1,12 @@
+#!/usr/bin/env zsh
+
+set -e
+
+USER=adam
+
+source ~/.zshenv
+
+dsa
+rcup
+zrec
+emk
