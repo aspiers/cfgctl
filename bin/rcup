@@ -5,7 +5,7 @@ set -e
 normalize-bookmarks
 cd
 
-if [ -z "$@" ]; then
+if [ -z "$*" ]; then
   rcs="`list-cvs-files rcs | sed 's/^rcs\///'` `list-checked-out-dirs -t`"
 else
   rcs="$@"
