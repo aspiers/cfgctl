@@ -40,10 +40,7 @@ sub wanted {
 
 sub is_subdir {
   my ($path) = @_;
-#  warn "p $path, ", (-d "$cvsroot/$path" ? 'dir' : 'files'), "\n";
-#  return 0 unless -d "$cvsroot/$path";
   return 0 if $dirs{$path};
   return 0 if $path eq '.';
-warn "$path is subdir\n";
   return 1;
 }
