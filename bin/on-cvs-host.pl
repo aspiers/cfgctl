@@ -1,3 +1,7 @@
+# On the master host, make sure you've done:
+#
+#  hostname > ~/.my-cvs-host
+
 use Net::Domain qw(hostfqdn);
 
 chomp(my $cvs_host  = `cat $ENV{HOME}/.my-cvs-host`);
