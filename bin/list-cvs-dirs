@@ -1,25 +1,28 @@
 #!/usr/bin/perl -w
 
+# for comparing my repository with checked out bits
+
 use strict;
 use File::Find;
-use Getopt::Std;
+use Getopt::Long;
 
-my %opts = ( orig => 0 );
-getopt('o', \%opts);
+my $repository = 0;
+my $missing    = 0;
+GetOptions('repository|r' => \$repository,
+           'missing|m'    => \$missing);
 
-my %dirs = ();
+my %dirs    = ();
+my %missing = ();
 my $cvsroot = $ARGV[0] || "$ENV{HOME}/.CVSROOT";
 find(\&wanted, $cvsroot);
 
-foreach my $dir (sort keys %dirs) {
-  if ($opts{orig}) {
+foreach my $dir (sort keys (%dirs, %missing)) {
+  if ($missing) {
+    print '# ' if $missing{$dir};
     print "$dir\n";
   }
   else {
-    print "$dir\n" if -d $dir;
-    if ($dir =~ s!software/perl5?!perl!) {
-      print "$dir\n" if -d $dir;
-    }
+    print "$dir\n";
   }
 }
 
@@ -28,6 +31,14 @@ sub wanted {
   my $path = $File::Find::name;
   $path =~ s!^\Q$cvsroot\E/?!!;
   return if $path =~ /Attic$/;
-  $path =~ s!^((X|mutt)_)?rcs/?!! unless $opts{orig};
+
+  if ($repository) {
+  }
+  else {
+    print "$dir\n" if -d $dir;
+    if ($dir =~ s!software/perl5?!perl!) {
+      print "$dir\n" if -d $dir;
+    }
+  }
   $dirs{$path}++ if $path;
 }
