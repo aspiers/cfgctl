@@ -1,3 +1,5 @@
 #!/bin/sh
 
-perl -pi -e 's/ +LAST_VISIT="\d+"//g' ~/.netscape/bookmarks.html
+bookmarks=~/.netscape/bookmarks.html
+[ -e $bookmarks ] && \
+  perl -pi -e 's/ +LAST_VISIT="\d+"//g' $bookmarks
