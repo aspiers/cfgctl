@@ -1,5 +1,7 @@
 #!/bin/sh
 
+echo -n "Normalizing Netscape bookmarks ... "
 bookmarks=~/.netscape/bookmarks.html
 [ -e $bookmarks ] && \
   perl -pi -e 's/ +LAST_VISIT="\d+"//g' $bookmarks
+echo "done."
