@@ -21,7 +21,9 @@ else
 fi
 
 if ps -uxww | grep -v grep | grep -q galeon; then
-  echo "Can't normalize $galeon while galeon running."
+  echo "Can't safely normalize $galeon while galeon running."
+elif mount | grep -q "$HOME type nfs"; then
+  echo "Can't safely normalize $galeon on NFS share."
 else
   if [ -e $galeon ]; then
     echo -n "Normalizing galeon XBEL bookmarks ... "
