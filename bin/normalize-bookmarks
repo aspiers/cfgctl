@@ -7,8 +7,6 @@ galeon=~/.galeon/bookmarks.xbel
 
 if ps -uxww | grep -v grep | grep -q netscape; then
   echo "Can't normalize $netscape while netscape running."
-  echo "Quit to avoid conflicts."
-  exit 1
 else
   if [ -e $netscape ]; then
     echo -n "Normalizing Netscape bookmarks ... "
@@ -24,8 +22,6 @@ fi
 
 if ps -uxww | grep -v grep | grep -q galeon; then
   echo "Can't normalize $galeon while galeon running."
-  echo "Quit to avoid conflicts."
-  exit 1
 else
   if [ -e $galeon ]; then
     echo -n "Normalizing galeon XBEL bookmarks ... "

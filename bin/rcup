@@ -6,7 +6,17 @@ normalize-bookmarks
 cd
 
 if [ -z "$@" ]; then
-  cvsuhq `list-cvs-files rcs | sed 's/^rcs\///'` `list-checked-out-dirs -t`
+  rcs="`list-cvs-files rcs | sed 's/^rcs\///'` `list-checked-out-dirs -t`"
 else
-  cvsuhq "$@"
+  rcs="$@"
 fi
+
+# Don't update the config dirs of running browsers
+for browser in netscape galeon; do
+  if ps -uxww | grep -v grep | grep -q $browser; then
+    echo "$browser is running; not updating ~/.$browser"
+    rcs="`echo $rcs | sed -e s/\\.$browser\\ //`"
+  fi
+done
+
+cvsuhq $rcs
