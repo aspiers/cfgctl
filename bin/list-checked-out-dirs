@@ -90,7 +90,7 @@ Defaults to just existing directories.
 Example usage:
 
 $0 -t | while read d; do
-  echo -n "\$d: "; ( cd \$d/.. && cvsroot )
+  echo -n "\$d: "; ( cd \$d && cvsroot )
 done
 EOF
 }
