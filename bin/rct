@@ -1,0 +1,9 @@
+#!/bin/sh
+
+cd ~
+
+if [ -z "$@" ]; then
+  cvst `list-cvs-files rcs | sed 's/^rcs\///'` `list-checked-out-dirs -t`
+else
+  cvst "$@"
+fi
