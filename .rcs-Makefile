@@ -1,0 +1,14 @@
+file_list=.rcs-list
+
+targz: rcs.tar.gz
+.PHONY: targz
+
+rcs.tar.gz: $(FILES) $(file_list)
+	@echo "Making $@"
+	@(cd; tar zcvf $@ $(shell cat $(file_list)) )
+
+rc.list:
+	@list-cvs-files -r rcs | \
+	  perl -lne 's,^rcs/,,; -e && print' > ~/$(file_list)
+.PHONY: rc.list
+
