@@ -1,9 +1,11 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl
 
 # For comparing my repository with checked out bits,
 # see also list-checked-out-dirs
 
 use strict;
+use warnings;
+
 use File::Find;
 use FindBin;
 use Getopt::Long;

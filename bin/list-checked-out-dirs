@@ -1,9 +1,10 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl
 
 # For comparing my repository with checked out bits,
 # see also list-cvs-dirs.
 
 use strict;
+use warnings;
 
 use Getopt::Long;
 
