@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 
-# for comparing my repository with checked out bits
+# For comparing my repository with checked out bits,
+# see also list-cvs-dirs.
 
 use strict;
 
@@ -12,6 +13,7 @@ usage() if $opts{help};
 
 my $get_dirs = 'list-cvs-dirs';
 my $cvs_host  = `cat .my-cvs-host`;
+die "no .my-cvs-host\n" unless $cvs_host;
 $get_dirs = 'ssh $cvs_host ' . $get_dirs
   if `hostname` =~ $cvs_host;
 my @repository_dirs = split /\n/, `$get_dirs`;

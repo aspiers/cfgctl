@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 
-# for comparing my repository with checked out bits
+# For comparing my repository with checked out bits,
+# see also list-checked-out-dirs
 
 use strict;
 use File::Find;
