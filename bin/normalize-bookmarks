@@ -1,7 +1,14 @@
 #!/bin/bash
 
+set -e
+
 netscape=~/.netscape/bookmarks.html
 galeon=~/.galeon/bookmarks.xbel
+
+if ps -uxww | grep -v grep | grep -q netscape; then
+  echo "Shut down netscape first."
+  exit 1
+fi
 
 if [ -e $netscape ]; then
   echo -n "Normalizing Netscape bookmarks ... "
@@ -12,6 +19,11 @@ if [ -e $netscape ]; then
   echo "done."
 else
   echo "$netscape didn't exist."
+fi
+
+if ps -uxww | grep -v grep | grep -q galeon; then
+  echo "Shut down galeon first."
+  exit 1
 fi
 
 if [ -e $galeon ]; then
