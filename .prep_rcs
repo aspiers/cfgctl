@@ -97,6 +97,9 @@ while [ $# != 0 ]; do
       ;;
     mutt)
       prep mutt_rcs
+      cd ~/.mutt
+      ln -s colours.default colours
+      touch local
       ;;
     *)
       echo "\`$rc_set' is an unknown set of rcs -- ignoring."
