@@ -6,39 +6,22 @@ use strict;
 use File::Find;
 use Getopt::Long;
 
-my $repository = 0;
-my $missing    = 0;
-GetOptions('repository|r' => \$repository,
-           'missing|m'    => \$missing);
-
-my %dirs    = ();
-my %missing = ();
 my $cvsroot = $ARGV[0] || "$ENV{HOME}/.CVSROOT";
+my @dirs = ();
 find(\&wanted, $cvsroot);
 
-foreach my $dir (sort keys (%dirs, %missing)) {
-  if ($missing) {
-    print '# ' if $missing{$dir};
-    print "$dir\n";
-  }
-  else {
-    print "$dir\n";
-  }
+foreach my $dir (sort @dirs) {
+  print "$dir\n";
 }
-
+  
 sub wanted {
   return unless -d;
   my $path = $File::Find::name;
   $path =~ s!^\Q$cvsroot\E/?!!;
   return if $path =~ /Attic$/;
 
-  if ($repository) {
-  }
-  else {
-    print "$dir\n" if -d $dir;
-    if ($dir =~ s!software/perl5?!perl!) {
-      print "$dir\n" if -d $dir;
-    }
-  }
-  $dirs{$path}++ if $path;
+  $path =~ s!^((X|mutt)_)?rcs/?!!;
+
+  return unless $path;
+  push @dirs, $path;
 }
