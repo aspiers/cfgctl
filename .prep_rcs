@@ -1,0 +1,82 @@
+#!/bin/bash
+#
+# Utility to setup Adam's sets of rc files on a new machine
+
+# This is where they come from
+export CVSROOT=adams@plig.net:/home/adam/.CVSROOT
+export CVS_RSH=ssh
+
+# Abort immediately if anything goes wrong.
+set -e
+
+# Ugh!
+case "$BASH_VERSION" in
+  1*) allow_null_glob_expansion=1 ;;
+  2*) shopt -s nullglob           ;;
+esac
+
+usage () {
+  cat <<EOF
+Usage: $0 <rc set>
+rc sets are:
+  base  --  core stuff (shell, etc.)
+  X     --  stuff for a nice X environment
+  mutt  --  mutt stuff
+EOF
+
+  exit 0
+}
+
+prep () {
+  cvs_dir=$1
+
+  cd ~
+
+  if [ ! -d ~/CVS ] && [ $cvs_dir != 'rcs' ]; then
+    echo 'You must prep the base set before any others.'
+    exit 1
+  fi
+
+  if [ -d ~/new_rcs ]; then
+    echo 'new_rcs already exists; aborting.'
+    exit 1
+  fi
+
+  cvs -d $CVSROOT co -d new_rcs $cvs_dir
+
+  # move along, nothing to see here
+  if [ -d ~/CVS ]; then
+    cat new_rcs/CVS/Entries >> ~/CVS/Entries
+    rm -rf new_rcs/CVS
+  fi
+
+  mv new_rcs/{*,.[a-zA-Z]*} ~
+
+  if ! rmdir new_rcs; then
+    echo 'rmdir new_rcs failed; aborting.'
+    exit 1
+  fi
+}
+
+[ $# = 0 ] && usage
+
+while [ $# != 0 ]; do
+  rc_set=$1
+  shift
+
+  case $rc_set in
+    base)
+      prep rcs
+      ;;
+    X)
+      prep X_rcs
+      ;;
+    mutt)
+      prep mutt_rcs
+      ;;
+    *)
+      echo "\`$rc_set' is an unknown set of rcs -- ignoring."
+      ;;
+  esac
+done
+
