@@ -2,5 +2,9 @@
 
 normalize-bookmarks
 cd ~
-CVS_RSH=ssh CVSROOT=adam@thelonious.new.ox.ac.uk:/usr/local/cvsroot \
+
+if [ -n "$@" ]; then
   cvsuq "$@"
+else
+  cvsuq `list-checked-out-dirs`
+fi
