@@ -3,5 +3,6 @@
 echo -n "Normalizing Netscape bookmarks ... "
 bookmarks=~/.netscape/bookmarks.html
 [ -e $bookmarks ] && \
-  perl -pi -e 's/ +LAST_VISIT="\d+"//g' $bookmarks
+  perl -pi -e 's/ +LAST_VISIT="\d+"//g;
+               s/<H3 (FOLDED )?/<H3 FOLDED /g' $bookmarks
 echo "done."
