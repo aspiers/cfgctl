@@ -11,7 +11,7 @@ use FindBin;
 
 require "$FindBin::Bin/on-cvs-host.pl";
 
-my $cvsroot = $ARGV[0] || "$ENV{HOME}/.CVSROOT";
+my $cvsroot = $ARGV[0] || ".CVSROOT";
 my @dirs = ();
 find(\&wanted, $cvsroot);
 
