@@ -1,6 +1,6 @@
 use Net::Domain qw(hostfqdn);
 
-my $cvs_host  = `cat .my-cvs-host`;
+my $cvs_host  = `cat ~/.my-cvs-host`;
 die "no .my-cvs-host\n" unless $cvs_host;
 
 (my $me = $0) =~ s!$ENV{HOME}/!!;
