@@ -1,0 +1,53 @@
+#!/usr/bin/perl -w
+
+# for comparing my repository with checked out bits
+
+use strict;
+
+use Getopt::Long;
+my %opts = ();
+GetOptions(\%opts, 'help|h', 'missing|m', 'all|a');
+
+usage() if $opts{help};
+
+my $get_dirs = 'list-cvs-dirs';
+my $cvs_host  = `cat .my-cvs-host`;
+$get_dirs = 'ssh $cvs_host ' . $get_dirs
+  if `hostname` =~ $cvs_host;
+my @repository_dirs = split /\n/, `$get_dirs`;
+
+my (%existing, %missing);
+foreach my $dir (@repository_dirs) {
+  if (-d "$dir/CVS") {
+    $existing{$dir}++;
+    next;
+  }
+
+  my $guess = $dir;
+  $guess =~ s!^software/perl5(/?)!perl$1!;
+
+  if (-d "$guess/CVS") {
+    $existing{$guess}++;
+    next;
+  }
+
+  $missing{$dir}++;
+}
+
+foreach my $dir (sort (keys %existing, keys %missing)) {
+  print "$dir\n" if $existing{$dir} && ! $opts{missing};
+  if ($missing{$dir}) {
+    print "# " if $opts{all};
+    print "$dir\n" if $opts{all} || $opts{missing};
+  }
+}
+
+sub usage {
+  die <<EOF;
+Usage: $0 [ <options> ]
+  -a, --all       All, existing or missing
+  -m, --missing   Only missing directories
+
+Defaults to just existing directories.
+EOF
+}
