@@ -3,7 +3,7 @@
 # Utility to setup Adam's sets of rc files on a new machine
 
 # This is where they come from
-export CVSROOT=adams@plig.net:/home/adam/.CVSROOT
+export CVSROOT=adams@plig.net:/home/adams/.CVSROOT
 export CVS_RSH=ssh
 
 # Abort immediately if anything goes wrong.
@@ -50,11 +50,28 @@ prep () {
     rm -rf new_rcs/CVS
   fi
 
-  mv new_rcs/{*,.[a-zA-Z]*} ~
+  mv new_rcs/.[a-zA-Z]* ~
+  for dir in new_rcs/*; do
+    mv $dir/{*,.*} ~/$dir
+    if ! rmdir $dir; then
+      echo "rmdir ~/new_rcs/$dir failed; aborting."
+      exit 1
+    fi
+  done
 
   if ! rmdir new_rcs; then
     echo 'rmdir new_rcs failed; aborting.'
     exit 1
+  fi
+}
+
+prep_X_fonts () {
+  cd ~
+  cvs -d $CVSROOT co -d .X_fonts X_fonts
+
+  # move along, nothing to see here
+  if [ -d ~/CVS ]; then
+    echo D/.X_fonts//// >> ~/CVS/Entries
   fi
 }
 
@@ -70,6 +87,13 @@ while [ $# != 0 ]; do
       ;;
     X)
       prep X_rcs
+      prep_X_fonts
+      ;;
+    X_rcs)
+      prep X_rcs
+      ;;
+    X_fonts)
+      prep_X_fonts
       ;;
     mutt)
       prep mutt_rcs
