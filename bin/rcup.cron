@@ -7,6 +7,9 @@ USER=adam
 source ~/.zshenv
 
 dsa
+echo "\n-----------------\n"
 rcup
+echo "\n-----------------\n"
 zrec
+echo "\n-----------------\n"
 emk
