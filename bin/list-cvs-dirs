@@ -25,7 +25,7 @@ sub wanted {
   $path =~ s!^\Q$cvsroot\E/?!!;
   return if $path =~ /Attic$/;
 
-  $path =~ s!^((X|mutt)_)?rcs/?!!;
+  $path =~ s!^(((X|mutt)_)?rcs|audio)/?!!;
 
   return unless $path;
   push @dirs, $path;
