@@ -6,35 +6,33 @@ netscape=~/.netscape/bookmarks.html
 galeon=~/.galeon/bookmarks.xbel
 
 if ps -uxww | grep -v grep | grep -q netscape; then
-  echo "Shut down netscape first."
+  echo "Netscape running; won't normalize $netscape"
   exit 1
-fi
-
-if [ -e $netscape ]; then
-  echo -n "Normalizing Netscape bookmarks ... "
-  perl -pi -e '
-    s/ +LAST_VISIT="\d+"//g;
-    s/<H3 (FOLDED )?/<H3 FOLDED /g unless />Toolbar</;
-  ' $netscape
-  echo "done."
 else
-  echo "$netscape didn't exist."
+  if [ -e $netscape ]; then
+    echo -n "Normalizing Netscape bookmarks ... "
+    perl -pi -e '
+      s/ +LAST_VISIT="\d+"//g;
+      s/<H3 (FOLDED )?/<H3 FOLDED /g unless />Toolbar</;
+    ' $netscape
+    echo "done."
+  else
+    echo "$netscape didn't exist."
+  fi
 fi
 
 if ps -uxww | grep -v grep | grep -q galeon; then
-  echo "Shut down galeon first."
-  exit 1
-fi
-
-if [ -e $galeon ]; then
-  echo -n "Normalizing galeon XBEL bookmarks ... "
-  perl -ni -e '
-    s/<folder folded="no">/<folder folded="yes">/g;
-    print unless m!^\s*<time_(visited|modified)>\d+</time_\1>\s*!;
-  ' $galeon
-  echo "done."
+  echo "galeon running; won't normalize $galeon"
 else
-  echo "$galeon didn't exist."
-fi
-  
+  if [ -e $galeon ]; then
+    echo -n "Normalizing galeon XBEL bookmarks ... "
+    perl -ni -e '
+      s/<folder folded="no">/<folder folded="yes">/g;
+      print unless m!^\s*<time_(visited|modified)>\d+</time_\1>\s*!;
+    ' $galeon
+    echo "done."
+  else
+    echo "$galeon didn't exist."
+  fi
+fi  
 
