@@ -6,18 +6,13 @@
 use strict;
 
 use Getopt::Long;
-use Net::Domain qw(hostfqdn);
 
 my %opts = ();
 GetOptions(\%opts, 'help|h', 'missing|m', 'all|a', 'tops|t');
 
 usage() if $opts{help};
 
-my $get_dirs = 'list-cvs-dirs';
-my $cvs_host  = `cat .my-cvs-host`;
-die "no .my-cvs-host\n" unless $cvs_host;
-$get_dirs = "ssh $cvs_host bin/$get_dirs" if hostfqdn() !~ $cvs_host;
-my @repository_dirs = split /\n/, `$get_dirs`;
+my @repository_dirs = split /\n/, `list-cvs-dirs`;
 
 my (%existing, %missing);
 foreach my $dir (@repository_dirs) {
