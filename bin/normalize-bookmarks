@@ -6,7 +6,9 @@ netscape=~/.netscape/bookmarks.html
 galeon=~/.galeon/bookmarks.xbel
 
 if ps -uxww | grep -v grep | grep -q netscape; then
-  echo "Can't normalize $netscape while netscape running."
+  echo "Can't safely normalize $netscape while netscape running."
+elif mount | grep -q "$HOME type nfs"; then
+  echo "Can't safely normalize $netscape on NFS share."
 else
   if [ -e $netscape ]; then
     echo -n "Normalizing Netscape bookmarks ... "
