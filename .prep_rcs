@@ -3,7 +3,7 @@
 # Utility to setup Adam's sets of rc files on a new machine
 
 # This is where they come from
-export CVSROOT=adams@plig.net:/home/adams/.CVSROOT
+export CVSROOT=adam@f5.mandolinarchive.com:/home/adam/.CVSROOT
 export CVS_RSH=ssh
 
 # Abort immediately if anything goes wrong.
