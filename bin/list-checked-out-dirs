@@ -13,9 +13,8 @@ usage() if $opts{help};
 
 my $get_dirs = 'list-cvs-dirs';
 my $cvs_host  = `cat .my-cvs-host`;
-die "no .my-cvs-host" unless $cvs_host;
-$get_dirs = 'ssh $cvs_host ' . $get_dirs
-  if `hostname` =~ $cvs_host;
+die "no .my-cvs-host\n" unless $cvs_host;
+$get_dirs = "ssh $cvs_host bin/$get_dirs" if `hostname` =~ $cvs_host;
 my @repository_dirs = split /\n/, `$get_dirs`;
 
 my (%existing, %missing);
