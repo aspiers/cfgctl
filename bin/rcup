@@ -1,6 +1,6 @@
 #!/bin/sh
 
-normalize-bookmarks
+#normalize-bookmarks
 cd ~
 
 if [ -z "$@" ]; then
