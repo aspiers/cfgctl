@@ -1,0 +1,62 @@
+# Adam's config packages.  Listed in suggested installation order.
+# Copy from config.map.template to config.map and edit as appropriate.
+
+# Bootstrapping
+config/META-TOOLS
+config/shell-env
+config/dev-tools/BASE
+config/dev-tools/perl/mine
+config/dev-tools/perl/doc
+config/dev-tools/rpm
+config/dev-tools/cvs
+
+# Bare essentials
+config/shell-apps/ssh
+config/shell-apps/screen
+config/shell-apps/emacs
+config/Xwindows/SESSION
+config/shell-apps/watchlogs
+
+# First things first
+config/Xwindows/Eterm
+config/Xwindows/gkrellm
+config/Xwindows/sawfish
+config/Xwindows/fonts
+config/shell-apps/mutt
+config/shell-apps/gnupg
+config/shell-apps/lftp
+config/shell-apps/ncftp
+
+# Getting more comfortable
+config/dev-tools/perl/pmtools
+config/dev-tools/ruby
+config/dev-tools/darcs
+config/dev-tools/dup-files
+
+# For work only
+config/work-tools
+
+# For play only
+config/shell-apps/htmltidy
+config/shell-apps/palm
+config/Xwindows/gqview
+config/Xwindows/audio
+config/Xwindows/xwrits
+config/Xwindows/backgrounds
+config/Xwindows/rxvt
+config/shell-apps/crm114
+config/Xwindows/xmms
+config/Xwindows/xchat
+config/personal-interest
+
+# Deprecated; warn if still using this stuff
+config/Xwindows/galeon.RETIRED
+config/Xwindows/gnome.RETIRED
+config/Xwindows/netscape.RETIRED
+config/term.RETIRED
+config/shell-apps/mh.RETIRED
+config/shell-apps/sdf.RETIRED
+config/shell-apps/bk2site.RETIRED
+config/shell-apps/lynx.RETIRED
+config/shell-apps/ytalk.RETIRED
+config/shell-apps/mailcap.RETIRED
