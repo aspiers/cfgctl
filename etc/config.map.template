@@ -1,5 +1,5 @@
-# Adam's config packages.  Listed in suggested installation order.
-# Copy from config.map.template to config.map and edit as appropriate.
+## Adam's config packages.  Listed in suggested installation order.
+## Copy from config.map.template to config.map and edit as appropriate.
 
 # Bootstrapping
 config/META-TOOLS
