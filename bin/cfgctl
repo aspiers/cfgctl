@@ -1,0 +1,88 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use File::Spec;
+use FindBin qw($RealBin);
+
+my $MAP_FILE     = "$RealBin/../etc/config.map";
+my $WORKING_ROOT = "$ENV{HOME}/local/stow";
+my $STOW         = "$RealBin/stow";
+my $TARGET_DIR   = $ENV{HOME};
+
+-e $MAP_FILE
+  or die "$MAP_FILE does not exist; did you copy from $MAP_FILE.template?\n";
+-e $WORKING_ROOT
+  or die "$WORKING_ROOT does not exist; is the stuff really checked out yet?\n";
+-e $STOW
+  or die "$STOW not found!  Aborting.\n";
+
+process_pkgs();
+exit 0;
+
+sub process_pkgs {
+  open(MAP, $MAP_FILE) or die "open($MAP_FILE) failed: $!\n";
+  while (<MAP>) {
+    if (/^\s*\#\@/) {
+      print;
+      next;
+    }
+    next if /^\s*(\#|$)/;
+        
+    chomp;
+    s/^\s+//;
+    s/\s+$//;
+
+    process_pkg($_);
+  }
+}
+
+sub process_pkg {
+  my ($pkg) = @_;
+  
+  -d "$WORKING_ROOT/$pkg" or check_out_pkg($pkg);
+  
+  if ($pkg =~ /RETIRE/) {
+    deprecate_pkg($pkg);
+  }
+  else {
+    install_pkg($pkg);
+  }
+}
+
+sub check_out_pkg {
+  my ($pkg) = @_;
+  chdir($WORKING_ROOT) or die "chdir($WORKING_ROOT) failed: $!\n";
+  print "Checking out $pkg ...\n";
+  system "cvs", "checkout", $pkg;
+  my $exit = $? >> 8;
+  die "cvs checkout $pkg failed; aborting!\n" if $exit != 0;
+}  
+
+sub deprecate_pkg {
+  my ($pkg) = @_;
+  #print "$pkg is deprecated; checking not installed ...\n";
+  my ($stow_dir, $pkg_dir) = get_stow_dirs($pkg);
+  system $STOW,
+      '-c',            # Dummy run, checking for conflicts.  If we're
+                       # not using the deprecated package, there won't
+                       # be any.
+      '-d', $stow_dir,
+      '-t', $TARGET_DIR,
+      $pkg_dir;
+  my $exit = $? >> 8;
+  warn "$STOW failed; aborting!\n" if $exit != 0;
+}
+
+sub install_pkg {
+  my ($pkg) = @_;
+}
+
+sub get_stow_dirs {
+  my ($path) = @_;
+  my ($vol, @dirs) = File::Spec->splitpath($path);
+  my $pkg          = pop @dirs;
+  my $stow_dir     = File::Spec->join($WORKING_ROOT, @dirs);
+  return ($stow_dir, $pkg);
+}
