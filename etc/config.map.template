@@ -3,7 +3,7 @@
 ## Adam's config packages.  Listed in suggested installation order.
 ## Copy from config.map.template to config.map and edit as appropriate.
 
-# Bootstrapping
+#@ Bootstrapping
 config/META-TOOLS
 config/shell-env
 config/dev-tools/BASE
@@ -12,14 +12,14 @@ config/dev-tools/perl/doc
 config/dev-tools/rpm
 config/dev-tools/cvs
 
-# Bare essentials
+#@ Bare essentials
 config/shell-apps/ssh
 config/shell-apps/screen
 config/shell-apps/emacs
 config/Xwindows/SESSION
 config/shell-apps/watchlogs
 
-# First things first
+#@ First things first
 config/Xwindows/Eterm
 config/Xwindows/gkrellm
 config/Xwindows/sawfish
@@ -29,16 +29,16 @@ config/shell-apps/gnupg
 config/shell-apps/lftp
 config/shell-apps/ncftp
 
-# Getting more comfortable
+#@ Getting more comfortable
 config/dev-tools/perl/pmtools
 config/dev-tools/ruby
 config/dev-tools/darcs
 config/dev-tools/dup-files
 
-# For work only
+#@ For work only
 config/work-tools
 
-# For play only
+#@ For play only
 config/shell-apps/htmltidy
 config/shell-apps/palm
 config/Xwindows/gqview
@@ -51,7 +51,7 @@ config/Xwindows/xmms
 config/Xwindows/xchat
 config/personal-interest
 
-# Deprecated; warn if still using this stuff
+#@ Deprecated; warn if still using this stuff
 config/Xwindows/galeon.RETIRED
 config/Xwindows/gnome.RETIRED
 config/Xwindows/netscape.RETIRED
