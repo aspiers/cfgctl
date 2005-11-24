@@ -5,11 +5,15 @@ use warnings;
 
 use File::Spec;
 use FindBin qw($RealBin);
+use lib "$RealBin/../lib/perl5";
+use File::Compare;
 
 my $MAP_FILE     = "$RealBin/../etc/config.map";
-my $WORKING_ROOT = "$ENV{HOME}/local/stow";
+my $WORKING_ROOT = "$RealBin/../..";
 my $STOW         = "$RealBin/stow";
-my $TARGET_DIR   = $ENV{HOME};
+#my $TARGET_DIR   = $ENV{HOME};
+my $TARGET_DIR   = "$ENV{HOME}/tmp/config-stow-test";
+my $for_real     = 1;
 
 -e $MAP_FILE
   or die "$MAP_FILE does not exist; did you copy from $MAP_FILE.template?\n";
@@ -41,7 +45,8 @@ sub process_pkgs {
 sub process_pkg {
   my ($pkg) = @_;
   
-  -d "$WORKING_ROOT/$pkg" or check_out_pkg($pkg);
+  (my $dst = $pkg) =~ s!^config/!!;
+  -d "$WORKING_ROOT/$dst" or check_out_pkg($pkg, $dst);
   
   if ($pkg =~ /RETIRE/) {
     deprecate_pkg($pkg);
@@ -52,10 +57,10 @@ sub process_pkg {
 }
 
 sub check_out_pkg {
-  my ($pkg) = @_;
+  my ($pkg, $dst) = @_;
   chdir($WORKING_ROOT) or die "chdir($WORKING_ROOT) failed: $!\n";
   print "Checking out $pkg ...\n";
-  system "cvs", "checkout", $pkg;
+  system 'cvs', 'checkout', '-d', $dst, $pkg;
   my $exit = $? >> 8;
   die "cvs checkout $pkg failed; aborting!\n" if $exit != 0;
 }  
@@ -68,15 +73,65 @@ sub deprecate_pkg {
       '-c',            # Dummy run, checking for conflicts.  If we're
                        # not using the deprecated package, there won't
                        # be any.
-      '-d', $stow_dir,
       '-t', $TARGET_DIR,
+      '-d', $stow_dir,
       $pkg_dir;
   my $exit = $? >> 8;
-  warn "$STOW failed; aborting!\n" if $exit != 0;
+  warn "$STOW -c failed; aborting!\n" if $exit != 0;
 }
 
 sub install_pkg {
   my ($pkg) = @_;
+  my ($stow_dir, $pkg_dir) = get_stow_dirs($pkg);
+  my $stow_args = "-t $TARGET_DIR -d $stow_dir $pkg_dir";
+  my $cmd = "$STOW -c $stow_args";
+  (my $human_cmd = $cmd) =~ s!\b$ENV{HOME}/!~/!g;
+  open(STOW, "$cmd 2>&1 |") or die "open($human_cmd|) failed: $!\n";
+  while (<STOW>) {
+    if (/^CONFLICT: (.+) vs. (.+)\s*/) {
+      my ($src, $dst) = ($1, $2);
+      preempt_conflict($src, $dst);
+      next;
+    }
+    print "! surplus stow -c output: $_";
+  }
+  close(STOW) or die "close($human_cmd|) failed: $!\n";
+
+  # Should have preempted all conflicts now; run for real.
+  $cmd = "$STOW $stow_args";
+  ($human_cmd = $cmd) =~ s!(^|\s)$ENV{HOME}/!$1~/!g;
+  print "$human_cmd\n";
+  if ($for_real) {
+    system $cmd;
+    my $exit = $? >> 8;
+    warn "$STOW failed; aborting!\n" if $exit != 0;
+  }
+}
+
+sub preempt_conflict {
+  my ($src, $dst) = @_;
+  
+  (my $human_src = $src) =~ s!^$ENV{HOME}/!~/!;
+  (my $human_dst = $dst) =~ s!^$ENV{HOME}/!~/!;
+
+  if (compare($src, $dst) == 0) {
+    # same file contents - remove target so that stow can put a
+    # symlink there instead.
+    print "rm $human_dst # make way for symlink\n";
+    if ($for_real) {
+      unlink $dst or die "unlink($dst) failed: $!\n";
+    }
+  }
+  else {
+    # different file contents - move target to source so that stow
+    # can put a symlink there instead whilst still preserving
+    # local changes
+    print "mv $human_dst $human_src\n";
+    if ($for_real) {
+      rename($dst, $src)
+        or die "rename($human_dst, $human_src) failed: $!\n";
+    }
+  }
 }
 
 sub get_stow_dirs {
