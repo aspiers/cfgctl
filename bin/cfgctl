@@ -73,6 +73,9 @@ if (! -d $STOW_DIR) {
 ensure_correct_symlink($CONVENIENCE_DIR, $CO_CFG_ROOT);
 
 process_pkgs();
+
+TempDir->cleanup();
+
 exit 0;
 
 sub process_pkgs {
@@ -245,7 +248,7 @@ use File::Spec;
 use File::Temp qw/ tempfile tempdir /;
 
 our $tempdir;
-my $init = 0;
+my $init = 0; # yuk
 my @subdirs;
 
 sub init {
@@ -264,7 +267,6 @@ sub get {
   foreach my $dir (@subdirs) {
     my $new = File::Spec->join($tempdir, $dir);
     mkdir($new) or die "mkdir($new) failed: $!\n";;
-    warn "$new";
   }
   return $tempdir;
 }
@@ -275,14 +277,6 @@ sub cleanup {
     rmdir($doomed) or die "$doomed not empty?";
   }
   rmdir($tempdir) or die "rmdir($tempdir) failed: $!\n";
-}
-
-sub force_cleanup {
-  rmtree($tempdir) or die "rmtree($tempdir) failed: no files deleted?\n";
-}
-
-END {
-  cleanup();
 }
 
 1;
