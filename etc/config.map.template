@@ -4,7 +4,7 @@
 ## Copy from config.map.template to config.map and edit as appropriate.
 
 #@ Bootstrapping
-config/META-TOOLS
+config/META
 config/shell-env
 config/dev-tools/BASE
 config/dev-tools/perl/mine
