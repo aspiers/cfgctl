@@ -261,7 +261,7 @@ sub get {
   shift->init();
   return $tempdir if $tempdir;
   my $me = basename($0);
-  $tempdir = tempdir("$me.XXXXXXXX", TMPDIR => 1);
+  $tempdir = tempdir(".$me.XXXXXXXX", DIR => $TARGET_DIR);
   die "huh?" unless -d $tempdir;
   die unless @subdirs;
   foreach my $dir (@subdirs) {
