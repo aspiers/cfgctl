@@ -5,22 +5,72 @@ use warnings;
 
 use File::Spec;
 use FindBin qw($RealBin);
+use Getopt::Long;
+
 use lib "$RealBin/../lib/perl5";
 use File::Compare;
+use Sh qw(abs_path move_with_subpath);
 
-my $MAP_FILE     = "$RealBin/../etc/config.map";
-my $WORKING_ROOT = "$RealBin/../..";
-my $STOW         = "$RealBin/stow";
-#my $TARGET_DIR   = $ENV{HOME};
-my $TARGET_DIR   = "$ENV{HOME}/tmp/config-stow-test";
-my $for_real     = 1;
+# Pathname strategy involves multiple levels of symlinks, e.g.:
+#
+# (1)                                  ~/bin/cpan # these actually get used!
+#                                            vvvv 
+# (2)   ~/.stow/PKGS/dev-tools+perl+mine/bin/cpan # flat namespace required for stow
+#                                   vvvv
+# (3) ~/.stow/config/dev-tools/perl/mine/bin/cpan # for flexible sourcecontrol
+#               ^^^^
+# (4)         ~/.cfg/dev-tools/perl/mine/bin/cpan # for convenience
+#
+# Note:
+#
+#   * 'config' is a single CVS module so (3) must contain a directory called 'config'.
+#
+#   * (1) links to (2) not (4) because an extra level of indirection is
+#     inefficient, even if it makes `ls -la ~/.*' more legible.
+#
+#   * We allow room for expansion via packages prefixed with something other than
+#     'config/'.  It may make sense to label them something other than 'config'
+#     but still include them in the same stow repository
+
+# Now we define the top-level container directories corresponding to each level:
+
+# (1) Where the all-important symlinks go.
+my $TARGET_DIR  = "$ENV{HOME}/tmp/config-stow-test";
+
+# (2) Stow directory - stow requires all packages live immediately under this.
+my $STOW_DIR    = "$ENV{HOME}/.stow/PKGS";
+
+# (3) Root of the checked-out config tree.
+my $CO_CFG_ROOT = abs_path("$RealBin/../.."); # 
+
+# (4) For CLI convenience only.
+my $CONVENIENCE_DIR = "$ENV{HOME}/.cfg";
+
+# The source code control system's working directory which contains
+# the checked out config.
+my $CVS_ROOT_WD = abs_path("$CO_CFG_ROOT/..");
+
+# We use a slightly hacked-up version of GNU stow which ignores CVS/ directories.
+my $STOW        = "$RealBin/stow";
+
+# This is where we configure which config packages we want installed locally.
+my $MAP_FILE    = abs_path("$RealBin/../etc/config.map");
+
+my %opts;
+GetOptions(\%opts, 'dry-run|n') or die "Bad options";
+my $for_real = $opts{'dry-run'} ? 0 : 1;
 
 -e $MAP_FILE
   or die "$MAP_FILE does not exist; did you copy from $MAP_FILE.template?\n";
--e $WORKING_ROOT
-  or die "$WORKING_ROOT does not exist; is the stuff really checked out yet?\n";
+-e $CO_CFG_ROOT
+  or die "$CO_CFG_ROOT does not exist; is the stuff really checked out yet?\n";
 -e $STOW
   or die "$STOW not found!  Aborting.\n";
+
+if (! -d $STOW_DIR) {
+  mkdir $STOW_DIR or die "mkdir($STOW_DIR) failed: $!\n";
+}
+ensure_correct_symlink($CONVENIENCE_DIR, $CO_CFG_ROOT);
 
 process_pkgs();
 exit 0;
@@ -45,22 +95,40 @@ sub process_pkgs {
 sub process_pkg {
   my ($pkg) = @_;
   
-  (my $dst = $pkg) =~ s!^config/!!;
-  -d "$WORKING_ROOT/$dst" or check_out_pkg($pkg, $dst);
+  (my $dst = $pkg) =~ s!^config/!!
+    or die "Non-config not supported yet";
   
-  if ($pkg =~ /RETIRE/) {
-    deprecate_pkg($pkg);
+  if (! -d "$CO_CFG_ROOT/$dst") {
+    check_out_pkg($pkg);
   }
   else {
-    install_pkg($pkg);
+    print "# $dst already checked out in $CO_CFG_ROOT\n";
+  }
+  
+  if ($pkg =~ /RETIRE/) {
+    deprecate_pkg($dst);
+  }
+  else {
+    install_pkg($dst);
   }
 }
 
+sub stowify_pkg {
+  my ($pkg) = @_;
+  my @segments = File::Spec->splitdir($pkg);
+  my $stow_pkg = join '+', @segments;
+  ensure_correct_symlink(
+    File::Spec->join($STOW_DIR, $stow_pkg),
+    File::Spec->join($CO_CFG_ROOT, $pkg),
+  );
+  return $stow_pkg;
+}  
+
 sub check_out_pkg {
-  my ($pkg, $dst) = @_;
-  chdir($WORKING_ROOT) or die "chdir($WORKING_ROOT) failed: $!\n";
+  my ($pkg) = @_;
+  chdir($CVS_ROOT_WD) or die "chdir($CVS_ROOT_WD) failed: $!\n";
   print "Checking out $pkg ...\n";
-  system 'cvs', 'checkout', '-d', $dst, $pkg;
+  system 'cvs', 'checkout', $pkg;
   my $exit = $? >> 8;
   die "cvs checkout $pkg failed; aborting!\n" if $exit != 0;
 }  
@@ -68,29 +136,30 @@ sub check_out_pkg {
 sub deprecate_pkg {
   my ($pkg) = @_;
   #print "$pkg is deprecated; checking not installed ...\n";
-  my ($stow_dir, $pkg_dir) = get_stow_dirs($pkg);
+  my $stow_pkg = stowify_pkg($pkg);
   system $STOW,
       '-c',            # Dummy run, checking for conflicts.  If we're
                        # not using the deprecated package, there won't
                        # be any.
+      '-R',            # Remove any symlinks already there.
       '-t', $TARGET_DIR,
-      '-d', $stow_dir,
-      $pkg_dir;
+      '-d', $STOW_DIR,
+      $stow_pkg;
   my $exit = $? >> 8;
   warn "$STOW -c failed; aborting!\n" if $exit != 0;
 }
 
 sub install_pkg {
   my ($pkg) = @_;
-  my ($stow_dir, $pkg_dir) = get_stow_dirs($pkg);
-  my $stow_args = "-t $TARGET_DIR -d $stow_dir $pkg_dir";
-  my $cmd = "$STOW -c $stow_args";
+  my $stow_pkg  = stowify_pkg($pkg);
+  my $stow_args = qq{-t "$TARGET_DIR" -d "$STOW_DIR" "$stow_pkg"};
+  my $cmd       = "$STOW -c -R $stow_args";
   (my $human_cmd = $cmd) =~ s!\b$ENV{HOME}/!~/!g;
   open(STOW, "$cmd 2>&1 |") or die "open($human_cmd|) failed: $!\n";
   while (<STOW>) {
     if (/^CONFLICT: (.+) vs. (.+)\s*/) {
-      my ($src, $dst) = ($1, $2);
-      preempt_conflict($src, $dst);
+      my ($src, $symlink) = ($1, $2);
+      preempt_conflict($src, $symlink);
       next;
     }
     print "! surplus stow -c output: $_";
@@ -109,35 +178,111 @@ sub install_pkg {
 }
 
 sub preempt_conflict {
-  my ($src, $dst) = @_;
-  
-  (my $human_src = $src) =~ s!^$ENV{HOME}/!~/!;
-  (my $human_dst = $dst) =~ s!^$ENV{HOME}/!~/!;
+  my ($src, $symlink) = @_;
 
-  if (compare($src, $dst) == 0) {
+  # Shorter, human-readable versions of source file and symlink
+  (my $human_src     = $src)     =~ s!^$ENV{HOME}/!~/!;
+  (my $human_symlink = $symlink) =~ s!^$ENV{HOME}/!~/!;
+  (my $sub_symlink   = $symlink) =~ s!^$TARGET_DIR/!!
+    or die "$symlink didn't start with $TARGET_DIR\n";
+
+  return if -d $symlink and -d $src;
+  return "Only one of $human_symlink and $human_src is a directory; aborting!\n"
+    if -d $symlink xor -d $src;
+
+  my $tempdir = TempDir->get;
+  die unless -d $tempdir;
+  
+  if (compare($src, $symlink) == 0) {
     # same file contents - remove target so that stow can put a
     # symlink there instead.
-    print "rm $human_dst # make way for symlink\n";
+    print "# move $human_symlink to make way for symlink\n";
+    my $same_dir = File::Spec->join($tempdir, 'same');
+    die $same_dir unless -d $same_dir;
     if ($for_real) {
-      unlink $dst or die "unlink($dst) failed: $!\n";
+      move_with_subpath($TARGET_DIR, $same_dir, $sub_symlink);
     }
   }
   else {
     # different file contents - move target to source so that stow
     # can put a symlink there instead whilst still preserving
     # local changes
-    print "mv $human_dst $human_src\n";
+    my $modified_dir = File::Spec->join($tempdir, 'modified');
+    print "mv $human_symlink $human_src\n";
     if ($for_real) {
-      rename($dst, $src)
-        or die "rename($human_dst, $human_src) failed: $!\n";
+      move_with_subpath($TARGET_DIR, $modified_dir, $sub_symlink);
     }
   }
 }
 
-sub get_stow_dirs {
-  my ($path) = @_;
-  my ($vol, @dirs) = File::Spec->splitpath($path);
-  my $pkg          = pop @dirs;
-  my $stow_dir     = File::Spec->join($WORKING_ROOT, @dirs);
-  return ($stow_dir, $pkg);
+sub ensure_correct_symlink {
+  my ($symlink, $required_target) = @_;
+
+  if (! -e $symlink) {
+    symlink $required_target, $symlink
+      or die "symlink($required_target, $symlink) failed: $!\n";
+    return;
+  }
+
+  if (! -l $symlink) {
+    die "$symlink already exists but is not a symlink; aborting!\n";
+  }
+
+  my ($a_dev, $a_ino) = stat($symlink) # stat automatically follows symlinks
+    or die "lstat($symlink) failed: $!";
+  my ($r_dev, $r_ino) = stat($required_target)
+    or die "stat($required_target) failed: $!";
+  if ($a_dev != $r_dev or $a_ino != $r_ino) {
+    die "$symlink already exists and points to the wrong place; aborting!\n";
+  }
 }
+
+package TempDir;
+
+use File::Basename;
+use File::Path;
+use File::Spec;
+use File::Temp qw/ tempfile tempdir /;
+
+our $tempdir;
+my $init = 0;
+my @subdirs;
+
+sub init {
+  return if $init;
+  @subdirs = (qw/same modified/);
+  $init++;
+}
+
+sub get {
+  shift->init();
+  return $tempdir if $tempdir;
+  my $me = basename($0);
+  $tempdir = tempdir("$me.XXXXXXXX", TMPDIR => 1);
+  die "huh?" unless -d $tempdir;
+  die unless @subdirs;
+  foreach my $dir (@subdirs) {
+    my $new = File::Spec->join($tempdir, $dir);
+    mkdir($new) or die "mkdir($new) failed: $!\n";;
+    warn "$new";
+  }
+  return $tempdir;
+}
+
+sub cleanup {
+  foreach my $dir (@subdirs) {
+    my $doomed = File::Spec->join($tempdir, $dir);
+    rmdir($doomed) or die "$doomed not empty?";
+  }
+  rmdir($tempdir) or die "rmdir($tempdir) failed: $!\n";
+}
+
+sub force_cleanup {
+  rmtree($tempdir) or die "rmtree($tempdir) failed: no files deleted?\n";
+}
+
+END {
+  cleanup();
+}
+
+1;
