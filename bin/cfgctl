@@ -35,7 +35,8 @@ use Sh qw(abs_path move_with_subpath);
 # Now we define the top-level container directories corresponding to each level:
 
 # (1) Where the all-important symlinks go.
-my $TARGET_DIR  = "$ENV{HOME}/tmp/config-stow-test";
+#my $TARGET_DIR  = "$ENV{HOME}/tmp/config-stow-test";
+my $TARGET_DIR  = $ENV{HOME};
 
 # (2) Stow directory - stow requires all packages live immediately under this.
 my $STOW_DIR    = "$ENV{HOME}/.stow/PKGS";
@@ -86,7 +87,7 @@ sub process_pkgs {
       next;
     }
     next if /^\s*(\#|$)/;
-        
+
     chomp;
     s/^\s+//;
     s/\s+$//;
@@ -97,17 +98,17 @@ sub process_pkgs {
 
 sub process_pkg {
   my ($pkg) = @_;
-  
+
   (my $dst = $pkg) =~ s!^config/!!
     or die "Non-config not supported yet";
-  
+
   if (! -d "$CO_CFG_ROOT/$dst") {
     check_out_pkg($pkg);
   }
   else {
-    print "# $dst already checked out in $CO_CFG_ROOT\n";
+    #print "# $dst already checked out in $CO_CFG_ROOT\n";
   }
-  
+
   if ($pkg =~ /RETIRE/) {
     deprecate_pkg($dst);
   }
@@ -125,7 +126,7 @@ sub stowify_pkg {
     File::Spec->join($CO_CFG_ROOT, $pkg),
   );
   return $stow_pkg;
-}  
+}
 
 sub check_out_pkg {
   my ($pkg) = @_;
@@ -134,7 +135,7 @@ sub check_out_pkg {
   system 'cvs', 'checkout', $pkg;
   my $exit = $? >> 8;
   die "cvs checkout $pkg failed; aborting!\n" if $exit != 0;
-}  
+}
 
 sub deprecate_pkg {
   my ($pkg) = @_;
@@ -158,13 +159,16 @@ sub install_pkg {
   my $stow_args = qq{-t "$TARGET_DIR" -d "$STOW_DIR" "$stow_pkg"};
   my $cmd       = "$STOW -c -R $stow_args";
   (my $human_cmd = $cmd) =~ s!\b$ENV{HOME}/!~/!g;
+  #print "preempt: $cmd\n";
   open(STOW, "$cmd 2>&1 |") or die "open($human_cmd|) failed: $!\n";
   while (<STOW>) {
-    if (/^CONFLICT: (.+) vs. (.+)\s*/) {
+    if (/^CONFLICT: (.+) vs. (.+?)( \(.*?\))?$/) {
+      #print;
       my ($src, $symlink) = ($1, $2);
       preempt_conflict($src, $symlink);
       next;
     }
+    
     print "! surplus stow -c output: $_";
   }
   close(STOW) or die "close($human_cmd|) failed: $!\n";
@@ -172,7 +176,7 @@ sub install_pkg {
   # Should have preempted all conflicts now; run for real.
   $cmd = "$STOW $stow_args";
   ($human_cmd = $cmd) =~ s!(^|\s)$ENV{HOME}/!$1~/!g;
-  print "$human_cmd\n";
+  #print "post-preempt: $human_cmd\n";
   if ($for_real) {
     system $cmd;
     my $exit = $? >> 8;
@@ -193,27 +197,38 @@ sub preempt_conflict {
   return "Only one of $human_symlink and $human_src is a directory; aborting!\n"
     if -d $symlink xor -d $src;
 
-  my $tempdir = TempDir->get;
-  die unless -d $tempdir;
-  
+#   my $tempdir = TempDir->get;
+#   die unless -d $tempdir;
+
+  my ($src_dev,     $src_ino)     = stat($src)     or die "stat($src) failed: $!";
+  my ($symlink_dev, $symlink_ino) = stat($symlink) or die "stat($symlink) failed: $!";
+
+  if ($src_dev == $symlink_dev and $src_ino == $symlink_ino) {
+    # print "$human_src and $human_symlink are the same file; must be false conflict (see 6.3 Conflicts section of manual)\n";
+    return;
+  }
+
   if (compare($src, $symlink) == 0) {
     # same file contents - remove target so that stow can put a
     # symlink there instead.
-    print "# move $human_symlink to make way for symlink\n";
-    my $same_dir = File::Spec->join($tempdir, 'same');
-    die $same_dir unless -d $same_dir;
+    print "# $human_symlink == $src; remove to make way for symlink\n";
+#     my $same_dir = File::Spec->join($tempdir, 'same');
+#     die $same_dir unless -d $same_dir;
     if ($for_real) {
-      move_with_subpath($TARGET_DIR, $same_dir, $sub_symlink);
+      unlink $symlink or die "unlink($symlink) to preempt conflict failed: $!\n";
+      #move_with_subpath($TARGET_DIR, $same_dir, $sub_symlink);
     }
   }
   else {
     # different file contents - move target to source so that stow
     # can put a symlink there instead whilst still preserving
     # local changes
-    my $modified_dir = File::Spec->join($tempdir, 'modified');
-    print "mv $human_symlink $human_src\n";
+#     my $modified_dir = File::Spec->join($tempdir, 'modified');
+    print "# $human_symlink != $human_src; mv to preserve changes\n";
     if ($for_real) {
-      move_with_subpath($TARGET_DIR, $modified_dir, $sub_symlink);
+      rename $symlink, $src
+	or die "rename($symlink, $src) to preempt conflict failed: $!\n";
+      #move_with_subpath($TARGET_DIR, $modified_dir, $sub_symlink);
     }
   }
 }
@@ -272,11 +287,18 @@ sub get {
 }
 
 sub cleanup {
+  return unless $tempdir and -d $tempdir;
   foreach my $dir (@subdirs) {
     my $doomed = File::Spec->join($tempdir, $dir);
     rmdir($doomed) or die "$doomed not empty?";
   }
   rmdir($tempdir) or die "rmdir($tempdir) failed: $!\n";
+}
+
+END {
+  if ($tempdir and -e $tempdir) {
+    warn "! Did not exit cleanly; $tempdir still exists.\n";
+  }
 }
 
 1;
