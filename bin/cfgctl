@@ -237,7 +237,7 @@ sub preempt_conflict {
 sub ensure_correct_symlink {
   my ($symlink, $required_target) = @_;
 
-  if (! -e $symlink) {
+  if (! lstat $symlink) {
     symlink $required_target, $symlink
       or die "symlink($required_target, $symlink) failed: $!\n";
     return;
@@ -248,7 +248,7 @@ sub ensure_correct_symlink {
   }
 
   my ($a_dev, $a_ino) = stat($symlink) # stat automatically follows symlinks
-    or die "lstat($symlink) failed: $!";
+    or die "stat($symlink) failed ($!); invalid symlink?\n";
   my ($r_dev, $r_ino) = stat($required_target)
     or die "stat($required_target) failed: $!";
   if ($a_dev != $r_dev or $a_ino != $r_ino) {
