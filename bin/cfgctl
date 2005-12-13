@@ -15,9 +15,9 @@ use Sh qw(abs_path move_with_subpath);
 #
 # (1)                                  ~/bin/cpan # these actually get used!
 #                                            vvvv 
-# (2)   ~/.stow/PKGS/dev-tools+perl+mine/bin/cpan # flat namespace required for stow
+# (2)        ~/.stow/dev-tools+perl+mine/bin/cpan # flat namespace required for stow
 #                                   vvvv
-# (3) ~/.stow/config/dev-tools/perl/mine/bin/cpan # for flexible sourcecontrol
+# (3)  ~/.cvs/config/dev-tools/perl/mine/bin/cpan # for flexible sourcecontrol
 #               ^^^^
 # (4)         ~/.cfg/dev-tools/perl/mine/bin/cpan # for convenience
 #
@@ -30,7 +30,7 @@ use Sh qw(abs_path move_with_subpath);
 #
 #   * We allow room for expansion via packages prefixed with something other than
 #     'config/'.  It may make sense to label them something other than 'config'
-#     but still include them in the same stow repository
+#     but still include them in the same stow repository.
 
 # Now we define the top-level container directories corresponding to each level:
 
@@ -39,10 +39,11 @@ use Sh qw(abs_path move_with_subpath);
 my $TARGET_DIR  = $ENV{HOME};
 
 # (2) Stow directory - stow requires all packages live immediately under this.
-my $STOW_DIR    = "$ENV{HOME}/.stow/PKGS";
+my $STOW_DIR    = "$ENV{HOME}/.stow";
 
-# (3) Root of the checked-out config tree.
-my $CO_CFG_ROOT = abs_path("$RealBin/../.."); # 
+# (3) Root of the checked-out config tree.  We work it out by assuming
+#     that this file is in the directory $wd/config/META/bin.
+my $CO_CFG_ROOT = abs_path("$RealBin/../..");
 
 # (4) For CLI convenience only.
 my $CONVENIENCE_DIR = "$ENV{HOME}/.cfg";
