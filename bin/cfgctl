@@ -15,7 +15,7 @@ use Sh qw(abs_path move_with_subpath);
 #
 # (1)                                  ~/bin/cpan # these actually get used!
 #                                            vvvv 
-# (2)        ~/.stow/dev-tools+perl+mine/bin/cpan # flat namespace required for stow
+# (2)        ~/.Stow/dev-tools+perl+mine/bin/cpan # flat namespace required for stow
 #                                   vvvv
 # (3)  ~/.cvs/config/dev-tools/perl/mine/bin/cpan # for flexible sourcecontrol
 #               ^^^^
@@ -23,23 +23,32 @@ use Sh qw(abs_path move_with_subpath);
 #
 # Note:
 #
-#   * 'config' is a single CVS module so (3) must contain a directory called 'config'.
+#   * We use ~/.Stow not ~/.stow because stow interprets ".stow"
+#     existing in a directory as a flag meaning that that directory is
+#     a stow directory containing stow source packages.  As a result
+#     it will not remove any stow symlinks from there, but we certainly
+#     want it to remove stow symlinks from under ~
+#
+#   * 'config' is a single CVS module so (3) must contain a directory
+#     called 'config'.
 #
 #   * (1) links to (2) not (4) because an extra level of indirection is
 #     inefficient, even if it makes `ls -la ~/.*' more legible.
 #
-#   * We allow room for expansion via packages prefixed with something other than
-#     'config/'.  It may make sense to label them something other than 'config'
-#     but still include them in the same stow repository.
+#   * We allow room for expansion via packages prefixed with something
+#     other than 'config/'.  It may make sense to label them something
+#     other than 'config' but still include them in the same stow
+#     repository.
 
-# Now we define the top-level container directories corresponding to each level:
+# Now we define the top-level container directories corresponding to
+# each level:
 
 # (1) Where the all-important symlinks go.
 #my $TARGET_DIR  = "$ENV{HOME}/tmp/config-stow-test";
 my $TARGET_DIR  = $ENV{HOME};
 
 # (2) Stow directory - stow requires all packages live immediately under this.
-my $STOW_DIR    = "$ENV{HOME}/.stow";
+my $STOW_DIR    = "$ENV{HOME}/.Stow";
 
 # (3) Root of the checked-out config tree.  We work it out by assuming
 #     that this file is in the directory $wd/config/META/bin.
@@ -59,7 +68,9 @@ my $STOW        = "$RealBin/stow";
 my $MAP_FILE    = abs_path("$RealBin/../etc/config.map");
 
 my %opts;
-GetOptions(\%opts, 'dry-run|n') or die "Bad options";
+Getopt::Long::Configure('no_ignore_case');
+GetOptions(\%opts, 'dry-run|n', 'delete|D', 'debug|d')
+  or die "Bad options";
 my $for_real = $opts{'dry-run'} ? 0 : 1;
 
 -e $MAP_FILE
@@ -74,13 +85,20 @@ if (! -d $STOW_DIR) {
 }
 ensure_correct_symlink($CONVENIENCE_DIR, $CO_CFG_ROOT);
 
-process_pkgs();
+if (@ARGV) {
+  foreach my $pkg (@ARGV) {
+    process_pkg($pkg);
+  }
+}
+else {
+  process_pkgs_from_config();
+}
 
 TempDir->cleanup();
 
 exit 0;
 
-sub process_pkgs {
+sub process_pkgs_from_config {
   open(MAP, $MAP_FILE) or die "open($MAP_FILE) failed: $!\n";
   while (<MAP>) {
     if (/^\s*\#\@/) {
@@ -111,10 +129,18 @@ sub process_pkg {
   }
 
   if ($pkg =~ /RETIRE/) {
+    print "#! deprecating: $pkg\n";
     deprecate_pkg($dst);
   }
   else {
-    install_pkg($dst);
+    if ($opts{delete}) {
+      delete_pkg($dst);
+      print "# de-installed: $pkg\n";
+    }
+    else {
+      install_pkg($dst);
+      print "# installed: $pkg\n";
+    }
   }
 }
 
@@ -154,13 +180,27 @@ sub deprecate_pkg {
   warn "$STOW -c failed; aborting!\n" if $exit != 0;
 }
 
+sub delete_pkg {
+  my ($pkg) = @_;
+  my $stow_pkg = stowify_pkg($pkg);
+  system $STOW,
+      ($for_real ? () : ( '-n' )),
+      '-D', 
+      '-t', $TARGET_DIR,
+      '-d', $STOW_DIR,
+      $stow_pkg;
+  my $exit = $? >> 8;
+  warn "$STOW -c failed; aborting!\n" if $exit != 0;
+}
+
 sub install_pkg {
   my ($pkg) = @_;
   my $stow_pkg  = stowify_pkg($pkg);
   my $stow_args = qq{-t "$TARGET_DIR" -d "$STOW_DIR" "$stow_pkg"};
+  $stow_args = "-vvv $stow_args" if $opts{debug};
   my $cmd       = "$STOW -c -R $stow_args";
   (my $human_cmd = $cmd) =~ s!\b$ENV{HOME}/!~/!g;
-  #print "preempt: $cmd\n";
+  debug("preempt: $cmd\n");
   open(STOW, "$cmd 2>&1 |") or die "open($human_cmd|) failed: $!\n";
   while (<STOW>) {
     if (/^CONFLICT: (.+) vs. (.+?)( \(.*?\))?$/) {
@@ -170,14 +210,15 @@ sub install_pkg {
       next;
     }
     
-    print "! surplus stow -c output: $_";
+    #debug("! surplus stow -c output: $_");
+    print "$_";
   }
   close(STOW) or die "close($human_cmd|) failed: $!\n";
 
   # Should have preempted all conflicts now; run for real.
-  $cmd = "$STOW $stow_args";
+  $cmd = "$STOW -R $stow_args";
   ($human_cmd = $cmd) =~ s!(^|\s)$ENV{HOME}/!$1~/!g;
-  #print "post-preempt: $human_cmd\n";
+  debug("post-preempt: $human_cmd\n");
   if ($for_real) {
     system $cmd;
     my $exit = $? >> 8;
@@ -205,14 +246,14 @@ sub preempt_conflict {
   my ($symlink_dev, $symlink_ino) = stat($symlink) or die "stat($symlink) failed: $!";
 
   if ($src_dev == $symlink_dev and $src_ino == $symlink_ino) {
-    # print "$human_src and $human_symlink are the same file; must be false conflict (see 6.3 Conflicts section of manual)\n";
+    debug("$human_src and $human_symlink are the same file; must be false conflict (see 6.3 Conflicts section of manual)\n");
     return;
   }
 
   if (compare($src, $symlink) == 0) {
     # same file contents - remove target so that stow can put a
     # symlink there instead.
-    print "# $human_symlink == $src; remove to make way for symlink\n";
+    debug("# $human_symlink == $src; remove to make way for symlink\n");
 #     my $same_dir = File::Spec->join($tempdir, 'same');
 #     die $same_dir unless -d $same_dir;
     if ($for_real) {
@@ -225,7 +266,7 @@ sub preempt_conflict {
     # can put a symlink there instead whilst still preserving
     # local changes
 #     my $modified_dir = File::Spec->join($tempdir, 'modified');
-    print "# $human_symlink != $human_src; mv to preserve changes\n";
+    debug("# $human_symlink != $human_src; mv to preserve changes\n");
     if ($for_real) {
       rename $symlink, $src
 	or die "rename($symlink, $src) to preempt conflict failed: $!\n";
@@ -255,6 +296,12 @@ sub ensure_correct_symlink {
     die "$symlink already exists and points to the wrong place; aborting!\n";
   }
 }
+
+sub debug {
+  print @_ if $opts{debug};
+}
+
+##############################################################################
 
 package TempDir;
 
