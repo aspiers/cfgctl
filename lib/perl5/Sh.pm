@@ -22,6 +22,7 @@ our @EXPORT_OK = qw(
   grep_quiet line_count
   md5hex_file md5b64_file
   move_with_subpath move_with_common_subpath
+  glob_to_re
 );
 
 sub get_absolute_path {
@@ -223,6 +224,16 @@ sub _find_common_tail_elements {
     pop @b;
   }
   return (\@common, \@a, \@b);
+}
+
+sub glob_to_re {
+  local $_ = shift;
+  s/([.{}^\$])/\\$1/g;
+  s/\*/.*/g;
+  s/\?/./g;
+  s/^/^/;
+  s/$/\$/;
+  return $_;
 }
 
 =head1 BUGS
