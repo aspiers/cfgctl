@@ -4,13 +4,13 @@
 ## Copy from config.map.template to config.map and edit as appropriate.
 
 #@ Bootstrapping
+config/dev-tools/cvs
 config/META
 config/shell-env
 config/dev-tools/BASE
 config/dev-tools/perl/mine
 config/dev-tools/perl/doc
 config/dev-tools/rpm
-config/dev-tools/cvs
 
 #@ Bare essentials
 config/shell-apps/ssh
