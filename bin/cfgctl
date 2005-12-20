@@ -13,55 +13,61 @@ use Sh qw(abs_path move_with_subpath);
 
 # Pathname strategy involves multiple levels of symlinks, e.g.:
 #
-# (1)                                  ~/bin/cpan # these actually get used!
-#                                            vvvv 
-# (2)        ~/.Stow/dev-tools+perl+mine/bin/cpan # flat namespace required for stow
-#                                   vvvv
-# (3)  ~/.cvs/config/dev-tools/perl/mine/bin/cpan # for flexible sourcecontrol
-#               ^^^^
-# (4)         ~/.cfg/dev-tools/perl/mine/bin/cpan # for convenience
+# (1)                      ~/bin/cpan   # These are the filenames
+#                                |--|   # which actually get used
+#                                  |    # as config etc.
+#                                  v  
+#                                |--| 
+# (2)       ~/.cfg/perl+mine/bin/cpan   # Flat namespace required for
+#                  |_______|            # stow or other package management
+#                      \_________       # tool.  Only one tool should ever be
+#                                \      # used at any given time, hence it's
+#                                 |     # nicer to call it ~/.cfg than ~/.Stow
+#                                 v     # or similar.
+#                              |-------| 
+# (3)  ~/.cvs/config/dev-tools/perl/mine/bin/cpan   # for flexible
+#                                                   # sourcecontrol
 #
 # Note:
 #
-#   * We use ~/.Stow not ~/.stow because stow interprets ".stow"
-#     existing in a directory as a flag meaning that that directory is
-#     a stow directory containing stow source packages.  As a result
-#     it will not remove any stow symlinks from there, but we certainly
-#     want it to remove stow symlinks from under ~
+#   * The symlinks between (1) and (2) are managed entirely by the
+#     chosen package management tool.
+#
+#   * The symlinks between (2) and (3) are managed entirely by this
+#     program and the etc/config.map file.
 #
 #   * 'config' is a single CVS module so (3) must contain a directory
 #     called 'config'.
 #
-#   * (1) links to (2) not (4) because an extra level of indirection is
-#     inefficient, even if it makes `ls -la ~/.*' more legible.
+#   * The flexibility of mapping between (2) and (3) offered by the
+#     etc/config.map file lets us squash multiple sources into the
+#     same unique package namespace.  Advantages:
 #
-#   * We allow room for expansion via packages prefixed with something
-#     other than 'config/'.  It may make sense to label them something
-#     other than 'config' but still include them in the same stow
-#     repository.
+#       + Can have parallel public/private/RETIRED hierarchies
+#         within the CVS repository.
+#
+#       + Could even manage config concurrently from several different
+#         source control systems.
+#
+#   * We avoid ~/.stow because stow interprets ".stow" existing in a
+#     directory as a flag meaning that that directory is a stow
+#     directory containing stow source packages.  As a result it will
+#     not remove any stow symlinks from that directory, but we certainly
+#     want it to remove stow symlinks from under ~
+#
 
 # Now we define the top-level container directories corresponding to
 # each level:
 
 # (1) Where the all-important symlinks go.
-#my $TARGET_DIR  = "$ENV{HOME}/tmp/config-stow-test";
 my $TARGET_DIR  = $ENV{HOME};
 
-# (2) Stow directory - stow requires all packages live immediately under this.
-my $STOW_DIR    = "$ENV{HOME}/.Stow";
+# (2) Package directory ("stow directory" in stow terminology).
+#     stow requires all packages live immediately under this.
+my $PKG_DIR     = "$ENV{HOME}/.cfg";
 
-# (3) Root of the checked-out config tree.  We work it out by assuming
-#     that this file is in the directory $wd/config/META/bin.
-my $CO_CFG_ROOT = abs_path("$RealBin/../..");
-
-# (4) For CLI convenience only.
-my $CONVENIENCE_DIR = "$ENV{HOME}/.cfg";
-
-# The source code control system's working directory which contains
-# the checked out config.
-my $CVS_ROOT_WD = abs_path("$CO_CFG_ROOT/..");
-
-# We use a slightly hacked-up version of GNU stow which ignores CVS/ directories.
+# We use a slightly hacked-up version of GNU stow which ignores CVS/
+# directories.
 my $STOW        = "$RealBin/stow";
 
 # This is where we configure which config packages we want installed locally.
@@ -69,21 +75,32 @@ my $MAP_FILE    = abs_path("$RealBin/../etc/config.map");
 
 my %opts;
 Getopt::Long::Configure('no_ignore_case');
-GetOptions(\%opts, 'dry-run|n', 'delete|D', 'debug|d')
+GetOptions(
+  \%opts,
+  'dry-run|n', 'debug|d',
+  'pkg-dir|p=s', 'target|t=s', 'map|m=s',
+  'delete|D',
+)
   or die "Bad options";
-my $for_real = $opts{'dry-run'} ? 0 : 1;
 
+my $for_real = $opts{'dry-run'} ? 0 : 1;
+$PKG_DIR     = $opts{'pkg-dir'} if $opts{'pkg-dir'};
+$TARGET_DIR  = $opts{'target' } if $opts{'target' };
+$MAP_FILE    = $opts{'map'    } if $opts{'map'    };
+
+-d $TARGET_DIR
+  or die "$TARGET_DIR is not a valid directory; aborting.\n";
 -e $MAP_FILE
   or die "$MAP_FILE does not exist; did you copy from $MAP_FILE.template?\n";
--e $CO_CFG_ROOT
-  or die "$CO_CFG_ROOT does not exist; is the stuff really checked out yet?\n";
 -e $STOW
   or die "$STOW not found!  Aborting.\n";
 
-if (! -d $STOW_DIR) {
-  mkdir $STOW_DIR or die "mkdir($STOW_DIR) failed: $!\n";
+if (-e $PKG_DIR) {
+  -d $PKG_DIR or die "$PKG_DIR must be a directory!  Aborting.\n";
 }
-ensure_correct_symlink($CONVENIENCE_DIR, $CO_CFG_ROOT);
+else {
+  mkdir $PKG_DIR or die "mkdir($PKG_DIR) failed: $!\n";
+}
 
 if (@ARGV) {
   foreach my $pkg (@ARGV) {
@@ -99,6 +116,8 @@ TempDir->cleanup();
 exit 0;
 
 sub process_pkgs_from_config {
+  my %repos;
+
   open(MAP, $MAP_FILE) or die "open($MAP_FILE) failed: $!\n";
   while (<MAP>) {
     if (/^\s*\#\@/) {
@@ -111,92 +130,102 @@ sub process_pkgs_from_config {
     s/^\s+//;
     s/\s+$//;
 
-    process_pkg($_);
+    if (/^%repo\((.+)\)\s+(\S+)\s*=\s*(.+)$/) {
+      my ($type, $label, $root) = ($1, $2, $3);
+      $root =~ s!^~/!$ENV{HOME}/!;
+      $repos{$label} = {
+        type => $type,
+        root => $root,
+      };
+      next;
+    }
+
+    my ($repo, $src, $dst) = split /\s+/, $_;
+    $dst or die "Invalid line $. in $MAP_FILE:\n$_\n";
+    $repos{$repo} or die "Invalid repository $repo in line $. of $MAP_FILE:\n$_\n";
+
+    process_pkg($repos{$repo}, $src, $dst);
   }
 }
 
 sub process_pkg {
-  my ($pkg) = @_;
+  my ($repo, $src, $dst) = @_;
 
-  (my $dst = $pkg) =~ s!^config/!!
-    or die "Non-config not supported yet";
+  maybe_check_out_pkg($repo, $src);
 
-  if (! -d "$CO_CFG_ROOT/$dst") {
-    check_out_pkg($pkg);
-  }
-  else {
-    #print "# $dst already checked out in $CO_CFG_ROOT\n";
-  }
-
-  if ($pkg =~ /RETIRE/) {
-    print "#! deprecating: $pkg\n";
-    deprecate_pkg($dst);
+  if ($src =~ /RETIRE/) {
+    print "#! deprecating: $src\n";
+    deprecate_pkg($src, $dst);
   }
   else {
     if ($opts{delete}) {
       delete_pkg($dst);
-      print "# de-installed: $pkg\n";
+      print "# de-installed: $src\n";
     }
     else {
       install_pkg($dst);
-      print "# installed: $pkg\n";
+      print "# installed: $src\n";
     }
   }
 }
 
-sub stowify_pkg {
-  my ($pkg) = @_;
-  my @segments = File::Spec->splitdir($pkg);
-  my $stow_pkg = join '+', @segments;
-  ensure_correct_symlink(
-    File::Spec->join($STOW_DIR, $stow_pkg),
-    File::Spec->join($CO_CFG_ROOT, $pkg),
-  );
-  return $stow_pkg;
+sub maybe_check_out_pkg {
+  my ($repo, $src) = @_;
+
+  if ($repo->{type} eq 'cvs') {
+    maybe_check_out_cvs_pkg($repo, $src);
+  }
+  # support for other SCMs go here
+  else {
+    die "Repo type $repo->{type} not supported yet for $src; aborting.\n";
+  }
 }
 
-sub check_out_pkg {
-  my ($pkg) = @_;
-  chdir($CVS_ROOT_WD) or die "chdir($CVS_ROOT_WD) failed: $!\n";
-  print "Checking out $pkg ...\n";
-  system 'cvs', 'checkout', $pkg;
+sub maybe_check_out_cvs_pkg {
+  my ($repo, $src) = @_;
+  
+  if (-d File::Spec->join($repo->{root}, $src)) {
+    #print "# $dst already checked out in $CO_CFG_ROOT\n";
+    return;
+  }
+  
+  chdir($repo->{root}) or die "chdir($repo->{root}) failed: $!\n";
+  print "Checking out $src ...\n";
+  system 'cvs', 'checkout', $src;
   my $exit = $? >> 8;
-  die "cvs checkout $pkg failed; aborting!\n" if $exit != 0;
+  die "cvs checkout $src failed; aborting!\n" if $exit != 0;
 }
 
 sub deprecate_pkg {
-  my ($pkg) = @_;
-  #print "$pkg is deprecated; checking not installed ...\n";
-  my $stow_pkg = stowify_pkg($pkg);
+  my ($src, $dst) = @_;
+  #print "$src is deprecated; checking not installed ...\n";
   system $STOW,
       '-c',            # Dummy run, checking for conflicts.  If we're
                        # not using the deprecated package, there won't
                        # be any.
       '-R',            # Remove any symlinks already there.
       '-t', $TARGET_DIR,
-      '-d', $STOW_DIR,
-      $stow_pkg;
+      '-d', $PKG_DIR,
+      $dst;
   my $exit = $? >> 8;
   warn "$STOW -c failed; aborting!\n" if $exit != 0;
 }
 
 sub delete_pkg {
-  my ($pkg) = @_;
-  my $stow_pkg = stowify_pkg($pkg);
+  my ($src, $dst) = @_;
   system $STOW,
       ($for_real ? () : ( '-n' )),
       '-D', 
       '-t', $TARGET_DIR,
-      '-d', $STOW_DIR,
-      $stow_pkg;
+      '-d', $PKG_DIR,
+      $dst;
   my $exit = $? >> 8;
   warn "$STOW -c failed; aborting!\n" if $exit != 0;
 }
 
 sub install_pkg {
-  my ($pkg) = @_;
-  my $stow_pkg  = stowify_pkg($pkg);
-  my $stow_args = qq{-t "$TARGET_DIR" -d "$STOW_DIR" "$stow_pkg"};
+  my ($dst) = @_;
+  my $stow_args = qq{-t "$TARGET_DIR" -d "$PKG_DIR" "$dst"};
   $stow_args = "-vvv $stow_args" if $opts{debug};
   my $cmd       = "$STOW -c -R $stow_args";
   (my $human_cmd = $cmd) =~ s!\b$ENV{HOME}/!~/!g;
