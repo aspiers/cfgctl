@@ -79,7 +79,7 @@ GetOptions(
   \%opts,
   'dry-run|n', 'debug|d',
   'pkg-dir|p=s', 'target|t=s', 'map|m=s',
-  'delete|D',
+  'delete|D', 'remove-dangling|r',
 )
   or die "Bad options";
 
@@ -217,7 +217,7 @@ sub deprecate_pkg {
 }
 
 sub delete_pkg {
-  my ($src, $dst) = @_;
+  my ($dst) = @_;
   system $STOW,
       ($for_real ? () : ( '-n' )),
       '-D', 
@@ -263,6 +263,8 @@ sub install_pkg {
 sub preempt_conflict {
   my ($src, $symlink) = @_;
 
+  debug("preempting conflict between $src and $symlink\n");
+
   # Shorter, human-readable versions of source file and symlink
   (my $human_src     = $src)     =~ s!^$ENV{HOME}/!~/!;
   (my $human_symlink = $symlink) =~ s!^$ENV{HOME}/!~/!;
@@ -270,14 +272,37 @@ sub preempt_conflict {
     or die "$symlink didn't start with $TARGET_DIR\n";
 
   return if -d $symlink and -d $src;
-  return "Only one of $human_symlink and $human_src is a directory; aborting!\n"
-    if -d $symlink xor -d $src;
+
+  die "$human_symlink is a directory but $human_src isn't; aborting!\n"
+    if -d $symlink and ! -d $src;
+  
+  if (! -d $symlink and ! -l $symlink and -d $src) {
+    die "$human_src is a directory but $human_symlink isn't; aborting!\n";
+  }
 
 #   my $tempdir = TempDir->get;
 #   die unless -d $tempdir;
 
-  my ($src_dev,     $src_ino)     = stat($src)     or die "stat($src) failed: $!";
-  my ($symlink_dev, $symlink_ino) = stat($symlink) or die "stat($symlink) failed: $!";
+  my ($src_dev,     $src_ino)     = stat($src) or die "stat($src) failed: $!";
+  my ($symlink_dev, $symlink_ino) = stat($symlink);
+
+  if (! $symlink_dev || ! $symlink_ino) {
+    if (-l $symlink) {
+      if ($opts{'remove-dangling'}) {
+        debug("! Removing dangling symlink $symlink\n");
+        if ($for_real) {
+          unlink($symlink) or die "unlink($symlink) failed: $!\n";
+        }
+        return;
+      }
+      else {
+        die "stat($symlink) failed ($!); invalid symlink?  Specify -r to remove dangling symlinks.\n";
+      }
+    }
+    else {
+      die "stat($symlink) failed ($!); can't preempt conflict!  Aborting.\n";
+    }
+  }
 
   if ($src_dev == $symlink_dev and $src_ino == $symlink_ino) {
     debug("$human_src and $human_symlink are the same file; must be false conflict (see 6.3 Conflicts section of manual)\n");
@@ -332,7 +357,7 @@ sub ensure_correct_symlink {
 }
 
 sub debug {
-  print @_ if $opts{debug};
+  warn @_ if $opts{debug};
 }
 
 ##############################################################################
