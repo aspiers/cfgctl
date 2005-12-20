@@ -31,7 +31,7 @@ use Sh qw(abs_path move_with_subpath);
 # Note:
 #
 #   * The symlinks between (1) and (2) are managed entirely by the
-#     chosen package management tool.
+#     chosen package management tool (currently stow).
 #
 #   * The symlinks between (2) and (3) are managed entirely by this
 #     program and the etc/config.map file.
@@ -152,6 +152,11 @@ sub process_pkg {
   my ($repo, $src, $dst) = @_;
 
   maybe_check_out_pkg($repo, $src);
+  
+  ensure_correct_symlink(
+    File::Spec->join($PKG_DIR, $dst),
+    File::Spec->join($repo->{root}, $src),
+  );
 
   if ($src =~ /RETIRE/) {
     print "#! deprecating: $src\n";
@@ -185,7 +190,7 @@ sub maybe_check_out_cvs_pkg {
   my ($repo, $src) = @_;
   
   if (-d File::Spec->join($repo->{root}, $src)) {
-    #print "# $dst already checked out in $CO_CFG_ROOT\n";
+    debug("# $src already checked out in $repo->{root}\n");
     return;
   }
   
@@ -198,7 +203,7 @@ sub maybe_check_out_cvs_pkg {
 
 sub deprecate_pkg {
   my ($src, $dst) = @_;
-  #print "$src is deprecated; checking not installed ...\n";
+  debug("$src is deprecated; checking not installed ...\n");
   system $STOW,
       '-c',            # Dummy run, checking for conflicts.  If we're
                        # not using the deprecated package, there won't
