@@ -16,15 +16,15 @@ use Sh qw(abs_path move_with_subpath);
 # (1)                      ~/bin/cpan   # These are the filenames
 #                                |--|   # which actually get used
 #                                  |    # as config etc.
-#                                  v  
-#                                |--| 
+#                                  v
+#                                |--|
 # (2)       ~/.cfg/perl+mine/bin/cpan   # Flat namespace required for
 #                  |_______|            # stow or other package management
 #                      \_________       # tool.  Only one tool should ever be
 #                                \      # used at any given time, hence it's
 #                                 |     # nicer to call it ~/.cfg than ~/.Stow
 #                                 v     # or similar.
-#                              |-------| 
+#                              |-------|
 # (3)  ~/.cvs/config/dev-tools/perl/mine/bin/cpan   # for flexible
 #                                                   # sourcecontrol
 #
@@ -102,14 +102,7 @@ else {
   mkdir $PKG_DIR or die "mkdir($PKG_DIR) failed: $!\n";
 }
 
-if (@ARGV) {
-  foreach my $pkg (@ARGV) {
-    process_pkg($pkg);
-  }
-}
-else {
-  process_pkgs_from_config();
-}
+process_pkgs_from_config();
 
 TempDir->cleanup();
 
@@ -117,6 +110,9 @@ exit 0;
 
 sub process_pkgs_from_config {
   my %repos;
+
+  my %filter = map { $_ => 1 } @ARGV;
+  my $do_filter = @ARGV;
 
   open(MAP, $MAP_FILE) or die "open($MAP_FILE) failed: $!\n";
   while (<MAP>) {
@@ -145,6 +141,11 @@ sub process_pkgs_from_config {
     $dst or die "Invalid line $. in $MAP_FILE:\n$_\n";
     $repos{$repo} or die "Invalid repository $repo in line $. of $MAP_FILE:\n$_\n";
 
+    if ($do_filter and ! $filter{$dst}) {
+      debug("#. skipping $dst - not on command-line pkg list\n");
+      next;
+    }
+    
     process_pkg($repos{$repo}, $src, $dst);
   }
 }
@@ -153,7 +154,7 @@ sub process_pkg {
   my ($repo, $src, $dst) = @_;
 
   maybe_check_out_pkg($repo, $src);
-  
+
   ensure_correct_symlink(
     File::Spec->join($PKG_DIR, $dst),
     File::Spec->join($repo->{root}, $src),
@@ -189,12 +190,12 @@ sub maybe_check_out_pkg {
 
 sub maybe_check_out_cvs_pkg {
   my ($repo, $src) = @_;
-  
+
   if (-d File::Spec->join($repo->{root}, $src)) {
     debug("# $src already checked out in $repo->{root}\n");
     return;
   }
-  
+
   chdir($repo->{root}) or die "chdir($repo->{root}) failed: $!\n";
   print "Checking out $src ...\n";
   system 'cvs', 'checkout', $src;
@@ -219,12 +220,16 @@ sub deprecate_pkg {
 
 sub delete_pkg {
   my ($dst) = @_;
-  system $STOW,
-      ($for_real ? () : ( '-n' )),
-      '-D', 
-      '-t', $TARGET_DIR,
-      '-d', $PKG_DIR,
-      $dst;
+  my @args = (
+    ($for_real ? () : ( '-n' )),
+    ($opts{debug} ? '-vvv' : ()),
+    '-D',
+    '-t', $TARGET_DIR,
+    '-d', $PKG_DIR,
+    $dst
+  );
+  debug("delete: $STOW @args\n");
+  system $STOW, @args;
   my $exit = $? >> 8;
   warn "$STOW -c failed; aborting!\n" if $exit != 0;
 }
@@ -244,7 +249,7 @@ sub install_pkg {
       preempt_conflict($src, $symlink);
       next;
     }
-    
+
     #debug("! surplus stow -c output: $_");
     print "$_";
   }
@@ -276,7 +281,7 @@ sub preempt_conflict {
 
   die "$human_symlink is a directory but $human_src isn't; aborting!\n"
     if -d $symlink and ! -d $src;
-  
+
   if (! -d $symlink and ! -l $symlink and -d $src) {
     die "$human_src is a directory but $human_symlink isn't; aborting!\n";
   }
@@ -329,7 +334,7 @@ sub preempt_conflict {
     debug("# $human_symlink != $human_src; mv to preserve changes\n");
     if ($for_real) {
       my $host = $ENV{HOST} || $ENV{HOSTNAME} || die "edge case";
-      my $suffix = "saved.$host.$$." . time();
+      my $suffix = "cfgsave.$host.$$." . time();
       rename $src, "$src.$suffix"
         or die "rename($src, $src.$suffix) failed: $!\n";
       print "$src saved as $src.$suffix\n";
