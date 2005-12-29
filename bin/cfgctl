@@ -1,65 +1,80 @@
 #!/usr/bin/perl
 
-use strict;
-use warnings;
+=head1 NAME
 
-use File::Spec;
-use FindBin qw($RealBin);
-use Getopt::Long;
+cfgctl - configuration file controller
 
-use lib "$RealBin/../lib/perl5";
-use File::Compare;
-use Sh qw(abs_path move_with_subpath);
+=head1 SYNOPSIS
 
-# Pathname strategy involves multiple levels of symlinks, e.g.:
-#
-# (1)                      ~/bin/cpan   # These are the filenames
-#                                |--|   # which actually get used
-#                                  |    # as config etc.
-#                                  v
-#                                |--|
-# (2)       ~/.cfg/perl+mine/bin/cpan   # Flat namespace required for
-#                  |_______|            # stow or other package management
-#                      \_________       # tool.  Only one tool should ever be
-#                                \      # used at any given time, hence it's
-#                                 |     # nicer to call it ~/.cfg than ~/.Stow
-#                                 v     # or similar.
-#                              |-------|
-# (3)  ~/.cvs/config/dev-tools/perl/mine/bin/cpan   # for flexible
-#                                                   # sourcecontrol
-#
-# Note:
-#
-#   * The symlinks between (1) and (2) are managed entirely by the
-#     chosen package management tool (currently stow).
-#
-#   * The symlinks between (2) and (3) are managed entirely by this
-#     program and the etc/config.map file.
-#
-#   * 'config' is a single CVS module so (3) must contain a directory
-#     called 'config'.
-#
-#   * The flexibility of mapping between (2) and (3) offered by the
-#     etc/config.map file lets us squash multiple sources into the
-#     same unique package namespace.  Advantages:
-#
-#       + Can have parallel public/private/RETIRED hierarchies
-#         within the CVS repository.
-#
-#       + Could even manage config concurrently from several different
-#         source control systems.
-#
-#   * We avoid ~/.stow because stow interprets ".stow" existing in a
-#     directory as a flag meaning that that directory is a stow
-#     directory containing stow source packages.  As a result it will
-#     not remove any stow symlinks from that directory, but we certainly
-#     want it to remove stow symlinks from under ~
-#
+    $ cfgctl [options] [pkg [pkg...]]
 
-# Now we define the top-level container directories corresponding to
-# each level:
+Installs the listed config packages, or all if none are specified.
 
-# (1) Where the all-important symlinks go.
+Options [defaults in square brackets]:
+
+  -n, --dry-run              Don't touch the disk
+  -d, --debug                Debug
+  -p, --pkg-dir=DIR          Change source package [$PKG_DIR]
+  -t, --target=TARGET-DIR    Change target directory [$TARGET_DIR]
+  -m, --map=MAP-FILE         Change config map file [$MAP_FILE]
+  -D, --delete               Delete the chosen packages, not install
+  -r, --remove-dangling      If conflicts with dangling symlinks
+                             are found, delete them.
+
+=head1 DESCRIPTION
+
+Blah blah.  Explain why this is a good idea.
+
+Pathname strategy involves multiple levels of symlinks, e.g.:
+
+(1)                      ~/bin/cpan   # These are the filenames
+                               |--|   # which actually get used
+                                 |    # as config etc.
+                                 v
+                               |--|
+(2)       ~/.cfg/perl+mine/bin/cpan   # Flat namespace required for
+                 |_______|            # stow or other package management
+                     \_________       # tool.  Only one tool should ever be
+                               \      # used at any given time, hence it's
+                                |     # nicer to call it ~/.cfg than ~/.Stow
+                                v     # or similar.
+                             |-------|
+(3)  ~/.cvs/config/dev-tools/perl/mine/bin/cpan   # for flexible
+                                                  # sourcecontrol
+
+Note:
+
+  * The symlinks between (1) and (2) are managed entirely by the
+    chosen package management tool (currently stow).
+
+  * The symlinks between (2) and (3) are managed entirely by this
+    program and the etc/config.map file.
+
+  * 'config' is a single CVS module so (3) must contain a directory
+    called 'config'.
+
+  * The flexibility of mapping between (2) and (3) offered by the
+    etc/config.map file lets us squash multiple sources into the
+    same unique package namespace.  Advantages:
+
+      + Can have parallel public/private/RETIRED hierarchies
+        within the CVS repository.
+
+      + Could even manage config concurrently from several different
+        source control systems.
+
+  * We avoid ~/.stow because stow interprets ".stow" existing in a
+    directory as a flag meaning that that directory is a stow
+    directory containing stow source packages.  As a result it will
+    not remove any stow symlinks from that directory, but we certainly
+    want it to remove stow symlinks from under ~
+
+=cut
+
+# Now we define some sensible default settings for the top-level
+# container directories corresponding to each level above:
+
+# (1) Where the all-important end-user symlinks go.
 my $TARGET_DIR  = $ENV{HOME};
 
 # (2) Package directory ("stow directory" in stow terminology).
@@ -72,6 +87,17 @@ my $STOW        = "$RealBin/stow";
 
 # This is where we configure which config packages we want installed locally.
 my $MAP_FILE    = abs_path("$RealBin/../etc/config.map");
+
+use strict;
+use warnings;
+
+use File::Spec;
+use FindBin qw($RealBin);
+use Getopt::Long;
+
+use lib "$RealBin/../lib/perl5";
+use File::Compare;
+use Sh qw(abs_path move_with_subpath);
 
 my %opts;
 Getopt::Long::Configure('no_ignore_case');
