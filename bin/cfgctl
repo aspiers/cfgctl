@@ -25,49 +25,63 @@ Options [defaults in square brackets]:
 
 Blah blah.  Explain why this is a good idea.
 
-Pathname strategy involves multiple levels of symlinks, e.g.:
+=head1 ARCHITECTURE
 
-(1)                      ~/bin/cpan   # These are the filenames
-                               |--|   # which actually get used
-                                 |    # as config etc.
-                                 v
-                               |--|
-(2)       ~/.cfg/perl+mine/bin/cpan   # Flat namespace required for
-                 |_______|            # stow or other package management
-                     \_________       # tool.  Only one tool should ever be
-                               \      # used at any given time, hence it's
-                                |     # nicer to call it ~/.cfg than ~/.Stow
-                                v     # or similar.
-                             |-------|
-(3)  ~/.cvs/config/dev-tools/perl/mine/bin/cpan   # for flexible
-                                                  # sourcecontrol
+The pathname strategy involves multiple levels of symlinks, e.g.:
 
-Note:
+ (1)                      ~/bin/cpan    # These are the filenames
+                                |--|    # which actually get used
+                        symlink   |     # as config etc.
+                                  v
+                                |--|    # Flat namespace required for 
+ (2)       ~/.cfg/perl+mine/bin/cpan    # stow or other package       
+                  |-------|             # management tool.  Only one  
+                      \_________        # tool should ever be used at 
+                                \       # any given time, hence it's  
+                        symlink  |      # nicer to call it ~/.cfg than
+                                 v      # ~/.Stow or similar. 
+                              |-------| 
+ (3)  ~/.cvs/config/dev-tools/perl/mine/bin/cpan   # for flexible
+                                                   # sourcecontrol
 
-  * The symlinks between (1) and (2) are managed entirely by the
+Explanation and justification of this design follows:
+
+=over 4
+
+=item * Clear demarcation of responsibility
+
+  + The symlinks between (1) and (2) are managed entirely by the
     chosen package management tool (currently stow).
 
-  * The symlinks between (2) and (3) are managed entirely by this
+  + The symlinks between (2) and (3) are managed entirely by this
     program and the etc/config.map file.
 
-  * 'config' is a single CVS module so (3) must contain a directory
-    called 'config'.
+=item * Flexibility
 
-  * The flexibility of mapping between (2) and (3) offered by the
-    etc/config.map file lets us squash multiple sources into the
-    same unique package namespace.  Advantages:
+The flexibility of mapping between (2) and (3) offered by the
+etc/config.map file lets us squash multiple sources into the
+same unique package namespace.  Advantages:
 
-      + Can have parallel public/private/RETIRED hierarchies
-        within the CVS repository.
+  + Can have parallel public/private/RETIRED hierarchies
+    within the CVS repository.
 
-      + Could even manage config concurrently from several different
-        source control systems.
+  + Could even manage config concurrently from several different
+    source control systems.
 
-  * We avoid ~/.stow because stow interprets ".stow" existing in a
-    directory as a flag meaning that that directory is a stow
-    directory containing stow source packages.  As a result it will
-    not remove any stow symlinks from that directory, but we certainly
-    want it to remove stow symlinks from under ~
+=item * Cooperation with source control system
+
+'config' is currently a single CVS module so (3) must contain a
+directory called 'config' for clean check-out.
+
+=back
+
+=head2 CAVEAT
+
+We avoid ~/.stow because stow interprets ".stow" existing in a
+directory as a flag meaning that that directory is a stow directory
+containing stow source packages.  As a result it will not remove any
+stow symlinks from that directory, but we certainly want it to remove
+stow symlinks from under ~
 
 =cut
 
@@ -88,11 +102,13 @@ my $STOW        = "$RealBin/stow";
 # This is where we configure which config packages we want installed locally.
 my $MAP_FILE    = abs_path("$RealBin/../etc/config.map");
 
+##############################################################################
+
 use strict;
 use warnings;
 
 use File::Spec;
-use FindBin qw($RealBin);
+use FindBin qw($RealBin $RealScript);
 use Getopt::Long;
 
 use lib "$RealBin/../lib/perl5";
@@ -107,7 +123,27 @@ GetOptions(
   'pkg-dir|p=s', 'target|t=s', 'map|m=s',
   'delete|D', 'remove-dangling|r',
 )
-  or die "Bad options";
+  or usage();
+
+sub usage {
+  warn @_, "\n" if @_;
+
+  die <<EOUSAGE;
+$RealScript [options] [pkg [pkg...]]
+
+Installs the listed config packages, or all if none are specified.
+
+Options [defaults in square brackets]:
+  -n, --dry-run              Don't touch the disk
+  -d, --debug                Debug
+  -p, --pkg-dir=DIR          Change source package [$PKG_DIR]
+  -t, --target=TARGET-DIR    Change target directory [$TARGET_DIR]
+  -m, --map=MAP-FILE         Change config map file [$MAP_FILE]
+  -D, --delete               Delete the chosen packages, not install
+  -r, --remove-dangling      If conflicts with dangling symlinks
+                             are found, delete them.
+EOUSAGE
+}
 
 my $for_real = $opts{'dry-run'} ? 0 : 1;
 $PKG_DIR     = $opts{'pkg-dir'} if $opts{'pkg-dir'};
@@ -115,14 +151,14 @@ $TARGET_DIR  = $opts{'target' } if $opts{'target' };
 $MAP_FILE    = $opts{'map'    } if $opts{'map'    };
 
 -d $TARGET_DIR
-  or die "$TARGET_DIR is not a valid directory; aborting.\n";
+  or usage("$TARGET_DIR is not a valid directory; aborting.\n");
 -e $MAP_FILE
-  or die "$MAP_FILE does not exist; did you copy from $MAP_FILE.template?\n";
+  or usage("$MAP_FILE does not exist; did you copy from $MAP_FILE.template?\n");
 -e $STOW
-  or die "$STOW not found!  Aborting.\n";
+  or usage("$STOW not found!  Aborting.\n");
 
 if (-e $PKG_DIR) {
-  -d $PKG_DIR or die "$PKG_DIR must be a directory!  Aborting.\n";
+  -d $PKG_DIR or usage("$PKG_DIR must be a directory!  Aborting.\n");
 }
 else {
   mkdir $PKG_DIR or die "mkdir($PKG_DIR) failed: $!\n";
