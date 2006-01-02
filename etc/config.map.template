@@ -8,7 +8,7 @@
 %repo(cvs) cvs_wd = ~/.cvs
 
 ## Columns:
-##   1. Repository label as defined above
+##   1. Source repository label as defined above.
 ##   2. Source directory within the repository or working dir.
 ##   3. Target namespace as controlled by stow or similar
 ##      (therefore must be unique).
