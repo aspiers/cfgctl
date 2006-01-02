@@ -277,6 +277,8 @@ sub deprecate_pkg {
       '-c',            # Dummy run, checking for conflicts.  If we're
                        # not using the deprecated package, there won't
                        # be any.
+      ($opts{debug} ? '-vvv' : ()),
+      ($opts{thorough} ? () : '-p'),
       '-R',            # Remove any symlinks already there.
       '-t', $TARGET_DIR,
       '-d', $PKG_DIR,
