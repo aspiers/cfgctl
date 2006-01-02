@@ -62,13 +62,15 @@ cvs_wd config/Xwindows/xmms                   xmms
 cvs_wd config/Xwindows/xchat                  xchat
 cvs_wd config/personal-interest               personal-interest
 
-#@ Deprecated; warn if still using this stuff
-cvs_wd config/RETIRED/Xwindows/galeon         galeon
-cvs_wd config/RETIRED/Xwindows/gnome          gnome
-cvs_wd config/RETIRED/Xwindows/netscape       netscape
-cvs_wd config/RETIRED/term                    term
-cvs_wd config/RETIRED/shell-apps/mh           mh
-cvs_wd config/RETIRED/shell-apps/sdf          sdf
-cvs_wd config/RETIRED/shell-apps/bk2site      bk2site
-cvs_wd config/RETIRED/shell-apps/lynx         lynx
-cvs_wd config/RETIRED/shell-apps/ytalk        ytalk
+# #@ Deprecated; warn if still using this stuff.
+# ## N.B. to obtain warnings requires a checkout, so you may want
+# ## to leave these commented.
+# cvs_wd config/RETIRED/Xwindows/galeon         galeon
+# cvs_wd config/RETIRED/Xwindows/gnome          gnome
+# cvs_wd config/RETIRED/Xwindows/netscape       netscape
+# cvs_wd config/RETIRED/term                    term
+# cvs_wd config/RETIRED/shell-apps/mh           mh
+# cvs_wd config/RETIRED/shell-apps/sdf          sdf
+# cvs_wd config/RETIRED/shell-apps/bk2site      bk2site
+# cvs_wd config/RETIRED/shell-apps/lynx         lynx
+# cvs_wd config/RETIRED/shell-apps/ytalk        ytalk
