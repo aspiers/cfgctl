@@ -161,7 +161,7 @@ $MAP_FILE    = $opts{'map'    } if $opts{'map'    };
 -e $STOW
   or usage("$STOW not found!  Aborting.\n");
 
-stat($PKG_DIR);
+lstat($PKG_DIR);
 if (-e _) {
   -d _ or usage("$PKG_DIR must be a directory!  Aborting.\n");
 }
