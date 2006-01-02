@@ -3,62 +3,72 @@
 ## Adam's config packages.  Listed in suggested installation order.
 ## Copy from config.map.template to config.map and edit as appropriate.
 
+## First we define the source repository or working directory.  We
+## only support cvs so far.
+%repo(cvs) cvs_wd = ~/.cvs
+
+## Columns:
+##   1. Repository label as defined above
+##   2. Source directory within the repository or working dir.
+##   3. Target namespace as controlled by stow or similar
+##      (therefore must be unique).
+
 #@ Bootstrapping
-config/dev-tools/cvs
-config/META
-config/shell-env
-config/dev-tools/BASE
-config/dev-tools/perl/mine
-config/dev-tools/perl/doc
-config/dev-tools/rpm
+cvs_wd config/META                            META
+cvs_wd config/shell-env                       shell-env
+cvs_wd config/dev-tools/perl/mine             perl+mine
+cvs_wd config/dev-tools/perl/doc              perl+doc
+cvs_wd config/dev-tools/rpm                   rpm
+cvs_wd config/dev-tools/cvs                   cvs
 
 #@ Bare essentials
-config/shell-apps/ssh
-config/shell-apps/screen
-config/shell-apps/emacs
-config/Xwindows/SESSION
-config/shell-apps/watchlogs
+cvs_wd config/shell-apps/ssh                  ssh
+cvs_wd config/shell-apps/screen               screen
+cvs_wd config/shell-apps/emacs                emacs
+cvs_wd config/Xwindows/SESSION                SESSION
+cvs_wd config/shell-apps/watchlogs            watchlogs
 
 #@ First things first
-config/Xwindows/Eterm
-config/Xwindows/gkrellm
-config/Xwindows/sawfish
-config/Xwindows/fonts
-config/shell-apps/mutt
-config/shell-apps/gnupg
-config/shell-apps/lftp
-config/shell-apps/ncftp
+cvs_wd config/Xwindows/Eterm                  Eterm
+cvs_wd config/Xwindows/gkrellm                gkrellm
+cvs_wd config/Xwindows/sawfish                sawfish
+cvs_wd config/Xwindows/fonts                  fonts
+cvs_wd config/shell-apps/mutt                 mutt
+cvs_wd config/shell-apps/mailcap              mailcap
+cvs_wd config/shell-apps/gnupg                gnupg
+cvs_wd config/shell-apps/lftp                 lftp
+cvs_wd config/shell-apps/ncftp                ncftp
 
 #@ Getting more comfortable
-config/dev-tools/perl/pmtools
-config/dev-tools/ruby
-config/dev-tools/darcs
-config/dev-tools/dup-files
+cvs_wd config/dev-tools/perl/pmtools          pmtools
+cvs_wd config/dev-tools/ruby                  ruby
+cvs_wd config/dev-tools/darcs                 darcs
+cvs_wd config/dev-tools/dup-files             dup-files
 
 #@ For work only
-config/work-tools
+cvs_wd config/work-tools                      work-tools
+cvs_wd priv/config/novell/mail                novell+mail
 
 #@ For play only
-config/shell-apps/htmltidy
-config/shell-apps/palm
-config/Xwindows/gqview
-config/Xwindows/audio
-config/Xwindows/xwrits
-config/Xwindows/backgrounds
-config/Xwindows/rxvt
-config/shell-apps/crm114
-config/Xwindows/xmms
-config/Xwindows/xchat
-config/personal-interest
+cvs_wd config/shell-apps/htmltidy             htmltidy
+cvs_wd config/shell-apps/palm                 palm
+cvs_wd config/Xwindows/gqview                 gqview
+cvs_wd config/Xwindows/audio                  audio
+cvs_wd config/Xwindows/xwrits                 xwrits
+cvs_wd config/Xwindows/backgrounds            backgrounds
+cvs_wd config/Xwindows/rxvt                   rxvt
+cvs_wd config/shell-apps/crm114               crm114
+cvs_wd config/Xwindows/xmms                   xmms
+cvs_wd config/Xwindows/xchat                  xchat
+cvs_wd config/personal-interest               personal-interest
 
 #@ Deprecated; warn if still using this stuff
-config/Xwindows/galeon.RETIRED
-config/Xwindows/gnome.RETIRED
-config/Xwindows/netscape.RETIRED
-config/term.RETIRED
-config/shell-apps/mh.RETIRED
-config/shell-apps/sdf.RETIRED
-config/shell-apps/bk2site.RETIRED
-config/shell-apps/lynx.RETIRED
-config/shell-apps/ytalk.RETIRED
-config/shell-apps/mailcap.RETIRED
+cvs_wd config/RETIRED/Xwindows/galeon         galeon
+cvs_wd config/RETIRED/Xwindows/gnome          gnome
+cvs_wd config/RETIRED/Xwindows/netscape       netscape
+cvs_wd config/RETIRED/term                    term
+cvs_wd config/RETIRED/shell-apps/mh           mh
+cvs_wd config/RETIRED/shell-apps/sdf          sdf
+cvs_wd config/RETIRED/shell-apps/bk2site      bk2site
+cvs_wd config/RETIRED/shell-apps/lynx         lynx
+cvs_wd config/RETIRED/shell-apps/ytalk        ytalk
