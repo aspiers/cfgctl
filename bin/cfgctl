@@ -402,15 +402,16 @@ sub preempt_conflict {
     # can put a symlink there instead whilst still preserving
     # local changes
 #     my $modified_dir = File::Spec->join($tempdir, 'modified');
-    debug("# $human_symlink != $human_src; mv to preserve changes\n");
+    print "M $human_symlink\n");
     if ($for_real) {
       my $host = $ENV{HOST} || $ENV{HOSTNAME} || die "edge case";
       my $suffix = "cfgsave.$host.$$." . time();
       rename $src, "$src.$suffix"
         or die "rename($src, $src.$suffix) failed: $!\n";
-      print "$src saved as $src.$suffix\n";
+      debug("mv pristine $human_src => $human_src.$suffix\n");
       rename $symlink, $src
 	or die "rename($symlink, $src) to preempt conflict failed: $!\n";
+      debug("mv modified $human_symlink => $human_src\n");
       #move_with_subpath($TARGET_DIR, $modified_dir, $sub_symlink);
     }
   }
