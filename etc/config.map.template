@@ -48,6 +48,7 @@ cvs_wd config/dev-tools/dup-files             dup-files
 #@ For work only
 cvs_wd config/work-tools                      work-tools
 cvs_wd priv/config/novell/mail                novell+mail
+cvs_wd priv/config/novell/vpn                 novell+vpn
 
 #@ For play only
 cvs_wd config/shell-apps/htmltidy             htmltidy
