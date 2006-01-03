@@ -14,12 +14,12 @@
 ##      (therefore must be unique).
 
 #@ Bootstrapping
+cvs_wd config/dev-tools/cvs                   cvs
 cvs_wd config/META                            META
 cvs_wd config/shell-env                       shell-env
 cvs_wd config/dev-tools/perl/mine             perl+mine
 cvs_wd config/dev-tools/perl/doc              perl+doc
 cvs_wd config/dev-tools/rpm                   rpm
-cvs_wd config/dev-tools/cvs                   cvs
 
 #@ Bare essentials
 cvs_wd config/shell-apps/ssh                  ssh
