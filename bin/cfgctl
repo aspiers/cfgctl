@@ -402,7 +402,7 @@ sub preempt_conflict {
     # can put a symlink there instead whilst still preserving
     # local changes
 #     my $modified_dir = File::Spec->join($tempdir, 'modified');
-    print "M $human_symlink\n");
+    print "M $human_symlink\n";
     if ($for_real) {
       my $host = $ENV{HOST} || $ENV{HOSTNAME} || die "edge case";
       my $suffix = "cfgsave.$host.$$." . time();
