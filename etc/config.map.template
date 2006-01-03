@@ -25,21 +25,24 @@ cvs_wd config/dev-tools/cvs                   cvs
 cvs_wd config/shell-apps/ssh                  ssh
 cvs_wd config/shell-apps/screen               screen
 cvs_wd config/shell-apps/emacs                emacs
+
+#@ X environment
 cvs_wd config/Xwindows/SESSION                SESSION
 cvs_wd config/shell-apps/watchlogs            watchlogs
-
-#@ First things first
 cvs_wd config/Xwindows/Eterm                  Eterm
 cvs_wd config/Xwindows/gkrellm                gkrellm
 cvs_wd config/Xwindows/sawfish                sawfish
 cvs_wd config/Xwindows/fonts                  fonts
+
+#@ Mail
 cvs_wd config/shell-apps/mutt                 mutt
 cvs_wd config/shell-apps/mailcap              mailcap
 cvs_wd config/shell-apps/gnupg                gnupg
-cvs_wd config/shell-apps/lftp                 lftp
-cvs_wd config/shell-apps/ncftp                ncftp
+cvs_wd config/shell-apps/crm114               crm114
 
 #@ Getting more comfortable
+cvs_wd config/shell-apps/lftp                 lftp
+cvs_wd config/shell-apps/ncftp                ncftp
 cvs_wd config/dev-tools/perl/pmtools          pmtools
 cvs_wd config/dev-tools/ruby                  ruby
 cvs_wd config/dev-tools/darcs                 darcs
@@ -58,7 +61,6 @@ cvs_wd config/Xwindows/audio                  audio
 cvs_wd config/Xwindows/xwrits                 xwrits
 cvs_wd config/Xwindows/backgrounds            backgrounds
 cvs_wd config/Xwindows/rxvt                   rxvt
-cvs_wd config/shell-apps/crm114               crm114
 cvs_wd config/Xwindows/xmms                   xmms
 cvs_wd config/Xwindows/xchat                  xchat
 cvs_wd config/personal-interest               personal-interest
