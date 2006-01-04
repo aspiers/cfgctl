@@ -87,6 +87,21 @@ containing stow source packages.  As a result it will not remove any
 stow symlinks from that directory, but we certainly want it to remove
 stow symlinks from under ~
 
+=head1 TODO
+
+=over 4
+
+=item * Perlify config file
+
+so can have flexible conditionals for inclusion, e.g.
+
+  my $personal = 1;
+  ...
+  if ($personal) {
+    map();
+
+=back
+
 =cut
 
 # Now we define some sensible default settings for the top-level
@@ -179,6 +194,7 @@ sub process_pkgs_from_config {
   my %repos;
 
   my %filter = map { $_ => 1 } @ARGV;
+  my %done;
   my $do_filter = @ARGV;
 
   open(MAP, $MAP_FILE) or die "open($MAP_FILE) failed: $!\n";
@@ -214,6 +230,11 @@ sub process_pkgs_from_config {
     }
     
     process_pkg($repos{$repo}, $src, $dst);
+    $done{$dst}++;
+  }
+  if ($do_filter) {
+    warn "$_ not found in $MAP_FILE; didn't process\n"
+      foreach grep ! $done{$_}, keys %filter;
   }
 }
 
