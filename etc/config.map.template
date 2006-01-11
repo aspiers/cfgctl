@@ -16,6 +16,10 @@
 #@ Bootstrapping
 cvs_wd config/dev-tools/cvs                   cvs
 cvs_wd config/META                            META
+# This one required to stop stow folding some high-level directories
+# which are safer left unfolded (in case I accidentally put new files
+# in there and they unintentionally go in a package directory).
+cvs_wd config/ANTIFOLD                        ANTIFOLD
 cvs_wd config/shell-env                       shell-env
 cvs_wd config/dev-tools/perl/mine             perl+mine
 cvs_wd config/dev-tools/perl/doc              perl+doc
