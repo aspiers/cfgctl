@@ -1,0 +1,9 @@
+#autoload
+
+map=$zdotdir/etc/config.map
+
+pkgs=( $( awk '/^cvs_wd/ { print $2 }' $map ) )
+
+local expl
+_description cfg_pkgs expl 'config packages'
+compadd -a - pkgs
