@@ -2,21 +2,19 @@
 
 set -e
 
-normalize-bookmarks
-cd
+#normalize-bookmarks
 
+root=~/.cvs
 if [ -z "$*" ]; then
-  rcs="`list-cvs-files rcs | sed 's/^rcs\///'` `list-checked-out-dirs -t`"
+  dirs="config priv"
 else
-  rcs="$@"
+  dirs=
+  for pkg in "$@"; do
+    cd ~/.cfg/$pkg
+    echo "#>>> cvs updating $pkg ..."
+    cvsuhq
+    echo "#>>> cfgctl $pkg"
+    cfgctl "$pkg"
+  done
 fi
 
-# Don't update the config dirs of running browsers
-for browser in netscape galeon; do
-  if ps -uxww | grep -v grep | grep -q $browser; then
-    echo "$browser is running; not updating ~/.$browser"
-    rcs="`echo $rcs | sed -e s/\\.$browser\\ //`"
-  fi
-done
-
-cvsuhq $rcs
