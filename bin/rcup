@@ -4,16 +4,24 @@ set -e
 
 #normalize-bookmarks
 
-root=~/.cvs
 if [ -z "$*" ]; then
-  dirs="config priv"
+  echo "#>>> cvs updating config ..."
+  cd ~/.cfg/config
+  cvsuhq
+
+  echo "#>>> cvs updating priv ..."
+  cd ~/.cfg/priv
+  cvsuhq
+
+  echo "#>>> cfgctl ..."
+  cfgctl
 else
   dirs=
   for pkg in "$@"; do
     cd ~/.cfg/$pkg
     echo "#>>> cvs updating $pkg ..."
     cvsuhq
-    echo "#>>> cfgctl $pkg"
+    echo "#>>> cfgctl $pkg ..."
     cfgctl "$pkg"
   done
 fi

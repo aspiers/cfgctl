@@ -1,9 +1,21 @@
-#!/bin/sh
+#!/bin/bash
 
-cd ~
+set -e
 
-if [ -z "$@" ]; then
-  cvsq `list-cvs-files rcs | sed 's/^rcs\///'` `list-checked-out-dirs -t`
+if [ -z "$*" ]; then
+  echo "#>>> cvsq config ..."
+  cd ~/.cfg/config
+  cvsq
+
+  echo "#>>> cvsq priv ..."
+  cd ~/.cfg/priv
+  cvsq
 else
-  cvsq "$@"
+  dirs=
+  for pkg in "$@"; do
+    cd ~/.cfg/$pkg
+    echo "#>>> cvsq $pkg ..."
+    cvsq
+  done
 fi
+
