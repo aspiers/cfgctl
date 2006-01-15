@@ -6,11 +6,11 @@ set -e
 
 if [ -z "$*" ]; then
   echo "#>>> cvs updating config ..."
-  cd ~/.cfg/config
+  cd ~/.cvs/config
   cvsuhq
 
   echo "#>>> cvs updating priv ..."
-  cd ~/.cfg/priv
+  cd ~/.cvs/priv
   cvsuhq
 
   echo "#>>> cfgctl ..."
