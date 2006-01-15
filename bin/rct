@@ -4,11 +4,11 @@ set -e
 
 if [ -z "$*" ]; then
   echo "#>>> cvst config ..."
-  cd ~/.cfg/config
+  cd ~/.cvs/config
   cvst
 
   echo "#>>> cvst priv ..."
-  cd ~/.cfg/priv
+  cd ~/.cvs/priv
   cvst
 else
   dirs=
