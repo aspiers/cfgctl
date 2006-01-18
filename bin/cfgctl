@@ -356,6 +356,14 @@ sub install_pkg {
     my $exit = $? >> 8;
     warn "$STOW failed; aborting!\n" if $exit != 0;
   }
+
+  my $post_hook = File::Spec->join($TARGET_DIR, '.cfg-post.d', $dst);
+  if (-x $post_hook) {
+    print "# Running $post_hook ...\n";
+    system $post_hook;
+    my $exit = $? >> 8;
+    warn "Warning: $post_hook failed\n" if $exit != 0;
+  }
 }
 
 sub preempt_conflict {
