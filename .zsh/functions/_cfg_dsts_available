@@ -5,5 +5,5 @@ map=$zdotdir/etc/config.map
 _cfg_dsts_available=( $( awk '/^cvs_wd/ { print $3 }' $map ) )
 
 local expl
-_description cfg_dsts expl 'config packages destinations available'
-compadd -a _cfg_dsts_available
+_description cfg_dsts expl 'config package destinations available'
+compadd "$expl[@]" -a _cfg_dsts_available
