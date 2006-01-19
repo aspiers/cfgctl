@@ -176,6 +176,13 @@ sub md5hex_file {
   return $md5;
 }
 
+=head2 move_with_subpath
+
+e.g. moves foo/bar/src/1/2/3 to foo/bar/dst/1/2/3 even if
+foo/bar/dst/1/2 didn't previously exist
+
+=cut
+
 sub move_with_subpath {
   my ($src_root, $dst_root, $subpath) = @_;
 
@@ -194,6 +201,12 @@ sub move_with_subpath {
 
   rename($src, $dst) or die "rename($src, $dst) failed: $!\n";
 }
+
+=head2 move_with_common_subpath
+
+Same as C<move_with_subpath> but auto-figures out C<$subpath>.
+
+=cut
 
 sub move_with_common_subpath {
   my ($src, $dst) = @_;
