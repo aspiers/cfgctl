@@ -13,6 +13,8 @@ set -e
 case "$BASH_VERSION" in
   1*) allow_null_glob_expansion=1 ;;
   2*) shopt -s nullglob           ;;
+  *)  echo "Unknown \$BASH_VERSION!  Aborting." >&2;
+      exit 1 ;;
 esac
 
 usage () {
