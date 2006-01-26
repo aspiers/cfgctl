@@ -21,6 +21,7 @@ cvs_wd config/META                            META
 # in there and they unintentionally go in a package directory).
 cvs_wd config/ANTIFOLD                        ANTIFOLD
 cvs_wd config/shell-env                       shell-env
+cvs_wd priv/config/adam.spiers/shell-env      shell-env.adam.spiers
 cvs_wd config/dev-tools/perl/mine             perl+mine
 cvs_wd config/dev-tools/perl/doc              perl+doc
 cvs_wd config/dev-tools/rpm                   rpm
@@ -54,6 +55,7 @@ cvs_wd config/dev-tools/dup-files             dup-files
 
 #@ For work only
 cvs_wd config/work-tools                      work-tools
+cvs_wd priv/config/novell/shell-env           novell+shell-env
 cvs_wd priv/config/novell/mail                novell+mail
 cvs_wd priv/config/novell/vpn                 novell+vpn
 
