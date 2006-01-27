@@ -262,8 +262,11 @@ sub process_pkg {
     else {
       install_pkg($src, $dst);
       print "# installed: $src\n";
-      if ($src =~ m!^personal/sec/!) {
-        my @chmod = ('chmod', 'go-rwx', '-R', $src_dir);
+      if ($src =~ m!^(personal/sec)/!) {
+        my @chmod = (
+          'chmod', 'go-rwx', '-R',
+          File::Spec->join($repo->{root}, $1),
+        );
         print "@chmod\n";
         system @chmod;
         my $exit = $? >> 8;
