@@ -1,4 +1,4 @@
-#compdef cfgctl rcup rct rcq rcd
+#compdef cfgctl rcup rct rcq
 
 map=$zdotdir/etc/config.map
 
