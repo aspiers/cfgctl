@@ -7,8 +7,8 @@ if [ -z "$*" ]; then
   cd ~/.cvs/config
   cvst
 
-  echo "#>>> cvst priv ..."
-  cd ~/.cvs/priv
+  echo "#>>> cvst personal ..."
+  cd ~/.cvs/personal
   cvst
 else
   dirs=

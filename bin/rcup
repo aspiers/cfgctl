@@ -9,8 +9,8 @@ if [ -z "$*" ]; then
   cd ~/.cvs/config
   cvsuhq
 
-  echo "#>>> cvs updating priv ..."
-  cd ~/.cvs/priv
+  echo "#>>> cvs updating personal ..."
+  cd ~/.cvs/personal
   cvsuhq
 
   echo "#>>> cfgctl ..."
