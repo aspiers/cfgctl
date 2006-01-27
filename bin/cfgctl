@@ -14,7 +14,7 @@ Options [defaults in square brackets]:
 
   -n, --dry-run              Don't touch the disk
   -d, --debug                Debug
-  -p, --pkg-dir=DIR          Change source package [$PKG_DIR]
+  -p, --pkg-dir=DIR          Change source package directory [$PKG_DIR]
   -t, --target=TARGET-DIR    Change target directory [$TARGET_DIR]
   -m, --map=MAP-FILE         Change config map file [$MAP_FILE]
   -D, --delete               Delete the chosen packages, not install
@@ -243,9 +243,11 @@ sub process_pkg {
 
   maybe_check_out_pkg($repo, $src);
 
+  my $src_dir = File::Spec->join($repo->{root}, $src);
+
   ensure_correct_symlink(
     File::Spec->join($PKG_DIR, $dst),
-    File::Spec->join($repo->{root}, $src),
+    $src_dir,
   );
 
   if ($src =~ /RETIRE/) {
@@ -258,8 +260,15 @@ sub process_pkg {
       print "# de-installed: $src\n";
     }
     else {
-      install_pkg($dst);
+      install_pkg($src, $dst);
       print "# installed: $src\n";
+      if ($src =~ m!^personal/sec/!) {
+        my @chmod = ('chmod', 'go-rwx', '-R', $src_dir);
+        print "@chmod\n";
+        system @chmod;
+        my $exit = $? >> 8;
+        warn "Warning: chmod failed\n" if $exit != 0;
+      }
     }
   }
 }
@@ -326,7 +335,7 @@ sub delete_pkg {
 }
 
 sub install_pkg {
-  my ($dst) = @_;
+  my ($src, $dst) = @_;
   my $stow_args = qq{-t "$TARGET_DIR" -d "$PKG_DIR" "$dst"};
   $stow_args = "-vvv $stow_args" if $opts{debug};
   $stow_args = "-p $stow_args"   if ! $opts{thorough};
@@ -360,6 +369,9 @@ sub install_pkg {
   my $post_hook = File::Spec->join($TARGET_DIR, '.cfg-post.d', $dst);
   if (-x $post_hook) {
     print "# Running $post_hook ...\n";
+    my $src_dir = File::Spec->join($PKG_DIR, $dst);
+    my $pkg_dir = File::Spec->join($PKG_DIR, $dst);
+    chdir($pkg_dir) or die "chdir($pkg_dir) failed: $!\n";
     system $post_hook;
     my $exit = $? >> 8;
     warn "Warning: $post_hook failed\n" if $exit != 0;
