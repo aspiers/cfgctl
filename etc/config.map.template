@@ -54,6 +54,9 @@ cvs_wd config/dev-tools/ruby                  ruby
 cvs_wd config/dev-tools/darcs                 darcs
 cvs_wd config/dev-tools/dup-files             dup-files
 
+#@ For moosehall only
+#cvs_wd personal/pub/config/moosehall/shell-apps/ssh moosehall+ssh.pub
+
 #@ For work only
 cvs_wd config/work-tools                      work-tools
 cvs_wd personal/pub/config/novell/shell-env   novell+shell-env.pub
