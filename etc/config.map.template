@@ -49,6 +49,7 @@ cvs_wd config/shell-apps/crm114               crm114
 #@ Getting more comfortable
 cvs_wd config/shell-apps/lftp                 lftp
 cvs_wd config/shell-apps/ncftp                ncftp
+cvs_wd config/shell-apps/wscan                wscan
 cvs_wd config/dev-tools/perl/pmtools          pmtools
 cvs_wd config/dev-tools/ruby                  ruby
 cvs_wd config/dev-tools/darcs                 darcs
