@@ -29,6 +29,7 @@ cvs_wd config/dev-tools/rpm                   rpm
 
 #@ Bare essentials
 cvs_wd config/shell-apps/ssh                  ssh
+cvs_wd personal/sec/config/shell-apps/ssh     ssh.adam_spiers.sec
 cvs_wd config/shell-apps/screen               screen
 cvs_wd config/shell-apps/emacs                emacs
 
