@@ -70,7 +70,7 @@ cvs_wd personal/sec/config/novell/vpn         novell+vpn.sec
 #@ For play only
 cvs_wd config/shell-apps/htmltidy             htmltidy
 cvs_wd config/shell-apps/palm                 palm
-cvs_wd config/Xwindows/gqview                 gqview
+cvs_wd config/Xwindows/graphics               graphics
 cvs_wd config/Xwindows/audio                  audio
 cvs_wd config/Xwindows/xwrits                 xwrits
 cvs_wd config/Xwindows/backgrounds            backgrounds
