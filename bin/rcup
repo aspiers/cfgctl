@@ -5,6 +5,16 @@ set -e
 #normalize-bookmarks
 
 if [ -z "$*" ]; then
+  echo "#>>> cvs updating META ..."
+  cd ~/.cvs/config/META
+  cvsuhq
+  if [ etc/config.map.template -nt etc/config.map ]; then
+      echo "etc/config.map.template newer then /etc/config.map; please merge ..."
+      echo "Press enter to edit ..."
+      read foo
+      ${EDITOR:-vi} etc/config.map{,.template}
+  fi
+
   echo "#>>> cvs updating config ..."
   cd ~/.cvs/config
   cvsuhq
