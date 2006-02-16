@@ -57,7 +57,9 @@ cvs_wd config/dev-tools/darcs                 darcs
 cvs_wd config/dev-tools/dup-files             dup-files
 
 #@ For moosehall only
-#cvs_wd personal/pub/config/moosehall/shell-apps/ssh moosehall+ssh.pub
+# cvs_wd personal/pub/config/moosehall/shell-apps/ssh moosehall+ssh.pub
+# cvs_wd personal/pub/config/moosehall/ldap     moosehall+ldap.pub
+# cvs_wd personal/sec/config/moosehall/ldap     moosehall+ldap.sec
 
 #@ For work only
 cvs_wd config/work-tools                      work-tools
