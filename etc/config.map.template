@@ -33,6 +33,11 @@ cvs_wd personal/sec/config/shell-apps/ssh     ssh.adam_spiers.sec
 cvs_wd config/shell-apps/screen               screen
 cvs_wd config/shell-apps/emacs                emacs
 
+#@ Distribution-specific
+#cvs_wd config/dists/SL10                      SL10
+#cvs_wd config/dists/NLD9                      NLD9
+#cvs_wd config/dists/FC4                       FC4
+
 #@ X environment
 cvs_wd config/Xwindows/SESSION                SESSION
 cvs_wd config/shell-apps/watchlogs            watchlogs
