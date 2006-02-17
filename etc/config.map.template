@@ -53,6 +53,7 @@ cvs_wd config/shell-apps/ncftp                ncftp
 cvs_wd config/shell-apps/wscan                wscan
 cvs_wd config/dev-tools/perl/pmtools          pmtools
 cvs_wd config/dev-tools/ruby                  ruby
+cvs_wd config/dev-tools/svn                   svn
 cvs_wd config/dev-tools/darcs                 darcs
 cvs_wd config/dev-tools/dup-files             dup-files
 
