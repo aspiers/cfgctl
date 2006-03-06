@@ -70,6 +70,7 @@ cvs_wd config/dev-tools/dup-files             dup-files
 #@ For work only
 cvs_wd config/work-tools                      work-tools
 cvs_wd personal/pub/config/novell/shell-env   novell+shell-env.pub
+cvs_wd personal/pub/config/novell/shell-apps/emacs  novell+emacs.pub
 cvs_wd personal/pub/config/novell/mail        novell+mail.pub
 cvs_wd personal/pub/config/novell/vpn         novell+vpn.pub
 cvs_wd personal/sec/config/novell/mail        novell+mail.sec
