@@ -131,7 +131,6 @@ use FindBin qw($RealBin $RealScript);
 use Getopt::Long;
 
 use lib "$RealBin/../lib/perl5";
-use File::Compare;
 use Sh qw(abs_path);
 use Cfg;
 use Cfg::Utils qw(%opts %cfg);
