@@ -1,8 +1,6 @@
 #autoload
 
-map=$zdotdir/etc/config.map
-
-_cfg_srcs_available=( $( awk '/^cvs_wd/ { print $2 }' $map ) )
+_cfg_srcs_available=( $( cfgctl -s ) )
 
 local expl
 _description cfg_srcs expl 'config package sources available'
