@@ -120,7 +120,7 @@ register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
     config/dev-tools/dup-files             dup-files
 EOF
 
-system("ifconfig | grep '10\.70.61\.'");
+system("ifconfig | grep -q '10\.70.61\.'");
 if ($? >> 8 == 0) {
   register new Cfg::Section "For moosehall only";
   register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
