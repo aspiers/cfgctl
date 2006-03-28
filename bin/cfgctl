@@ -14,9 +14,9 @@ Options [defaults in square brackets]:
 
   -n, --dry-run              Don't touch the disk
   -d, --debug                Debug
-  -p, --pkg-dir=DIR          Change source package directory [$PKG_DIR]
+  -p, --pkg-dir=DIR          Change source package directory [$cfg{PKG_DIR}]
   -t, --target=TARGET-DIR    Change target directory [$TARGET_DIR]
-  -m, --map=MAP-FILE         Change config map file [$MAP_FILE]
+  -m, --map=MAP-FILE         Change config map file [$cfg{MAP_FILE}]
   -D, --delete               Delete the chosen packages, not install
   -r, --remove-dangling      If conflicts with dangling symlinks
                              are found, delete them.
@@ -108,18 +108,18 @@ so can have flexible conditionals for inclusion, e.g.
 # container directories corresponding to each level above:
 
 # (1) Where the all-important end-user symlinks go.
-my $TARGET_DIR  = $ENV{HOME};
+$cfg{TARGET_DIR}  = $ENV{HOME};
 
 # (2) Package directory ("stow directory" in stow terminology).
 #     stow requires all packages live immediately under this.
-my $PKG_DIR     = "$ENV{HOME}/.cfg";
+$cfg{PKG_DIR}     = "$ENV{HOME}/.cfg";
 
 # We use a slightly hacked-up version of GNU stow which ignores CVS/
 # directories.
-my $STOW        = "$RealBin/stow";
+$cfg{STOW}        = "$RealBin/stow";
 
 # This is where we configure which config packages we want installed locally.
-my $MAP_FILE    = abs_path("$RealBin/../etc/config.map");
+$cfg{MAP_FILE}    = abs_path("$RealBin/../etc/config.map");
 
 ##############################################################################
 
@@ -132,13 +132,14 @@ use Getopt::Long;
 
 use lib "$RealBin/../lib/perl5";
 use File::Compare;
-use Sh qw(abs_path move_with_subpath);
+use Sh qw(abs_path);
+use Cfg;
+use Cfg::Utils qw(%opts %cfg);
 
-my %opts;
 Getopt::Long::Configure('no_ignore_case');
 GetOptions(
   \%opts,
-  'dry-run|n', 'debug|d',
+  'dry-run|n', 'sources|s', 'destinations|d', 'verbose|v+',
   'pkg-dir|p=s', 'target|t=s', 'map|m=s',
   'delete|D', 'remove-dangling|r', 'thorough|T',
 )
@@ -153,386 +154,46 @@ $RealScript [options] [pkg [pkg...]]
 Installs the listed config packages, or all if none are specified.
 
 Options [defaults in square brackets]:
+  -s, --sources              Only list source packages
+  -D, --destinations         Only list destination packages
   -n, --dry-run              Don't touch the disk
-  -d, --debug                Debug
-  -p, --pkg-dir=DIR          Change source package [$PKG_DIR]
-  -t, --target=TARGET-DIR    Change target directory [$TARGET_DIR]
-  -m, --map=MAP-FILE         Change config map file [$MAP_FILE]
+  -v, --verbose              Increase verbosity
+  -p, --pkg-dir=DIR          Change source package [$cfg{PKG_DIR}]
+  -t, --target=TARGET-DIR    Change target directory [$cfg{TARGET_DIR}]
+  -m, --map=MAP-FILE         Change config map file [$cfg{MAP_FILE}]
   -D, --delete               Delete the chosen packages, not install
   -r, --remove-dangling      If conflicts with dangling symlinks
                              are found, delete them.
 EOUSAGE
 }
 
-my $for_real = $opts{'dry-run'} ? 0 : 1;
-$PKG_DIR     = $opts{'pkg-dir'} if $opts{'pkg-dir'};
-$TARGET_DIR  = $opts{'target' } if $opts{'target' };
-$MAP_FILE    = $opts{'map'    } if $opts{'map'    };
+$cfg{PKG_DIR}     = $opts{'pkg-dir'} if $opts{'pkg-dir'};
+$cfg{TARGET_DIR}  = $opts{'target' } if $opts{'target' };
+$cfg{MAP_FILE}    = $opts{'map'    } if $opts{'map'    };
 
--d $TARGET_DIR
-  or usage("$TARGET_DIR is not a valid directory; aborting.\n");
--e $MAP_FILE
-  or usage("$MAP_FILE does not exist; did you copy from $MAP_FILE.template?\n");
--e $STOW
-  or usage("$STOW not found!  Aborting.\n");
+-d $cfg{TARGET_DIR}
+  or usage("$cfg{TARGET_DIR} is not a valid directory; aborting.\n");
+-e $cfg{MAP_FILE}
+  or usage("$cfg{MAP_FILE} does not exist; did you copy from $cfg{MAP_FILE}.template?\n");
+-e $cfg{STOW}
+  or usage("$cfg{STOW} not found!  Aborting.\n");
 
-lstat($PKG_DIR);
+lstat($cfg{PKG_DIR});
 if (-e _) {
-  -d _ or usage("$PKG_DIR must be a directory!  Aborting.\n");
+  -d _ or usage("$cfg{PKG_DIR} must be a directory!  Aborting.\n");
 }
 else {
-  mkdir $PKG_DIR or die "mkdir($PKG_DIR) failed: $!\n";
+  mkdir $cfg{PKG_DIR} or die "mkdir($cfg{PKG_DIR}) failed: $!\n";
 }
 
-process_pkgs_from_config();
+Cfg->do_registration();
 
-TempDir->cleanup();
+if ($opts{sources} || $opts{destinations}) {
+  Cfg->list_pkgs();
+  exit 0;
+}
+
+Cfg->process_pkgs();
 
 exit 0;
 
-sub process_pkgs_from_config {
-  my %repos;
-
-  my %filter = map { $_ => 1 } @ARGV;
-  my %done;
-  my $do_filter = @ARGV;
-
-  open(MAP, $MAP_FILE) or die "open($MAP_FILE) failed: $!\n";
-  while (<MAP>) {
-    if (/^\s*\#\@/) {
-      print;
-      next;
-    }
-    next if /^\s*(\#|$)/;
-
-    chomp;
-    s/^\s+//;
-    s/\s+$//;
-
-    if (/^%repo\((.+)\)\s+(\S+)\s*=\s*(.+)$/) {
-      my ($type, $label, $root) = ($1, $2, $3);
-      $root =~ s!^~/!$ENV{HOME}/!;
-      $repos{$label} = {
-        type => $type,
-        root => $root,
-      };
-      print "#* Registered $type repo at $root\n";
-      next;
-    }
-
-    my ($repo, $src, $dst) = split /\s+/, $_;
-    $dst or die "Invalid line $. in $MAP_FILE:\n$_\n";
-    $repos{$repo} or die "Invalid repository $repo in line $. of $MAP_FILE:\n$_\n";
-
-    if ($do_filter and ! $filter{$dst}) {
-      debug("#. skipping $dst - not on command-line pkg list\n");
-      next;
-    }
-    
-    process_pkg($repos{$repo}, $src, $dst);
-    $done{$dst}++;
-  }
-  if ($do_filter) {
-    warn "$_ not found in $MAP_FILE; didn't process\n"
-      foreach grep ! $done{$_}, keys %filter;
-  }
-}
-
-sub process_pkg {
-  my ($repo, $src, $dst) = @_;
-
-  maybe_check_out_pkg($repo, $src);
-
-  my $src_dir = File::Spec->join($repo->{root}, $src);
-
-  ensure_correct_symlink(
-    File::Spec->join($PKG_DIR, $dst),
-    $src_dir,
-  );
-
-  if ($src =~ /RETIRE/) {
-    print "#! deprecating: $src\n";
-    deprecate_pkg($src, $dst);
-  }
-  else {
-    if ($opts{delete}) {
-      delete_pkg($dst);
-      print "# de-installed: $src\n";
-    }
-    else {
-      install_pkg($src, $dst);
-      print "# installed: $src\n";
-      if ($src =~ m!^(personal/sec)/!) {
-        my @chmod = (
-          'chmod', 'go-rwx', '-R',
-          File::Spec->join($repo->{root}, $1),
-        );
-        print "@chmod\n";
-        system @chmod;
-        my $exit = $? >> 8;
-        warn "Warning: chmod failed\n" if $exit != 0;
-      }
-    }
-  }
-}
-
-sub maybe_check_out_pkg {
-  my ($repo, $src) = @_;
-
-  if ($repo->{type} eq 'cvs') {
-    maybe_check_out_cvs_pkg($repo, $src);
-  }
-  # support for other SCMs go here
-  else {
-    die "Repo type $repo->{type} not supported yet for $src; aborting.\n";
-  }
-}
-
-sub maybe_check_out_cvs_pkg {
-  my ($repo, $src) = @_;
-
-  if (-d File::Spec->join($repo->{root}, $src)) {
-    debug("# $src already checked out in $repo->{root}\n");
-    return;
-  }
-
-  chdir($repo->{root}) or die "chdir($repo->{root}) failed: $!\n";
-  print "Checking out $src ...\n";
-  system 'cvs', 'checkout', $src;
-  my $exit = $? >> 8;
-  die "cvs checkout $src failed; aborting!\n" if $exit != 0;
-}
-
-sub deprecate_pkg {
-  my ($src, $dst) = @_;
-  debug("$src is deprecated; checking not installed ...\n");
-  system $STOW,
-      '-c',            # Dummy run, checking for conflicts.  If we're
-                       # not using the deprecated package, there won't
-                       # be any.
-      ($opts{debug} ? '-vvv' : ()),
-      ($opts{thorough} ? () : '-p'),
-      '-R',            # Remove any symlinks already there.
-      '-t', $TARGET_DIR,
-      '-d', $PKG_DIR,
-      $dst;
-  my $exit = $? >> 8;
-  warn "$STOW -c failed; aborting!\n" if $exit != 0;
-}
-
-sub delete_pkg {
-  my ($dst) = @_;
-  my @args = (
-    ($for_real ? () : ( '-n' )),
-    ($opts{debug} ? '-vvv' : ()),
-    ($opts{thorough} ? () : '-p'),
-    '-D',
-    '-t', $TARGET_DIR,
-    '-d', $PKG_DIR,
-    $dst
-  );
-  debug("delete: $STOW @args\n");
-  system $STOW, @args;
-  my $exit = $? >> 8;
-  warn "$STOW -c failed; aborting!\n" if $exit != 0;
-}
-
-sub install_pkg {
-  my ($src, $dst) = @_;
-  my $stow_args = qq{-t "$TARGET_DIR" -d "$PKG_DIR" "$dst"};
-  $stow_args = "-vvv $stow_args" if $opts{debug};
-  $stow_args = "-p $stow_args"   if ! $opts{thorough};
-  my $cmd       = "$STOW -c -R $stow_args";
-  (my $human_cmd = $cmd) =~ s!\b$ENV{HOME}/!~/!g;
-  debug("preempt: $cmd\n");
-  open(STOW, "$cmd 2>&1 |") or die "open($human_cmd|) failed: $!\n";
-  while (<STOW>) {
-    if (/^CONFLICT: (.+) vs. (.+?)( \(.*?\))?$/) {
-      #print;
-      my ($src, $symlink) = ($1, $2);
-      preempt_conflict($src, $symlink);
-      next;
-    }
-
-    #debug("! surplus stow -c output: $_");
-    print "$_";
-  }
-  close(STOW) or die "close($human_cmd|) failed: $!\n";
-
-  # Should have preempted all conflicts now; run for real.
-  $cmd = "$STOW -R $stow_args";
-  ($human_cmd = $cmd) =~ s!(^|\s)$ENV{HOME}/!$1~/!g;
-  debug("post-preempt: $human_cmd\n");
-  if ($for_real) {
-    system $cmd;
-    my $exit = $? >> 8;
-    warn "$STOW failed; aborting!\n" if $exit != 0;
-  }
-
-  my $post_hook = File::Spec->join($TARGET_DIR, '.cfg-post.d', $dst);
-  if (-x $post_hook) {
-    print "# Running $post_hook ...\n";
-    my $src_dir = File::Spec->join($PKG_DIR, $dst);
-    my $pkg_dir = File::Spec->join($PKG_DIR, $dst);
-    chdir($pkg_dir) or die "chdir($pkg_dir) failed: $!\n";
-    system $post_hook;
-    my $exit = $? >> 8;
-    warn "Warning: $post_hook failed\n" if $exit != 0;
-  }
-}
-
-sub preempt_conflict {
-  my ($src, $symlink) = @_;
-
-  debug("preempting conflict between $src and $symlink\n");
-
-  # Shorter, human-readable versions of source file and symlink
-  (my $human_src     = $src)     =~ s!^$ENV{HOME}/!~/!;
-  (my $human_symlink = $symlink) =~ s!^$ENV{HOME}/!~/!;
-  (my $sub_symlink   = $symlink) =~ s!^$TARGET_DIR/!!
-    or die "$symlink didn't start with $TARGET_DIR\n";
-
-  return if -d $symlink and -d $src;
-
-  die "$human_symlink is a directory but $human_src isn't; aborting!\n"
-    if -d $symlink and ! -d $src;
-
-  if (! -d $symlink and ! -l $symlink and -d $src) {
-    die "$human_src is a directory but $human_symlink isn't; aborting!\n";
-  }
-
-#   my $tempdir = TempDir->get;
-#   die unless -d $tempdir;
-
-  my ($src_dev,     $src_ino)     = stat($src) or die "stat($src) failed: $!";
-  my ($symlink_dev, $symlink_ino) = stat($symlink);
-
-  if (! $symlink_dev || ! $symlink_ino) {
-    if (-l $symlink) {
-      if ($opts{'remove-dangling'}) {
-        debug("! Removing dangling symlink $symlink\n");
-        if ($for_real) {
-          unlink($symlink) or die "unlink($symlink) failed: $!\n";
-        }
-        return;
-      }
-      else {
-        die "stat($symlink) failed ($!); invalid symlink?  Specify -r to remove dangling symlinks.\n";
-      }
-    }
-    else {
-      die "stat($symlink) failed ($!); can't preempt conflict!  Aborting.\n";
-    }
-  }
-
-  if ($src_dev == $symlink_dev and $src_ino == $symlink_ino) {
-    debug("$human_src and $human_symlink are the same file; must be false conflict (see 6.3 Conflicts section of manual)\n");
-    return;
-  }
-
-  if (compare($src, $symlink) == 0) {
-    # same file contents - remove target so that stow can put a
-    # symlink there instead.
-    debug("# $human_symlink == $src; remove to make way for symlink\n");
-#     my $same_dir = File::Spec->join($tempdir, 'same');
-#     die $same_dir unless -d $same_dir;
-    if ($for_real) {
-      unlink $symlink or die "unlink($symlink) to preempt conflict failed: $!\n";
-      #move_with_subpath($TARGET_DIR, $same_dir, $sub_symlink);
-    }
-  }
-  else {
-    # different file contents - move target to source so that stow
-    # can put a symlink there instead whilst still preserving
-    # local changes
-#     my $modified_dir = File::Spec->join($tempdir, 'modified');
-    print "M $human_symlink\n";
-    if ($for_real) {
-      my $host = $ENV{HOST} || $ENV{HOSTNAME} || die "edge case";
-      my $suffix = "cfgsave.$host.$$." . time();
-      rename $src, "$src.$suffix"
-        or die "rename($src, $src.$suffix) failed: $!\n";
-      debug("mv pristine $human_src => $human_src.$suffix\n");
-      rename $symlink, $src
-	or die "rename($symlink, $src) to preempt conflict failed: $!\n";
-      debug("mv modified $human_symlink => $human_src\n");
-      #move_with_subpath($TARGET_DIR, $modified_dir, $sub_symlink);
-    }
-  }
-}
-
-sub ensure_correct_symlink {
-  my ($symlink, $required_target) = @_;
-
-  if (! lstat $symlink) {
-    symlink $required_target, $symlink
-      or die "symlink($required_target, $symlink) failed: $!\n";
-    return;
-  }
-
-  if (! -l $symlink) {
-    die "$symlink already exists but is not a symlink; aborting!\n";
-  }
-
-  my ($a_dev, $a_ino) = stat($symlink) # stat automatically follows symlinks
-    or die "stat($symlink) failed ($!); invalid symlink?\n";
-  my ($r_dev, $r_ino) = stat($required_target)
-    or die "stat($required_target) failed: $!";
-  if ($a_dev != $r_dev or $a_ino != $r_ino) {
-    die "$symlink already exists and points to the wrong place; aborting!\n";
-  }
-}
-
-sub debug {
-  warn @_ if $opts{debug};
-}
-
-##############################################################################
-
-package TempDir;
-
-use File::Basename;
-use File::Path;
-use File::Spec;
-use File::Temp qw/ tempfile tempdir /;
-
-our $tempdir;
-my $init = 0; # yuk
-my @subdirs;
-
-sub init {
-  return if $init;
-  @subdirs = (qw/same modified/);
-  $init++;
-}
-
-sub get {
-  shift->init();
-  return $tempdir if $tempdir;
-  my $me = basename($0);
-  $tempdir = tempdir(".$me.XXXXXXXX", DIR => $TARGET_DIR);
-  die "huh?" unless -d $tempdir;
-  die unless @subdirs;
-  foreach my $dir (@subdirs) {
-    my $new = File::Spec->join($tempdir, $dir);
-    mkdir($new) or die "mkdir($new) failed: $!\n";;
-  }
-  return $tempdir;
-}
-
-sub cleanup {
-  return unless $tempdir and -d $tempdir;
-  foreach my $dir (@subdirs) {
-    my $doomed = File::Spec->join($tempdir, $dir);
-    rmdir($doomed) or die "$doomed not empty?";
-  }
-  rmdir($tempdir) or die "rmdir($tempdir) failed: $!\n";
-}
-
-END {
-  if ($tempdir and -e $tempdir) {
-    warn "! Did not exit cleanly; $tempdir still exists.\n";
-  }
-}
-
-1;

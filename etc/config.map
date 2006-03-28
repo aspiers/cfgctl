@@ -1,0 +1,155 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+## Adam's config packages.  Listed in suggested installation order.
+
+## First we define the source repository or working directory.  We
+## only support cvs so far.
+$ENV{CVS_ROOT} = 'adam@f5.mandolinarchive.com:/home/adam/.CVSROOT';
+my $cvs_wd = "$ENV{HOME}/.cvs";
+
+## register_cvs_pkgs arguments:
+##   1. Source repository label as defined above.
+##   2. Column 1: Source directory within the repository or working dir.
+##      Column 2: Target namespace as controlled by stow or similar
+##                (therefore must be unique).
+
+register new Cfg::Section "Bootstrapping";
+register multi Cfg::Pkg::CVS($cvs_wd, <<EOF);
+    config/dev-tools/cvs                   cvs
+    config/dev-tools/arch                  arch
+    config/META                            META
+# This one required to stop stow folding some high-level directories
+# which are safer left unfolded (in case I accidentally put new files
+# in there and they unintentionally go in a package directory).
+    config/ANTIFOLD                        ANTIFOLD
+    config/shell-env                       shell-env
+    personal/pub/config/shell-env          shell-env.adam_spiers.pub
+    personal/sec/config/shell-env          shell-env.adam_spiers.sec
+    config/dev-tools/perl/mine             perl+mine
+    config/dev-tools/perl/doc              perl+doc
+    config/dev-tools/rpm                   rpm
+EOF
+
+register new Cfg::Section "Bare essentials";
+register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
+    config/shell-apps/ssh                  ssh
+    personal/sec/config/shell-apps/ssh     ssh.adam_spiers.sec
+    config/shell-apps/screen               screen
+    config/shell-apps/emacs                emacs
+EOF
+
+register new Cfg::Section "Distribution-specific";
+if (-e "/etc/SuSE-release") {
+  my $rel = cat_file("/etc/SuSE-release");
+  if ($rel =~ /SUSE LINUX 10\.0/i) {
+    register new Cfg::Pkg::CVS $cvs_wd, "config/dists/SL10", "SL10";
+  }
+  elsif ($rel =~ /Novell Linux Desktop 9/i) {
+    register new Cfg::Pkg::CVS $cvs_wd, "config/dists/NLD9", "NLD9";
+  }
+  else {
+    die "Unsupported release $rel";
+  }
+}
+elsif (-e "/etc/redhat-release") {
+  my $rel = cat_file("/etc/redhat-redhat");
+  if ($rel =~ /Fedora Core release 4/i) {
+    register new Cfg::Pkg::CVS $cvs_wd, "config/dists/FC4", "FC4";
+  }
+  else {
+    die "Unsupported release $rel";
+  }
+}
+else {
+  die "Didn't find /etc/redhat-release or /etc/SuSE-release!\n";
+}
+
+register new Cfg::Section "X environment";
+register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
+    config/Xwindows/SESSION                SESSION
+    config/shell-apps/watchlogs            watchlogs
+    config/Xwindows/Eterm                  Eterm
+    config/Xwindows/gkrellm                gkrellm
+    config/Xwindows/sawfish                sawfish
+    config/Xwindows/fonts                  fonts
+EOF
+
+register new Cfg::Section "Mail";
+register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
+    config/shell-apps/mutt                 mutt
+    config/shell-apps/mailcap              mailcap
+    config/shell-apps/gnupg                gnupg
+    config/shell-apps/crm114               crm114
+EOF
+
+register new Cfg::Section "Getting more comfortable";
+register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
+    config/shell-apps/lftp                 lftp
+    config/shell-apps/ncftp                ncftp
+    config/shell-apps/wscan                wscan
+    config/dev-tools/perl/pmtools          pmtools
+    config/dev-tools/ruby                  ruby
+    config/dev-tools/svn                   svn
+    config/dev-tools/darcs                 darcs
+    config/dev-tools/dup-files             dup-files
+EOF
+
+system("ifconfig | grep '10\.70.61\.'");
+if ($? >> 8 == 0) {
+  register new Cfg::Section "For moosehall only";
+  register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
+    personal/pub/config/moosehall/shell-apps/ssh  moosehall+ssh.pub
+    personal/pub/config/moosehall/ldap     moosehall+ldap.pub
+    personal/sec/config/moosehall/ldap     moosehall+ldap.sec
+EOF
+}
+
+register new Cfg::Section "For work only";
+register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
+    config/work-tools                      work-tools
+    personal/pub/config/novell/shell-env   novell+shell-env.pub
+    personal/pub/config/novell/shell-apps/emacs  novell+emacs.pub
+    personal/pub/config/novell/mail        novell+mail.pub
+    personal/pub/config/novell/vpn         novell+vpn.pub
+    personal/sec/config/novell/mail        novell+mail.sec
+    personal/sec/config/novell/vpn         novell+vpn.sec
+EOF
+
+register new Cfg::Section "For play only";
+register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
+    config/shell-apps/htmltidy             htmltidy
+    config/shell-apps/palm                 palm
+    config/Xwindows/graphics               graphics
+    config/Xwindows/audio                  audio
+    config/Xwindows/xwrits                 xwrits
+    config/Xwindows/backgrounds            backgrounds
+    config/Xwindows/rxvt                   rxvt
+    config/Xwindows/xmms                   xmms
+    config/Xwindows/xchat                  xchat
+EOF
+
+## To obtain warnings requires a checkout, so you may want
+## to leave these commented.
+if ($ENV{HOSTNAME} =~ /^atlantic/) {
+  register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
+   config/personal-interest               personal-interest
+EOF
+
+  register new Cfg::Section "Deprecated; warn if still using this stuff.";
+  register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
+    config/RETIRED/Xwindows/galeon         galeon
+    config/RETIRED/Xwindows/gnome          gnome
+    config/RETIRED/Xwindows/netscape       netscape
+    config/RETIRED/term                    term
+    config/RETIRED/shell-apps/mh           mh
+    config/RETIRED/shell-apps/sdf          sdf
+    config/RETIRED/shell-apps/bk2site      bk2site
+    config/RETIRED/shell-apps/lynx         lynx
+    config/RETIRED/shell-apps/ytalk        ytalk
+EOF
+}
+
+1;
