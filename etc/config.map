@@ -78,7 +78,7 @@ if (-e "/etc/SuSE-release") {
   }
 }
 elsif (-e "/etc/redhat-release") {
-  my $rel = cat_file("/etc/redhat-redhat");
+  my $rel = cat_file("/etc/redhat-release");
   if ($rel =~ /Fedora Core release 4/i) {
     register new Cfg::Pkg::CVS $cvs_wd, "config/dists/FC4", "FC4";
   }
