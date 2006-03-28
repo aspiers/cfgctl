@@ -107,8 +107,9 @@ if ($? >> 8 == 0) {
 EOF
 }
 
-register new Cfg::Section "For work only";
-register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
+if (-e "$ENV{HOME}/ifolder") {
+  register new Cfg::Section "For work only";
+  register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
     config/work-tools                      work-tools
     personal/pub/config/novell/shell-env   novell+shell-env.pub
     personal/pub/config/novell/shell-apps/emacs  novell+emacs.pub
@@ -117,6 +118,7 @@ register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
     personal/sec/config/novell/mail        novell+mail.sec
     personal/sec/config/novell/vpn         novell+vpn.sec
 EOF
+}
 
 register new Cfg::Section "For play only";
 register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
