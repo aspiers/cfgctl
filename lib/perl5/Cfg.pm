@@ -13,7 +13,6 @@ Cfg -
 use strict;
 use warnings;
 
-use File::Compare;
 use Tie::RefHash;
 
 use Cfg::Utils qw(debug %opts %cfg);

@@ -13,6 +13,8 @@ Cfg::Utils -
 use strict;
 use warnings;
 
+use File::Compare;
+
 use base 'Exporter';
 our @EXPORT_OK = qw(debug
                     ensure_correct_symlink preempt_conflict
