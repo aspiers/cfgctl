@@ -8,8 +8,8 @@ use warnings;
 ## First we define the source repository or working directory.  We
 ## only support cvs so far.
 $ENV{CVSROOT} = 'adam@f5.mandolinarchive.com:/home/adam/.CVSROOT';
-my $cvs_wd = "$ENV{HOME}/.cvs";
-my $baz_wd = "$ENV{HOME}/.baz";
+my $cvs_wd   = "$ENV{HOME}/.cvs";
+my $baz_root = "$ENV{HOME}/.baz";
 
 ## register_cvs_pkgs arguments:
 ##   1. Source repository label as defined above.
@@ -47,22 +47,6 @@ EOF
 #   "arch\@adamspiers.org--upstream-2006$host_suffix",
 #   'muse--main--1.0',
 #   ;
-
-# ~/.baz/
-#     arch@adamspiers.org--upstream-2006-d600/
-#       muse--main--1.0/
-#         a/
-#           file 
-#
-# ~/.baz-relocations/
-#     arch@adamspiers.org--upstream-2006-d600/  <-- stow dir
-#       muse--main--1.0/                        <-- stow package
-#         lib/                                  }
-#           emacs/                              } relocation
-#             major-modes/                      } path
-#               muse/                           }
-#                 a/
-#                   file 
 
 register new Cfg::Section "Distribution-specific";
 if (-e "/etc/SuSE-release") {

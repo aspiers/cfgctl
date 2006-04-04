@@ -20,37 +20,88 @@ use overload '""' => \&to_str;
 
 =head1 CONSTRUCTORS
 
+=head2 new($co_root, $archive, $revision, $dst, $relocate)
+
+C<$revision> could be C<CATEGORY--BRANCH--VERSION> or
+C<CATEGORY--BRANCH--VERSION--REVISION>.
+
 =cut
 
 sub new {
   my $self = shift;
   my $class = ref($self) || $self;
-  my ($wd, $src, $dst) = @_;
+  my ($co_root, $archive, $revision, $dst, $relocate) = @_;
   return bless {
-    wd => $wd,
-    src => $src,
-    dst => $dst,
+    co_root  => $co_root,
+    archive  => $archive,
+    revision => $revision,
+    dst      => $dst,
+    relocate => $relocate,
   }, $class;
 }
 
-sub multi {
-  my $self = shift;
-  my $class = ref($self) || $self;
-  my ($wd, $block) = @_;
-  my @new;
-  die unless $block;
-  for my $line (split /\n/, $block) {
-    $line =~ s/^\s+//;
-    $line =~ s/\s+$//;
-    next unless $line;
-    next if $line =~ /^#/;
-    my ($src, $dst) = split /\s+/, $line;
-    push @new, $class->new($wd, $src, $dst);
-  }
-  return @new;
-}
+=head1 TREE RELOCATION
 
-=head1 METHODS
+Unlike CVS, GNU arch enforces a flat storage model, so that checkouts
+never have any directory depth.  Therefore any required depth has to
+be ensured out of band.
+
+Example: we want C<muse--main--1.0> to appear as a subtree at
+C<~/lib/emacs/major-modes/muse>.
+
+First we check out to a predictable location:
+
+    ~/.baz/
+        arch@adamspiers.org--upstream-2006-d600/
+          muse--main--1.0/                       == $src
+            a/
+              file 
+
+Then we need some way of relocating the branch's contents to deeper
+within the dedicated stow package tree...
+
+=head2 Strategy 1
+
+Relocate using a separate tree C<~/.baz-relocations>:
+
+    ~/.baz-relocations/
+        arch@adamspiers.org--upstream-2006-d600/  <-- stow dir
+          muse--main--1.0/                        <-- symlink from ~/.cfg/muse
+            lib/                                }
+              emacs/                            } relocation
+                major-modes/                    } path
+                  muse/                         } <-- symlink to $src
+                    a/
+                      file
+
+Pros:
+
+  - makes it clear what's going on
+  - consistent view of stow package tree, retrievable by both 
+    baz archive/revision and C<$dst> key
+
+Cons:
+
+  - requires extra directory
+  - requires extra layer of indirection
+
+=head2 Strategy 2
+
+Symlink:
+
+    ~/.cfg/muse/lib/emacs/major-modes/muse -> $src
+
+Pros:
+
+  - no extra layer of indirection, but unlikely to help performance
+
+Cons:
+
+  - C<~/.cfg> contents are not purely symlinks
+
+=head2 Solution
+
+Strategy 1 wins (just).
 
 =cut
 
