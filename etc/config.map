@@ -57,17 +57,11 @@ if (-e "/etc/SuSE-release") {
   elsif ($rel =~ /Novell Linux Desktop 9/i) {
     register new Cfg::Pkg::CVS $cvs_wd, "config/dists/NLD9", "NLD9";
   }
-  else {
-    die "Unsupported release $rel";
-  }
 }
 elsif (-e "/etc/redhat-release") {
   my $rel = cat_file("/etc/redhat-release");
   if ($rel =~ /Fedora Core release 4/i) {
     register new Cfg::Pkg::CVS $cvs_wd, "config/dists/FC4", "FC4";
-  }
-  else {
-    die "Unsupported release $rel";
   }
 }
 else {
