@@ -98,6 +98,7 @@ register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
     config/dev-tools/dup-files             dup-files
 EOF
 
+$ENV{PATH} = "/sbin:$ENV{PATH}";
 system("ifconfig | grep -q '10\.70.61\.'");
 if ($? >> 8 == 0) {
   register new Cfg::Section "For moosehall only";
