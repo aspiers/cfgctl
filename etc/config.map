@@ -51,7 +51,7 @@ EOF
 register new Cfg::Section "Distribution-specific";
 if (-e "/etc/SuSE-release") {
   my $rel = cat_file("/etc/SuSE-release");
-  if ($rel =~ /SUSE LINUX 10\.0/i) {
+  if ($rel =~ /SUSE Linux.*VERSION *= *10/is) {
     register new Cfg::Pkg::CVS $cvs_wd, "config/dists/SL10", "SL10";
   }
   elsif ($rel =~ /Novell Linux Desktop 9/i) {
