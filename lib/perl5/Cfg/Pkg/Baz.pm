@@ -13,10 +13,14 @@ Cfg::Pkg::Baz - base class for cfgctl configuration packages
 use strict;
 use warnings;
 
+use File::Path;
+
 use Cfg::Utils qw(debug);
 use base 'Cfg::Pkg::Base';
 
-use overload '""' => \&to_str;
+my $BAZ_CMD = 'baz';
+
+#use overload '""' => \&to_str;
 
 =head1 CONSTRUCTORS
 
@@ -51,9 +55,9 @@ C<~/lib/emacs/major-modes/muse>.
 
 First we check out to a predictable location:
 
-    ~/.baz/
-        arch@adamspiers.org--upstream-2006-d600/
-          muse--main--1.0/                       == $src
+    ~/.baz/                                      <= $co_root  \
+        arch@adamspiers.org--upstream-2006-d600/ <= $archive  | <= src()
+          muse--main--1.0/                       <= $revision /
             a/
               file 
 
@@ -67,10 +71,10 @@ Relocate using a separate tree C<~/.baz-relocations>:
     ~/.baz-relocations/
         arch@adamspiers.org--upstream-2006-d600/  <-- stow dir
           muse--main--1.0/                        <-- symlink from ~/.cfg/muse
-            lib/                                }
-              emacs/                            } relocation
-                major-modes/                    } path
-                  muse/                         } <-- symlink to $src
+            lib/                                  \
+              emacs/                              | 
+                major-modes/                      | <= $relocate
+                  muse/       <-- symlink to $src / 
                     a/
                       file
 
@@ -93,7 +97,7 @@ Symlink:
 
 Pros:
 
-  - no extra layer of indirection, but unlikely to help performance
+  - no extra layer of indirection, but unlikely to help performance anyway
 
 Cons:
 
@@ -108,16 +112,23 @@ Strategy 1 wins (just).
 sub maybe_check_out {
   my $self = shift;
 
-  my $wd = $self->wd;
+  my $archive      = $self->archive;
+  my $revision     = $self->revision;
+  my $archrev      = "$archive/$revision";
+  my $archive_path = $self->archive_path;
+
+  if (! -d $archive_path) {
+    mkpath($archive_path) or die "mkpath($archive_path) failed: $!\n";
+  }
+
   my $src = $self->src;
-  if (-d File::Spec->join($wd, $src)) {
-    debug("# $src already checked out in $wd\n");
+  if (-d $src) {
+    debug("# $archrev already checked out in $archive_path\n");
     return;
   }
 
-  chdir($wd) or die "chdir($wd) failed: $!\n";
-  print "Checking out $src ...\n";
-  system 'cvs', 'checkout', $src;
+  print "Checking out $revision in $archive_path ...\n";
+  system $BAZ_CMD, 'get', '-A', $archive, $revision, $src;
   my $exit = $? >> 8;
   die "cvs checkout $src failed; aborting!\n" if $exit != 0;
 }
@@ -125,17 +136,27 @@ sub maybe_check_out {
 sub to_string {
   my $self = shift;
   return $self->{src};
-  return sprintf "%s: %s -> %s", @$self{qw/wd src dst/};
+  return sprintf "%s: %s -> %s", @$self{qw/co_root src dst/};
 }
 
-sub wd  { shift->{wd } }
-sub src { shift->{src} }
-sub dst { shift->{dst} }
+sub co_root    { shift->{co_root}    }
+sub archive    { shift->{archive}    }
+sub revision   { shift->{revision}   }
+sub dst        { shift->{dst}        }
+sub relocation { shift->{relocation} }
 
-sub to_str {
+sub archive_path {
   my $self = shift;
-  return $self->wd . ":" . $self->dst;
+  return File::Spec->join($self->co_root, $self->archive);
 }
+
+sub src {
+  my $self = shift;
+  return File::Spec->join($self->archive_path, $self->revision);
+}
+
+sub cfg_symlink_target { shift->src } # FIXME relocate
+sub deprecated { 0 }
 
 =head1 BUGS
 

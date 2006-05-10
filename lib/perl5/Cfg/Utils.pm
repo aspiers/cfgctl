@@ -13,6 +13,7 @@ Cfg::Utils -
 use strict;
 use warnings;
 
+use Carp qw(carp cluck croak confess);
 use File::Compare;
 
 use base 'Exporter';
@@ -40,7 +41,6 @@ sub ensure_correct_symlink {
 
   my ($a_dev, $a_ino) = stat($symlink) # stat automatically follows symlinks
     or die "stat($symlink) failed ($!); invalid symlink?\n";
-  use Carp qw(carp cluck croak confess);
   
   my ($r_dev, $r_ino) = stat($required_target)
     or confess "stat($required_target) failed: $!";

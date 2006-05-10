@@ -18,8 +18,9 @@ use Tie::RefHash;
 use Cfg::Utils qw(debug %opts %cfg);
 use Cfg::Section;
 use Cfg::Pkg::CVS;
+use Cfg::Pkg::Baz;
 
-use Sh qw(abs_path move_with_subpath cat);
+use Sh qw(abs_path move_with_subpath safe_cat);
 
 =head1 ROUTINES
 
@@ -92,12 +93,6 @@ sub process_pkgs {
     warn "$_ not found in $cfg{MAP_FILE}; didn't process\n"
       foreach grep ! $done{$_}, keys %filter;
   }
-}
-
-sub cat_file {
-  my ($file) = @_;
-  return '' unless -r $file;
-  return cat($file);
 }
 
 =head1 BUGS

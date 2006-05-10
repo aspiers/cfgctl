@@ -2,7 +2,7 @@ package Cfg::Pkg::Base;
 
 =head1 NAME
 
-Cfg::Pkg::Base - base class for cfgctl configuration packages
+Cfg::Pkg::Base - abstract base class for cfgctl configuration packages
 
 =head1 SYNOPSIS
 
@@ -19,6 +19,8 @@ use Cfg::Utils qw(debug
 
 =head1 CONSTRUCTORS
 
+See derived classes.
+
 =cut
 
 =head1 METHODS
@@ -30,45 +32,35 @@ sub process {
 
   maybe_check_out $self;
 
-  my $src = $self->src;
-  my $dst = $self->dst;
+  my $description = $self->description;
+  my $dst         = $self->dst;
 
   ensure_correct_symlink(
     File::Spec->join($cfg{PKG_DIR}, $dst),
-    File::Spec->join($self->wd, $src),
+    $self->cfg_source,
   );
 
-  if ($src =~ /RETIRE/) {
-    print "#! deprecating: $src\n";
+  if ($self->deprecated) {
+    print "#! deprecating: $description\n";
     $self->deprecate;
   }
   else {
     if ($opts{delete}) {
       $self->deinstall;
-      print "# de-installed: $src\n";
+      print "# de-installed: $description\n";
     }
     else {
       $self->install;
-      print "# installed: $src\n";
-      if ($src =~ m!^(personal/sec)/!) {
-        my @chmod = (
-          'chmod', 'go-rwx', '-R',
-          File::Spec->join($self->wd, $1),
-        );
-        print "@chmod\n";
-        system @chmod;
-        my $exit = $? >> 8;
-        warn "Warning: chmod failed\n" if $exit != 0;
-      }
+      print "# installed: $description\n";
     }
   }
 }
 
 sub deprecate {
   my $self = shift;
-  my $src = $self->src;
+  my $description = $self->description;
   my $dst = $self->dst;
-  debug("$src is deprecated; checking not installed ...\n");
+  debug("$description is deprecated; checking not installed ...\n");
   system $cfg{STOW},
       '-c',            # Dummy run, checking for conflicts.  If we're
                        # not using the deprecated package, there won't
@@ -145,6 +137,11 @@ sub install {
     warn "Warning: $post_hook failed\n" if $exit != 0;
   }
 }
+
+sub description { die "This should be overridden" }
+sub dst         { die "This should be overridden" }
+sub cfg_source  { die "This should be overridden" }
+sub deprecated  { die "This should be overridden" }
 
 =head1 BUGS
 

@@ -57,8 +57,8 @@ sub multi {
 sub maybe_check_out {
   my $self = shift;
 
-  my $wd = $self->wd;
-  my $src = $self->src;
+  my $wd = $self->_wd;
+  my $src = $self->_src;
   if (-d File::Spec->join($wd, $src)) {
     debug("# $src already checked out in $wd\n");
     return;
@@ -71,19 +71,48 @@ sub maybe_check_out {
   die "cvs checkout $src failed; aborting!\n" if $exit != 0;
 }
 
-sub to_string {
+sub install {
+  my $self = shift;
+  $self->SUPER::install(@_);
+  if ($self->_src =~ m!^(personal/sec)/!) {
+    my @chmod = (
+      'chmod', 'go-rwx', '-R',
+      File::Spec->join($self->_wd, $1),
+    );
+    print "@chmod\n";
+    system @chmod;
+    my $exit = $? >> 8;
+    warn "Warning: chmod failed\n" if $exit != 0;
+  }
+}
+
+# Private
+sub _wd         { shift->{wd } }
+sub _src        { shift->{src} }
+
+# Public
+sub description { shift->{src} }
+sub dst         { shift->{dst} }
+
+sub cfg_symlink_target {
+  my $self = shift;
+  File::Spec->join($self->_wd, $self->_src),
+}
+
+sub deprecated {
+  my $self = shift;
+  return $self->src =~ /RETIRE/;
+}
+
+sub to_str2 {
   my $self = shift;
   return $self->{src};
   return sprintf "%s: %s -> %s", @$self{qw/wd src dst/};
 }
 
-sub wd  { shift->{wd } }
-sub src { shift->{src} }
-sub dst { shift->{dst} }
-
 sub to_str {
   my $self = shift;
-  return $self->wd . ":" . $self->dst;
+  return $self->_wd . ":" . $self->dst;
 }
 
 =head1 BUGS

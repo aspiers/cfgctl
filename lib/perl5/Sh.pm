@@ -18,7 +18,7 @@ use File::Spec;
 use base qw(Exporter);
 our @EXPORT_OK = qw(
   get_absolute_path abs_path abs_path_by_chdir abs_path_by_chasing
-  cat read_lines_from_file write_to_file append_to_file remove_from_file
+  cat safe_cat read_lines_from_file write_to_file append_to_file remove_from_file
   grep_quiet line_count
   md5hex_file md5b64_file
   move_with_subpath move_with_common_subpath
@@ -92,6 +92,12 @@ sub cat {
   $text .= $_ while <FILE>;
   close(FILE);
   return $text;
+}
+
+sub safe_cat {
+  my ($file) = @_;
+  return '' unless -r $file;
+  return cat($file);
 }
 
 sub read_lines_from_file {
