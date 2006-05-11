@@ -36,11 +36,11 @@ sub new {
   my $class = ref($self) || $self;
   my ($co_root, $archive, $revision, $dst, $relocate) = @_;
   return bless {
-    co_root  => $co_root,
-    archive  => $archive,
-    revision => $revision,
-    dst      => $dst,
-    relocate => $relocate,
+    co_root  => $co_root,  # e.g. ~/.baz
+    archive  => $archive,  # e.g. mwolson@gnu.org--2006
+    revision => $revision, # e.g. muse--main--1.0
+    dst      => $dst,      # e.g. muse (stow package name)
+    relocate => $relocate, # e.g. lib/emacs/major-modes
   }, $class;
 }
 
@@ -56,7 +56,7 @@ C<~/lib/emacs/major-modes/muse>.
 First we check out to a predictable location:
 
     ~/.baz/                                      <= $co_root  \
-        arch@adamspiers.org--upstream-2006-d600/ <= $archive  | <= src()
+        arch@adamspiers.org--upstream-2006-d600/ <= $archive  | <= _src()
           muse--main--1.0/                       <= $revision /
             a/
               file 
@@ -121,7 +121,7 @@ sub maybe_check_out {
     mkpath($archive_path) or die "mkpath($archive_path) failed: $!\n";
   }
 
-  my $src = $self->src;
+  my $src = $self->_src;
   if (-d $src) {
     debug("# $archrev already checked out in $archive_path\n");
     return;
@@ -150,12 +150,11 @@ sub archive_path {
   return File::Spec->join($self->co_root, $self->archive);
 }
 
-sub src {
+sub _src {
   my $self = shift;
   return File::Spec->join($self->archive_path, $self->revision);
 }
 
-sub cfg_symlink_target { shift->src } # FIXME relocate
 sub deprecated { 0 }
 
 =head1 BUGS
