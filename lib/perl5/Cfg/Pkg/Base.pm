@@ -16,6 +16,7 @@ use warnings;
 use Cfg::Utils qw(debug
                   ensure_correct_symlink preempt_conflict for_real
                   %cfg %opts);
+use Carp qw(carp cluck croak confess);
 
 =head1 CONSTRUCTORS
 
@@ -95,7 +96,6 @@ sub deinstall {
 
 sub install {
   my $self = shift;
-  my $src = $self->src;
   my $dst = $self->dst;
   my $stow_args = qq{-t "$cfg{TARGET_DIR}" -d "$cfg{PKG_DIR}" "$dst"};
   $stow_args = "-vvv $stow_args" if $opts{debug};
@@ -138,10 +138,48 @@ sub install {
   }
 }
 
-sub description { die "This should be overridden" }
-sub dst         { die "This should be overridden" }
-sub cfg_source  { die "This should be overridden" }
-sub deprecated  { die "This should be overridden" }
+sub description {
+  my $self = shift;
+  my $sub = (caller(0))[3];
+  $sub =~ s/.+:://;
+  my $me = ref($self) . "::$sub";
+  confess <<EOF;
+$me should be overridden to return a human-readable description
+of the package for use with debug lines like
+  Installed: <description>
+EOF
+}
+
+sub dst {
+  my $self = shift;
+  my $sub = (caller(0))[3];
+  $sub =~ s/.+:://;
+  my $me = ref($self) . "::$sub";
+  confess <<EOF;
+$me should be overridden to return the package name as used by stow.
+EOF
+}
+
+sub cfg_source {
+  my $self = shift;
+  my $sub = (caller(0))[3];
+  $sub =~ s/.+:://;
+  my $me = ref($self) . "::$sub";
+  confess <<EOF;
+$me should be overridden to return the path to the cfg source
+e.g. ~/.cvs/config/dev-tools/perl/mine (see L<cfgctl>).
+EOF
+}
+
+sub deprecated  {
+  my $self = shift;
+  my $sub = (caller(0))[3];
+  $sub =~ s/.+:://;
+  my $me = ref($self) . "::$sub";
+  confess <<EOF;
+$me should be overridden to return true if the package is deprecated.
+EOF
+}
 
 =head1 BUGS
 
