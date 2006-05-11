@@ -27,9 +27,9 @@ sub new {
   my $class = ref($self) || $self;
   my ($wd, $src, $dst) = @_;
   return bless {
-    wd => $wd,
-    src => $src,
-    dst => $dst,
+    wd => $wd,    # e.g. "$ENV{HOME}/.cvs"            
+    src => $src,  # e.g. config/dev-tools/perl/mine   
+    dst => $dst,  # e.g. perl+mine
   }, $class;
 }
 
@@ -59,7 +59,7 @@ sub maybe_check_out {
 
   my $wd = $self->_wd;
   my $src = $self->_src;
-  if (-d File::Spec->join($wd, $src)) {
+  if (-d $self->cfg_source) {
     debug("# $src already checked out in $wd\n");
     return;
   }
@@ -87,21 +87,21 @@ sub install {
 }
 
 # Private
-sub _wd         { shift->{wd } }
-sub _src        { shift->{src} }
+sub _wd         { shift->{wd } } # e.g. "$ENV{HOME}/.cvs"
+sub _src        { shift->{src} } # e.g. config/dev-tools/perl/mine
 
 # Public
-sub description { shift->{src} }
-sub dst         { shift->{dst} }
+sub description { shift->{src} } # human-readable
+sub dst         { shift->{dst} } # e.g. perl+mine
 
-sub cfg_symlink_target {
+sub cfg_source {
   my $self = shift;
-  File::Spec->join($self->_wd, $self->_src),
+  return File::Spec->join($self->_wd, $self->_src);
 }
 
 sub deprecated {
   my $self = shift;
-  return $self->src =~ /RETIRE/;
+  return $self->_src =~ /RETIRE/;
 }
 
 sub to_str2 {
