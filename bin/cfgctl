@@ -142,11 +142,11 @@ we certainly want it to remove stow symlinks from under F<~>.)
 The flexibility of this two-layer mapping lets us squash multiple
 sources into the same unique package namespace.  Advantages:
 
-  + Allows management of config concurrently from several different
-    source control systems.
+  + Allows use and management of config concurrently from several
+    different source control systems / repositories.
 
-  + Can use parallel public/private/"retired" hierarchies
-    within one source control system (e.g. one CVS repository).
+  + Can use parallel public/private/"retired" hierarchies within one
+    source control system (e.g. within one CVS repository).
 
 =item * Clear demarcation of responsibility
 
