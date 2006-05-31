@@ -91,8 +91,10 @@ not see different behaviour from the application, depending on:
 Now imagine that the application actually uses several per-user
 configuration files.  (This is a very common scenario.)  Perhaps it
 makes sense for some of these files to be configured site-wide, but
-others per-user.  The traditional approach above may not be capable of
-yielding the right results.
+others per-user.  Or perhaps there are multiple versions of the
+application co-installed, but they all use the same per-user
+configuration directory.  In either case, the traditional approach
+above may not be capable of yielding the right results.
 
 =back
 
