@@ -28,11 +28,11 @@ Options [defaults in square brackets]:
 =head1 MOTIVATION
 
 Home directories on UNIX-like systems contain a wealth of
-configuration information.  This information is typically treated as
-"second-class citizen" data relative to source code; the latter is
-generally subject to standard modern software configuration management
-best practices which allow consistent deployment, auditing, roll-back
-and so on, whereas the former is usually managed in an ad-hoc and
+configuration data, which is typically treated as a "second-class
+citizen" in comparison to source code.  The latter is generally
+subject to standard modern software configuration management best
+practices which allow consistent deployment, auditing, roll-back and
+so on, whereas the former is usually managed in an ad-hoc and
 uncontrolled manner.
 
 There appears to be no reasonable justification for this inequality of
@@ -49,8 +49,9 @@ checked into a source code control system.
 
 =item * It often blurs the lines between code and data.
 
-For example, setting options in your shell - conceptually data but
-implemented by running commands in the shell profile.
+For example, options set in your shell profile are conceptually
+configuration data, but are implemented by running shell code commands
+(set/setopt etc.)
 
 =item * Most people don't bother with complex configurations anyway, and
 
