@@ -147,7 +147,7 @@ sources into the same unique package namespace.  Advantages:
     different source control systems / repositories.
 
   + Can use parallel public/private/"retired" hierarchies within one
-    source control system (e.g. within one CVS repository).
+    source control system (e.g. within one CVS/Subversion repository).
 
 =item * Clear demarcation of responsibility
 
@@ -189,7 +189,7 @@ $cfg{TARGET_DIR}  = $ENV{HOME};
 $cfg{PKG_DIR}     = "$ENV{HOME}/.cfg";
 
 # We use a slightly hacked-up version of GNU stow which ignores CVS/
-# directories.
+# directories and anything in ~/.cvsignore.
 $cfg{STOW}        = "$RealBin/stow";
 
 # This is where we configure which config packages we want installed locally.
