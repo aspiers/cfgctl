@@ -221,6 +221,8 @@ GetOptions(
 sub usage {
   warn @_, "\n" if @_;
 
+  ### N.B.!  If you change the below, don't forget to update the
+  ### SYNOPSIS too!
   die <<EOUSAGE;
 $RealScript [options] [pkg [pkg...]]
 
