@@ -65,6 +65,35 @@ Many people only configure to "scratch an itch".
 
 Therefore the user is often unaware of the back-end files even existing.
 
+=item * System administrators generally take a very hands-off approach. 
+
+With the exception of the canonical template skeleton user home
+directory (e.g. F</etc/skel>) which is used to populate a new home
+directory after creation, generally system administrators do not
+attempt to change per-user configuration data in any way.  Taking a
+naive political view, this would appear to be a very good thing ("get
+your hands off MY files!").  However, many system administrators would
+most likely not think twice about upgrading a system-wide package,
+which could have exactly the same effect.  For example, imagine an
+application C<foo> which looks for configuration data in
+F</etc/foo/default.rc> and F<~/.foorc>.  After an upgrade which
+changed the contents of F</etc/foo/default.rc>, a user might or might
+not see different behaviour from the application, depending on:
+
+    (a) whether F<~/.foorc> completely overrides F<default.rc> if
+        present, or merely inherits defaults from F<default.rc> and
+        then overrides them on a case-by-case basis, and
+
+    (b) whether on the user's first invocation of the application,
+        the application creates F<~/.foorc> before or after the user
+        customises any options.
+
+Now imagine that the application actually uses several per-user
+configuration files.  (This is a very common scenario.)  Perhaps it
+makes sense for some of these files to be configured site-wide, but
+others per-user.  The traditional approach above may not be capable of
+yielding the right results.
+
 =back
 
 It seems clear that for anyone who uses more than one system, is fussy
