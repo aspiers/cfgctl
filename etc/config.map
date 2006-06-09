@@ -111,9 +111,10 @@ system("ifconfig | grep -q '10\.70.61\.'");
 if ($? >> 8 == 0) {
   register new Cfg::Section "For moosehall only";
   register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
+    personal/pub/config/moosehall/shell-env       moosehall+shell-env
     personal/pub/config/moosehall/shell-apps/ssh  moosehall+ssh.pub
-    personal/pub/config/moosehall/ldap     moosehall+ldap.pub
-    personal/sec/config/moosehall/ldap     moosehall+ldap.sec
+    personal/pub/config/moosehall/ldap            moosehall+ldap.pub
+    personal/sec/config/moosehall/ldap            moosehall+ldap.sec
 EOF
 }
 
