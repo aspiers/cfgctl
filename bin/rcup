@@ -22,9 +22,12 @@ if [ -z "$*" ]; then
 else
   dirs=
   for pkg in "$@"; do
-    cd ~/.cfg/$pkg
-    echo "#>>> cvs updating $pkg ..."
-    cvsuhq
+    dir=$HOME/.cfg/$pkg
+    if [ -d "$dir" ]; then
+      cd "$dir"
+      echo "#>>> cvs updating $pkg ..."
+      cvsuhq
+    fi
     echo "#>>> cfgctl $pkg ..."
     cfgctl "$pkg"
   done
