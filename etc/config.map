@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 
+use Net::Domain qw(hostname);
 use Sh qw(cat);
 
 ## Adam's config packages.  Listed in suggested installation order.
@@ -146,7 +147,7 @@ EOF
 
 ## To obtain warnings requires a checkout, so you may want
 ## to leave these commented.
-if ($ENV{HOSTNAME} =~ /^atlantic/) {
+if (hostname() =~ /^atlantic/) {
   register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
    config/personal-interest               personal-interest
 EOF
