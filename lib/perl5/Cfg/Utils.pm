@@ -15,6 +15,7 @@ use warnings;
 
 use Carp qw(carp cluck croak confess);
 use File::Compare;
+use Net::Domain qw(hostname);
 
 use base 'Exporter';
 our @EXPORT_OK = qw(debug
@@ -143,7 +144,7 @@ sub preempt_conflict {
 #     my $modified_dir = File::Spec->join($tempdir, 'modified');
     print "M $human_dst\n";
     if (for_real()) {
-      my $host = $ENV{HOST} || $ENV{HOSTNAME} || die "edge case";
+      my $host = hostname() || die "Couldn't get hostname";
       my $suffix = "cfgsave.$host.$$." . time();
       rename $src, "$src.$suffix"
         or die "rename($src, $src.$suffix) failed: $!\n";
