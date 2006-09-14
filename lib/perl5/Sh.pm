@@ -127,12 +127,20 @@ sub append_to_file {
 }
 
 sub remove_from_file {
-  my ($file, $line) = @_;
+  my ($file, $match) = @_;
   my $new = '';
   open(FILE, "+<$file") or die "open(+<$file) failed: $!\n";
-  while (<FILE>) {
-    chomp;
-    $new .= "$_\n" unless $_ eq $line;
+  if (ref($match) eq 'Regexp') {
+    while (<FILE>) {
+      chomp;
+      $new .= "$_\n" unless /$match/;
+    }
+  }
+  else {
+    while (<FILE>) {
+      chomp;
+      $new .= "$_\n" unless $_ eq $match;
+    }
   }
   seek FILE, 0, 0;
   truncate FILE, 0;
