@@ -52,10 +52,10 @@ chomp(my $host_suffix = safe_cat("$ENV{HOME}/.localhost-nick"));
 #   'muse--main--1.0',
 #   'muse', 'lib/emacs/major-modes';
 
-register new Cfg::Pkg::Baz $baz_root,
-  "arch\@adamspiers.org--upstream-2006-$host_suffix",
-  'xkeycaps--aspiers--2.46',
-  'xkeycaps', 'lib/emacs/xkeycaps';
+# register new Cfg::Pkg::Baz $baz_root,
+#   "arch\@adamspiers.org--upstream-2006-$host_suffix",
+#   'xkeycaps--aspiers--2.46',
+#   'xkeycaps', 'lib/emacs/xkeycaps';
 
 register new Cfg::Section "Distribution-specific";
 if (-e "/etc/SuSE-release") {
@@ -142,7 +142,6 @@ register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
     config/Xwindows/xwrits                 xwrits
     config/Xwindows/backgrounds            backgrounds
     config/Xwindows/rxvt                   rxvt
-    config/Xwindows/xmms                   xmms
     config/Xwindows/xchat                  xchat
 EOF
 
