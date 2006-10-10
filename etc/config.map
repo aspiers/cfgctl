@@ -80,6 +80,7 @@ else {
 register new Cfg::Section "X environment";
 register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
     config/Xwindows/SESSION                SESSION
+    config/Xwindows/kde                    kde
     config/shell-apps/watchlogs            watchlogs
     config/Xwindows/Eterm                  Eterm
     config/Xwindows/gkrellm                gkrellm
