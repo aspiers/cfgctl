@@ -109,8 +109,8 @@ register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
 EOF
 
 $ENV{PATH} = "/sbin:$ENV{PATH}";
-system("ifconfig | grep -q '10\.70.61\.'");
-if ($? >> 8 == 0) {
+system("moosehall-connection-p");
+if ($? >> 8 == 0 || $ENV{MOOSEHALL}) {
   register new Cfg::Section "For moosehall only";
   register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
     personal/pub/config/moosehall/shell-env       moosehall+shell-env
