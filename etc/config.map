@@ -91,6 +91,8 @@ EOF
 register new Cfg::Section "Mail";
 register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
     config/shell-apps/mutt                 mutt
+    personal/pub/config/shell-apps/mutt    mutt.pub
+    personal/sec/config/shell-apps/mutt    mutt.sec
     config/shell-apps/mailcap              mailcap
     config/shell-apps/gnupg                gnupg
     config/shell-apps/crm114               crm114
@@ -166,5 +168,7 @@ EOF
     config/RETIRED/shell-apps/ytalk        ytalk
 EOF
 }
+
+alias 'mail', qw(mutt mutt.pub mutt.sec novell+mail.pub novell+mail.sec);
 
 1;
