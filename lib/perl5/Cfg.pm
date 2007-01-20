@@ -26,7 +26,7 @@ use Sh qw(abs_path move_with_subpath safe_cat);
 
 =cut
 
-my (@sections, %sections, $current_section);
+my (@sections, %sections, $current_section, %aliases);
 tie %sections, 'Tie::RefHash';
 
 sub register (@) {
@@ -43,6 +43,11 @@ sub register (@) {
       push @{ $sections{$current_section} }, $object;
     }
   }
+}
+
+sub alias ($@) {
+  my ($alias, @expansions) = @_;
+  $aliases{$alias} = [ @expansions ];
 }
 
 sub do_registration {
@@ -70,8 +75,21 @@ sub list_pkgs {
   }
 }
 
+sub expand_aliases {
+  my @result = ();
+  foreach my $elt (@_) {
+    if (my $expansion = $aliases{$elt}) {
+      push @result, @$expansion;
+    }
+    else {
+      push @result, $elt;
+    }
+  }
+  return @result;
+}
+
 sub process_pkgs {
-  my %filter = map { $_ => 1 } @ARGV;
+  my %filter = map { $_ => 1 } expand_aliases(@ARGV);
   my %done;
   my $do_filter = @ARGV;
 
