@@ -45,17 +45,23 @@ register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
     config/shell-apps/emacs                emacs
 EOF
 
-chomp(my $host_suffix = safe_cat("$ENV{HOME}/.localhost-nick"));
-# register new Cfg::Pkg::Baz $baz_root,
-#   #'mwolson@gnu.org--2006',
-#   "arch\@adamspiers.org--upstream-2006-$host_suffix",
-#   'muse--main--1.0',
-#   'muse', 'lib/emacs/major-modes';
+my $localhost_nick_file = "$ENV{HOME}/.localhost-nickname";
+chomp(my $host_suffix = safe_cat($localhost_nick_file));
+if ($host_suffix) {
+#   register new Cfg::Pkg::Baz $baz_root,
+#     #'mwolson@gnu.org--2006',
+#     "arch\@adamspiers.org--upstream-2006-$host_suffix",
+#       'muse--main--1.0',
+#         'muse', 'lib/emacs/major-modes';
 
-# register new Cfg::Pkg::Baz $baz_root,
-#   "arch\@adamspiers.org--upstream-2006-$host_suffix",
-#   'xkeycaps--aspiers--2.46',
-#   'xkeycaps', 'lib/emacs/xkeycaps';
+#   register new Cfg::Pkg::Baz $baz_root,
+#     "arch\@adamspiers.org--upstream-2006-$host_suffix",
+#       'xkeycaps--aspiers--2.46',
+#         'xkeycaps', 'lib/emacs/xkeycaps';
+}
+else {
+  warn "$localhost_nick_file empty; skipping some packages.\n";
+}
 
 register new Cfg::Section "Distribution-specific";
 if (-e "/etc/SuSE-release") {
