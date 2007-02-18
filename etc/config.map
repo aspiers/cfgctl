@@ -117,7 +117,7 @@ register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
 EOF
 
 $ENV{PATH} = "/sbin:$ENV{PATH}";
-system("moosehall-connection-p");
+system("moosehall-connection-p 2>/dev/null");
 if ($? >> 8 == 0 || $ENV{MOOSEHALL}) {
   register new Cfg::Section "For moosehall only";
   register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
