@@ -128,9 +128,10 @@ sub maybe_check_out {
   }
 
   print "Checking out $revision in $archive_path ...\n";
-  system $BAZ_CMD, 'get', '-A', $archive, $revision, $src;
+  my @cmd = ( $BAZ_CMD, 'get', '-A', $archive, $revision, $src );
+  system @cmd;
   my $exit = $? >> 8;
-  die "cvs checkout $src failed; aborting!\n" if $exit != 0;
+  die "command @cmd failed; aborting!\n" if $exit != 0;
 }
 
 sub to_string {
