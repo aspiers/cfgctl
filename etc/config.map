@@ -22,7 +22,7 @@ my $baz_root = "$ENV{HOME}/.baz";
 ##      Column 2: Target namespace as controlled by stow or similar
 ##                (therefore must be unique).
 
-register new Cfg::Section "Bootstrapping";
+register new Cfg::Section 'boot' => "Bootstrapping";
 register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
     config/dev-tools/cvs                   cvs
     config/dev-tools/arch                  arch
@@ -39,7 +39,7 @@ register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
     config/dev-tools/rpm                   rpm
 EOF
 
-register new Cfg::Section "Bare essentials";
+register new Cfg::Section 'basics' => "Bare essentials";
 register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
     config/shell-apps/ssh                  ssh
     personal/sec/config/shell-apps/ssh     ssh.adam_spiers.sec
@@ -50,11 +50,11 @@ EOF
 my $localhost_nick_file = "$ENV{HOME}/.localhost-nickname";
 chomp(my $host_suffix = safe_cat($localhost_nick_file));
 if ($host_suffix) {
-#   register new Cfg::Pkg::Baz $baz_root,
-#     #'mwolson@gnu.org--2006',
-#     "arch\@adamspiers.org--upstream-2006-$host_suffix",
-#       'muse--main--1.0',
-#         'muse', 'lib/emacs/major-modes';
+  register new Cfg::Pkg::Baz $baz_root,
+    #'mwolson@gnu.org--2006',
+    "arch\@adamspiers.org--upstream-2006-$host_suffix",
+      'muse--main--1.0',
+        'muse', 'lib/emacs/major-modes';
 
 #   register new Cfg::Pkg::Baz $baz_root,
 #     "arch\@adamspiers.org--upstream-2006-$host_suffix",
@@ -65,7 +65,7 @@ else {
   warn "$localhost_nick_file empty; skipping some packages.\n";
 }
 
-register new Cfg::Section "Distribution-specific";
+register new Cfg::Section 'dist' => "Distribution-specific";
 if (-e "/etc/SuSE-release") {
   my $rel = safe_cat("/etc/SuSE-release");
   if ($rel =~ /SUSE Linux.*VERSION *= *10/is) {
@@ -85,7 +85,7 @@ else {
   die "Didn't find /etc/redhat-release or /etc/SuSE-release!\n";
 }
 
-register new Cfg::Section "X environment";
+register new Cfg::Section 'X' => "X environment";
 register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
     config/Xwindows/SESSION                SESSION
     config/Xwindows/kde                    kde
@@ -96,7 +96,7 @@ register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
     config/Xwindows/fonts                  fonts
 EOF
 
-register new Cfg::Section "Mail";
+register new Cfg::Section mail => "Mail";
 register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
     config/shell-apps/mutt                 mutt
     personal/pub/config/shell-apps/mutt    mutt.pub
@@ -106,7 +106,7 @@ register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
     config/shell-apps/crm114               crm114
 EOF
 
-register new Cfg::Section "Getting more comfortable";
+register new Cfg::Section 'std' => "Getting more comfortable";
 register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
     config/shell-apps/lftp                 lftp
     config/shell-apps/ncftp                ncftp
@@ -122,7 +122,7 @@ EOF
 $ENV{PATH} = "/sbin:$ENV{PATH}";
 system("moosehall-connection-p 2>/dev/null");
 if ($? >> 8 == 0 || $ENV{MOOSEHALL}) {
-  register new Cfg::Section "For moosehall only";
+  register new Cfg::Section 'moosehall' => "For moosehall only";
   register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
     personal/pub/config/moosehall/shell-env       moosehall+shell-env
     personal/pub/config/moosehall/xsession        moosehall+xsession
@@ -133,7 +133,7 @@ EOF
 }
 
 if (-e "$ENV{HOME}/ifolder") {
-  register new Cfg::Section "For work only";
+  register new Cfg::Section 'novell' => "For work only";
   register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
     config/work-tools                      work-tools
     personal/pub/config/novell/shell-env   novell+shell-env.pub
@@ -145,7 +145,7 @@ if (-e "$ENV{HOME}/ifolder") {
 EOF
 }
 
-register new Cfg::Section "For play only";
+register new Cfg::Section 'play' => "For play only";
 register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
     config/shell-apps/htmltidy             htmltidy
     config/shell-apps/palm                 palm
@@ -164,7 +164,8 @@ if (hostname() =~ /^atlantic/) {
    config/personal-interest               personal-interest
 EOF
 
-  register new Cfg::Section "Deprecated; warn if still using this stuff.";
+  register new Cfg::Section 'deprecated' =>
+    "Deprecated; warn if still using this stuff.";
   register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
     config/RETIRED/Xwindows/galeon         galeon
     config/RETIRED/Xwindows/gnome          gnome
@@ -178,6 +179,6 @@ EOF
 EOF
 }
 
-alias 'mail' => qw(mutt mutt.pub mutt.sec novell+mail.pub novell+mail.sec);
+#alias 'mail' => qw(mutt mutt.pub mutt.sec novell+mail.pub novell+mail.sec);
 
 1;

@@ -1,4 +1,5 @@
 package Cfg::Section;
+# Here's a perfect example of why Ruby is so much nicer than Perl.
 
 =head1 NAME
 
@@ -20,9 +21,11 @@ use warnings;
 sub new {
   my $self = shift;
   my $class = ref($self) || $self;
-  my ($name) = @_;
+  my ($ident, $name) = @_;
   return bless {
-    name => $name,
+    ident => $ident,
+    name  => $name,
+    pkgs  => [],
   }, $class;
 }
 
@@ -30,11 +33,24 @@ sub new {
 
 =cut
 
-sub to_string {
+sub add_pkg {
   my $self = shift;
-  return '#@ ' . $self->{name};
+  my ($pkg) = @_;
+  push @{ $self->{pkgs} }, $pkg;
 }
 
+sub pkgs {
+  my $self = shift;
+  return @{ $self->{pkgs} };
+}
+
+sub name  { shift->{name}  }
+sub ident { shift->{ident} }
+
+sub to_string {
+  my $self = shift;
+  return $self->name;
+}
 
 =head1 BUGS
 

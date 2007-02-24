@@ -23,30 +23,33 @@ our @EXPORT_OK = qw(debug
                     for_real
                     %opts %cfg);
 
-our (%opts, %cfg);
+our %opts = ( verbose => 0 );
+our %cfg;
 
 sub for_real { $opts{'dry-run'} ? 0 : 1 }
 
 sub ensure_correct_symlink {
-  my ($symlink, $required_target) = @_;
-
-  if (! lstat $symlink) {
-    symlink $required_target, $symlink
-      or die "symlink($required_target, $symlink) failed: $!\n";
+  my %p = @_;
+  confess "ensure_correct_symlink was not passed a symlink" unless $p{symlink};
+  confess "ensure_correct_symlink was not passed a required_target" unless $p{required_target};
+  
+  if (! lstat $p{symlink}) {
+    symlink $p{required_target}, $p{symlink}
+      or die "symlink($p{required_target}, $p{symlink}) failed: $!\n";
     return;
   }
 
-  if (! -l $symlink) {
-    die "$symlink already exists but is not a symlink; aborting!\n";
+  if (! -l $p{symlink}) {
+    die "$p{symlink} already exists but is not a symlink; aborting!\n";
   }
 
-  my ($a_dev, $a_ino) = stat($symlink) # stat automatically follows symlinks
-    or die "stat($symlink) failed ($!); invalid symlink?\n";
+  my ($a_dev, $a_ino) = stat($p{symlink}) # stat automatically follows symlinks
+    or die "stat($p{symlink}) failed ($!); invalid symlink?\n";
   
-  my ($r_dev, $r_ino) = stat($required_target)
-    or confess "stat($required_target) failed: $!";
+  my ($r_dev, $r_ino) = stat($p{required_target})
+    or confess "stat($p{required_target}) failed: $!";
   if ($a_dev != $r_dev or $a_ino != $r_ino) {
-    die "$symlink already exists and points to the wrong place; aborting!\n";
+    die "$p{symlink} already exists and points to the wrong place; aborting!\n";
   }
 }
 
@@ -158,7 +161,7 @@ sub preempt_conflict {
 }
 
 sub debug {
-  warn @_ if $opts{debug};
+  warn @_ if $opts{verbose};
 }
 
 =head1 BUGS

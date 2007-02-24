@@ -2,7 +2,7 @@ package Cfg::Pkg::CVS;
 
 =head1 NAME
 
-Cfg::Pkg::CVS - base class for cfgctl configuration packages
+Cfg::Pkg::CVS - subclass for cfgctl configuration packages managed by CVS
 
 =head1 SYNOPSIS
 
@@ -13,10 +13,12 @@ Cfg::Pkg::CVS - base class for cfgctl configuration packages
 use strict;
 use warnings;
 
-use Cfg::Utils qw(debug);
+use Cfg::Utils qw(debug %opts);
 use base 'Cfg::Pkg::Base';
 
 use overload '""' => \&to_str;
+
+my %queues;
 
 =head1 CONSTRUCTORS
 
@@ -25,18 +27,19 @@ use overload '""' => \&to_str;
 sub new {
   my $self = shift;
   my $class = ref($self) || $self;
-  my ($wd, $src, $dst) = @_;
+  my ($root, $wd, $src, $dst) = @_;
   return bless {
-    wd => $wd,    # e.g. "$ENV{HOME}/.cvs"            
-    src => $src,  # e.g. config/dev-tools/perl/mine   
-    dst => $dst,  # e.g. perl+mine
+    root => $root, # e.g. 'adam@f5.mandolinarchive.com:/home/adam/.CVSROOT'
+    wd   => $wd,   # e.g. "$ENV{HOME}/.cvs"            
+    src  => $src,  # e.g. config/dev-tools/perl/mine   
+    dst  => $dst,  # e.g. perl+mine
   }, $class;
 }
 
 sub multi {
   my $self = shift;
   my $class = ref($self) || $self;
-  my ($wd, $block) = @_;
+  my ($cvsroot, $wd, $block) = @_;
   my @new;
   die unless $block;
   for my $line (split /\n/, $block) {
@@ -45,7 +48,7 @@ sub multi {
     next unless $line;
     next if $line =~ /^#/;
     my ($src, $dst) = split /\s+/, $line;
-    push @new, $class->new($wd, $src, $dst);
+    push @new, $class->new($cvsroot, $wd, $src, $dst);
   }
   return @new;
 }
@@ -54,21 +57,50 @@ sub multi {
 
 =cut
 
-sub maybe_check_out {
+sub enqueue_op {
   my $self = shift;
+  my ($op) = @_;
+  die unless $op eq 'update' or $op eq 'fetch';
+  $op = 'checkout' if $op eq 'fetch';
+  push @{ $queues{$op}{$self->cvsroot} }, $self;
+}
 
-  my $wd = $self->_wd;
-  my $src = $self->_src;
-  if (-d $self->cfg_source) {
-    debug("# $src already checked out in $wd\n");
-    return;
+sub process_queue {
+  my $self = shift;
+  my ($op) = @_;
+  die unless $op eq 'update' or $op eq 'fetch';
+  $op = 'checkout' if $op eq 'fetch';
+
+  print "# Processing CVS ${op}s...\n";
+
+  foreach my $cvsroot (keys %{ $queues{$op} }) {
+    my $pkgs = $queues{$op}{$cvsroot};
+
+    my $wd = $pkgs->[0]->_wd;
+    chdir($wd) or die "chdir($wd) failed: $!\n";
+
+    my @cmd = (
+      'cvs',
+      '-d', $cvsroot,
+      $op eq 'update' ? '-q' : (),
+      $opts{'dry-run'} ? '-n' : (),
+      $opts{'verbose'} > 3 ? '-t' : (),
+      $op
+    );
+    my @modules = map $_->_src, @$pkgs;
+    print "@cmd @modules\n";
+    open(XARGS, "|-", 'xargs', @cmd)
+      or die "Couldn't open(| xargs @cmd): $!\n";
+    print XARGS "$_\n" foreach @modules;
+    close(XARGS) or die "close(| xargs @cmd) failed: $!\n";
+    my $exit = $? >> 8;
+    die "cvs $op failed; aborting!\n" if $exit != 0;
   }
+}
 
-  chdir($wd) or die "chdir($wd) failed: $!\n";
-  print "Checking out $src ...\n";
-  system 'cvs', 'checkout', $src;
-  my $exit = $? >> 8;
-  die "cvs checkout $src failed; aborting!\n" if $exit != 0;
+sub src_local {
+  my $self = shift;
+  return -d $self->_wd;
 }
 
 sub install {
@@ -91,10 +123,11 @@ sub _wd         { shift->{wd } } # e.g. "$ENV{HOME}/.cvs"
 sub _src        { shift->{src} } # e.g. config/dev-tools/perl/mine
 
 # Public
-sub description { shift->{src} } # human-readable
-sub dst         { shift->{dst} } # e.g. perl+mine
+sub cvsroot     { shift->{root} }
+sub description { shift->{src}  } # human-readable
+sub dst         { shift->{dst}  } # e.g. perl+mine
 
-sub cfg_source {
+sub src {
   my $self = shift;
   return File::Spec->join($self->_wd, $self->_src);
 }

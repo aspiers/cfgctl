@@ -6,6 +6,9 @@ Cfg::Pkg::Base - abstract base class for cfgctl configuration packages
 
 =head1 SYNOPSIS
 
+Any mechanism for retrieving files via an SCM check-out or other
+process should be implemented as a sub-class of this base class.
+
 =head1 DESCRIPTION
 
 =cut
@@ -28,35 +31,6 @@ See derived classes.
 
 =cut
 
-sub process {
-  my $self = shift;
-
-  maybe_check_out $self;
-
-  my $description = $self->description;
-  my $dst         = $self->dst;
-
-  ensure_correct_symlink(
-    File::Spec->join($cfg{PKG_DIR}, $dst),
-    $self->cfg_source,
-  );
-
-  if ($self->deprecated) {
-    print "#! deprecating: $description\n";
-    $self->deprecate;
-  }
-  else {
-    if ($opts{delete}) {
-      $self->deinstall;
-      print "# de-installed: $description\n";
-    }
-    else {
-      $self->install;
-      print "# installed: $description\n";
-    }
-  }
-}
-
 sub deprecate {
   my $self = shift;
   my $description = $self->description;
@@ -74,6 +48,79 @@ sub deprecate {
       $dst;
   my $exit = $? >> 8;
   warn "$cfg{STOW} -c failed; aborting!\n" if $exit != 0;
+}
+
+# Syntactic sugar, but some SCMs might not reuse code between update
+# and fetch operations, so we need to keep the interfaces separate.
+sub enqueue_update       { shift->enqueue_op('update');    }
+sub enqueue_fetch        { shift->enqueue_op('fetch');     }
+sub process_update_queue { shift->process_queue('update'); }
+sub process_fetch_queue  { shift->process_queue('fetch');  }
+
+sub enqueue_op {
+  my $self = shift;
+  my ($op) = @_;
+  my $sub = (caller(0))[3];
+  $sub =~ s/.+:://;
+  my $class = ref($self);
+  my $me = "${class}::$sub";
+  die <<EOF;
+$class does not yet support updates.
+
+To add support, override ${class}::enqueue_$op and 
+${class}::process_${op}_queue.
+
+Note that it will also be responsible for checking out any
+non-existing sources, etc.
+EOF
+}
+
+sub process_queue {
+  my $self = shift;
+  my ($op) = @_;
+  my $sub = (caller(0))[3];
+  $sub =~ s/.+:://;
+  my $class = ref($self);
+  my $me = "${class}::$sub";
+  die <<EOF;
+$class does not yet support ${op}.
+
+To add support, override ${class}::enqueue_$op and 
+${class}::process_${op}_queue.
+
+Note that it will also be responsible for checking out any
+non-existing sources, etc.
+EOF
+}
+
+sub ensure_install_symlink {
+  my $self = shift;
+  ensure_correct_symlink(
+    symlink => File::Spec->join($cfg{PKG_DIR}, $self->dst),
+    required_target => $self->src,
+  );
+}
+
+sub src_local {
+  my $self = shift;
+  my $sub = (caller(0))[3];
+  $sub =~ s/.+:://;
+  my $class = ref($self);
+  my $me = "${class}::$sub";
+  die <<EOF;
+$me should be overridden to return true if the source exists locally.
+EOF
+}
+
+sub ensure_src_local {
+  my $self = shift;
+  my $sub = (caller(0))[3];
+  $sub =~ s/.+:://;
+  my $class = ref($self);
+  my $me = "${class}::$sub";
+  die <<EOF;
+$me should be overridden to ensure that the source exists locally.
+EOF
 }
 
 sub deinstall {
@@ -157,17 +204,25 @@ sub dst {
   my $me = ref($self) . "::$sub";
   confess <<EOF;
 $me should be overridden to return the package name as used by stow.
+It is the symlink which lives under the stow directory (F<~/.cfg>
+typically).
 EOF
 }
 
-sub cfg_source {
+sub src {
   my $self = shift;
   my $sub = (caller(0))[3];
   $sub =~ s/.+:://;
   my $me = ref($self) . "::$sub";
   confess <<EOF;
-$me should be overridden to return the path to the cfg source
-e.g. ~/.cvs/config/dev-tools/perl/mine (see L<cfgctl>).
+$me should be overridden to return the path to the cfg source, which the
+symlink under ~/.cfg points to, e.g. 
+
+   ~/.cvs/config/dev-tools/perl/mine
+
+is pointed to by
+
+   ~/.cfg/perl+mine
 EOF
 }
 

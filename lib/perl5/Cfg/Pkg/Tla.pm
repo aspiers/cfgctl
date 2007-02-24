@@ -1,8 +1,8 @@
-package Cfg::Pkg::Baz;
+package Cfg::Pkg::Tla;
 
 =head1 NAME
 
-Cfg::Pkg::Baz - subclass for cfgctl configuration packages managed by tla/baz
+Cfg::Pkg::Tla - subclass for cfgctl configuration packages managed by tla/tla
 
 =head1 SYNOPSIS
 
@@ -18,7 +18,7 @@ use File::Path;
 use Cfg::Utils qw(debug);
 use base 'Cfg::Pkg::Arch';
 
-sub ARCH_CMD { 'baz' };
+sub ARCH_CMD { 'tla' };
 
 =head1 SEE ALSO
 
