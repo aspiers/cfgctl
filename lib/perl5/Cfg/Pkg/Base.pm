@@ -116,17 +116,6 @@ $me should be overridden to return true if the source exists locally.
 EOF
 }
 
-sub ensure_src_local {
-  my $self = shift;
-  my $sub = (caller(0))[3];
-  $sub =~ s/.+:://;
-  my $class = ref($self);
-  my $me = "${class}::$sub";
-  die <<EOF;
-$me should be overridden to ensure that the source exists locally.
-EOF
-}
-
 sub deinstall {
   my $self = shift;
   my $dst = $self->dst;
