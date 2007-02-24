@@ -228,6 +228,8 @@ $me should be overridden to return true if the package is deprecated.
 EOF
 }
 
+sub relocation { undef }
+
 =head1 BUGS
 
 =head1 SEE ALSO
