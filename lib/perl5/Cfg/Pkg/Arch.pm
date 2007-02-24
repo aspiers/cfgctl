@@ -69,14 +69,14 @@ sub enqueue_op {
 }
 
 sub process_queue {
-  my $self = shift;
+  my $class = shift;
   my ($op) = @_;
   die unless $op eq 'update' or $op eq 'fetch';
-  $op = 'get' if $op eq 'fetch';
 
-  my $ARCH_CMD = $self->ARCH_CMD;
+  my $ARCH_CMD = $class->ARCH_CMD;
 
   foreach my $archive (keys %{ $queues{$op} }) {
+    debug(2, "#   Archive $archive in ${class}'s $op queue\n");
     my $pkgs = $queues{$op}{$archive};
     foreach my $pkg (@$pkgs) {
       my $archive      = $pkg->archive;
@@ -90,7 +90,7 @@ sub process_queue {
       my @cmd;
       if ($op eq 'fetch') {
         @cmd = ( $ARCH_CMD, 'get', '-A', $archive, $revision, $pkg->_co_to );
-        print "$ARCH_CMD get $revision to $archive_path ...\n";
+        debug(1, "$ARCH_CMD get $revision to $archive_path ...\n");
       }
       elsif ($op eq 'update') {
         die "arch update TODO";
