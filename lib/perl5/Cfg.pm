@@ -31,6 +31,7 @@ my (@sections, $current_section, %aliases);
 
 sub register (@) {
   foreach my $object (@_) {
+    next unless $object; # object constructor can fail and return undef
     if ($object->isa('Cfg::Section')) {
       my $section = $current_section = $object;
       push @sections, $section;
@@ -64,6 +65,7 @@ sub list_pkgs {
   foreach my $section (@sections) {
     debug(1, "#>>> ", $section->to_string, "\n"); 
     foreach my $pkg ($section->pkgs) {
+      next if $pkg->disabled;
       if ($opts{sources})  {
         print $pkg->src, "\n";
       }

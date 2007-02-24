@@ -218,6 +218,8 @@ is pointed to by
 EOF
 }
 
+sub disabled { 0 }
+
 sub deprecated  {
   my $self = shift;
   my $sub = (caller(0))[3];

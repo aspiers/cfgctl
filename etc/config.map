@@ -51,10 +51,16 @@ my $localhost_nick_file = "$ENV{HOME}/.localhost-nickname";
 chomp(my $host_suffix = safe_cat($localhost_nick_file));
 if ($host_suffix) {
   register new Cfg::Pkg::Baz $baz_root,
-    #'mwolson@gnu.org--2006',
-    "arch\@adamspiers.org--upstream-2006-$host_suffix",
+    'mwolson@gnu.org--2006',
       'muse--main--1.0',
-        'muse', 'lib/emacs/major-modes';
+        'muse-mwolson', 'lib/emacs/major-modes/$REV';
+
+#   register new Cfg::Pkg::Baz $baz_root,
+#     "arch\@adamspiers.org--upstream-2006-$host_suffix",
+#       'muse--main--1.0',
+#         'muse-aspiers', 'lib/emacs/major-modes/$REV';
+
+  alias muse => qw(muse-mwolson emacs);
 
 #   register new Cfg::Pkg::Baz $baz_root,
 #     "arch\@adamspiers.org--upstream-2006-$host_suffix",
