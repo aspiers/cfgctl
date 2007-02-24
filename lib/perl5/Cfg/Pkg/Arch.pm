@@ -89,7 +89,7 @@ sub process_queue {
 
       my @cmd;
       if ($op eq 'fetch') {
-        @cmd = ( $ARCH_CMD, 'get', '-A', $archive, $revision, $pkg->_co_to );
+        @cmd = ( $ARCH_CMD, 'get', $archrev, $pkg->_co_to );
         debug(1, "$ARCH_CMD get $revision to $archive_path ...\n");
       }
       elsif ($op eq 'update') {
