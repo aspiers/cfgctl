@@ -117,11 +117,11 @@ sub ensure_relocation {
   my $relocation_prefix = $self->relocation_path;
   
   if (-d $relocation_prefix) {
-    debug("relocation_prefix $relocation_prefix already exists\n");
+    debug(2, "relocation_prefix $relocation_prefix already exists\n");
   }
   else {
     mkpath($relocation_prefix);
-    debug("created relocation_prefix $relocation_prefix\n");
+    debug(2, "created relocation_prefix $relocation_prefix\n");
   }
   
   ensure_correct_symlink(

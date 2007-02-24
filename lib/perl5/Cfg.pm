@@ -78,6 +78,7 @@ sub list_pkgs {
 }
 
 sub expand_aliases {
+  debug(2, "# Expanding aliases");
   my @result = ();
   foreach my $elt (@_) {
     if (my $expansion = $aliases{$elt}) {
@@ -91,6 +92,8 @@ sub expand_aliases {
 }
 
 sub get_pkg_queue {
+  debug(2, "# Getting package queue");
+
   my %filter = map { $_ => 1 } expand_aliases(@ARGV);
   my $do_filter = @ARGV;
   my %pkg_found;
@@ -102,7 +105,7 @@ sub get_pkg_queue {
       my $dst = $pkg->dst;
       die unless $dst;
       if ($do_filter and ! $filter{$dst}) {
-        debug("#. skipping $dst - not on command-line pkg list\n");
+        debug(3, "#. skipping $dst - not on command-line pkg list\n");
         next;
       }
 
@@ -148,7 +151,7 @@ sub ensure_src_local {
       if ($pkg->src_local) {
         my $src = $pkg->_src;
         my $wd = $pkg->_wd;
-        debug("# $src already checked out in $wd\n");
+        debug(2, "# $src already checked out in $wd\n");
         return undef;
       }
       return 'fetch';

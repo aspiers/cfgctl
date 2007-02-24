@@ -64,7 +64,7 @@ use Getopt::Long;
 use lib "$RealBin/../lib/perl5";
 use Sh qw(abs_path);
 use Cfg;
-use Cfg::Utils qw(%opts %cfg);
+use Cfg::Utils qw(debug %opts %cfg);
 
 Getopt::Long::Configure('no_ignore_case', 'bundling');
 GetOptions(
