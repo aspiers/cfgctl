@@ -15,6 +15,7 @@ use warnings;
 
 use Carp qw(carp cluck croak confess);
 use File::Path;
+use File::Which;
 
 use Cfg::Pkg::Disabled;
 use Cfg::Utils qw(debug %opts);
@@ -49,6 +50,15 @@ sub new {
   my $class = ref($self) || $self;
   my ($co_root, $archive, $revision, $dst, $relocate) = @_;
 
+  unless ($class->arch_cmd_ok) {
+    my $ARCH_CMD = $class->ARCH_CMD;
+    my $reason = "$ARCH_CMD not found";
+    debug(0, "# ! Disabling $dst - $reason");
+    return Cfg::Pkg::Disabled->new(
+      $dst, __PACKAGE__, $dst, $reason,
+    );
+  }
+
   unless ($class->archive_valid($archive)) {
     my $ARCH_CMD = $class->ARCH_CMD;
     my $reason = "$ARCH_CMD archive $archive not found";
@@ -68,6 +78,11 @@ sub new {
     dst      => $dst,      # e.g. muse (stow package name)
     relocate => $relocate, # e.g. lib/emacs/major-modes
   }, $class;
+}
+
+sub arch_cmd_ok {
+  my $class = shift;
+  return which($class->ARCH_CMD);
 }
 
 sub archive_valid {
