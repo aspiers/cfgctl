@@ -174,6 +174,7 @@ sub _batch_get {
   foreach my $pkg (@pkgs) {
     my $mode = $mode_block->($pkg);
     next unless $mode;
+    next if $mode eq 'fetch' and $pkg->deprecated;
     $class_queues{$mode}{ref($pkg)}++;
     my $method = "enqueue_$mode";
     debug(2, "#   Enqueueing ", $pkg->description, " for $mode");
@@ -189,7 +190,7 @@ sub _batch_get {
   }
 
   foreach my $pkg (@pkgs) {
-    $pkg->ensure_relocation if $pkg->relocation;
+    $pkg->ensure_relocation if $pkg->relocation && $pkg->src_local;
   }
 }
 
