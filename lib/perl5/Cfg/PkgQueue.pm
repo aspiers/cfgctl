@@ -42,6 +42,7 @@ sub sections_and_pkgs {
   return @{ $self->{entries} };
 }
 
+sub empty { scalar(shift->sections_and_pkgs) == 0 }
 
 =head1 BUGS
 

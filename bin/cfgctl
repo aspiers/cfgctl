@@ -135,6 +135,8 @@ if ($opts{sources} || $opts{destinations}) {
 }
 
 my $queue = Cfg->get_pkg_queue;
+exit 1 if $queue->empty;
+
 if ($opts{update}) {
   Cfg->update($queue->pkgs);
   exit 0 if $opts{'dry-run'};
