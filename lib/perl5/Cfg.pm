@@ -138,7 +138,7 @@ sub update {
   my $class = shift;
   my @pkgs = @_;
 
-  debug(1, "# Batch update");
+  debug(2, "# Batch update");
   $class->_batch_get(
     sub {
       my $pkg = shift;
@@ -151,7 +151,7 @@ sub update {
 sub ensure_src_local {
   my $class = shift;
   my @pkgs = @_;
-  debug(1, "# Batch fetch");
+  debug(2, "# Batch fetch");
   $class->_batch_get(
     sub {
       my $pkg = shift;
