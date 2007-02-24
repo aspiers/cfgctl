@@ -12,6 +12,7 @@ use Sh qw(cat);
 ## only support cvs so far.
 $ENV{CVSROOT} = 'adam@f5.mandolinarchive.com:/home/adam/.CVSROOT';
 $ENV{CVSROOT} = '/home/adam/.CVSROOT' if hostname() eq 'f5';
+my $cvsroot  = $ENV{CVSROOT};
 my $cvs_wd   = "$ENV{HOME}/.cvs";
 my $baz_root = "$ENV{HOME}/.baz";
 
@@ -22,7 +23,7 @@ my $baz_root = "$ENV{HOME}/.baz";
 ##                (therefore must be unique).
 
 register new Cfg::Section "Bootstrapping";
-register multi Cfg::Pkg::CVS($cvs_wd, <<EOF);
+register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
     config/dev-tools/cvs                   cvs
     config/dev-tools/arch                  arch
     config/META                            META
@@ -39,7 +40,7 @@ register multi Cfg::Pkg::CVS($cvs_wd, <<EOF);
 EOF
 
 register new Cfg::Section "Bare essentials";
-register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
+register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
     config/shell-apps/ssh                  ssh
     personal/sec/config/shell-apps/ssh     ssh.adam_spiers.sec
     config/shell-apps/screen               screen
@@ -49,7 +50,7 @@ EOF
 my $localhost_nick_file = "$ENV{HOME}/.localhost-nickname";
 chomp(my $host_suffix = safe_cat($localhost_nick_file));
 if ($host_suffix) {
-#   register new Cfg::Pkg::Baz $baz_root,
+  register new Cfg::Pkg::Baz $baz_root,
 #     #'mwolson@gnu.org--2006',
 #     "arch\@adamspiers.org--upstream-2006-$host_suffix",
 #       'muse--main--1.0',
@@ -68,16 +69,16 @@ register new Cfg::Section "Distribution-specific";
 if (-e "/etc/SuSE-release") {
   my $rel = safe_cat("/etc/SuSE-release");
   if ($rel =~ /SUSE Linux.*VERSION *= *10/is) {
-    register new Cfg::Pkg::CVS $cvs_wd, "config/dists/SL10", "SL10";
+    register new Cfg::Pkg::CVS $cvsroot, $cvs_wd, "config/dists/SL10", "SL10";
   }
   elsif ($rel =~ /Novell Linux Desktop 9/i) {
-    register new Cfg::Pkg::CVS $cvs_wd, "config/dists/NLD9", "NLD9";
+    register new Cfg::Pkg::CVS $cvsroot, $cvs_wd, "config/dists/NLD9", "NLD9";
   }
 }
 elsif (-e "/etc/redhat-release") {
   my $rel = safe_cat("/etc/redhat-release");
   if ($rel =~ /Fedora Core release 4/i) {
-    register new Cfg::Pkg::CVS $cvs_wd, "config/dists/FC4", "FC4";
+    register new Cfg::Pkg::CVS $cvsroot, $cvs_wd, "config/dists/FC4", "FC4";
   }
 }
 else {
@@ -85,7 +86,7 @@ else {
 }
 
 register new Cfg::Section "X environment";
-register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
+register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
     config/Xwindows/SESSION                SESSION
     config/Xwindows/kde                    kde
     config/shell-apps/watchlogs            watchlogs
@@ -96,7 +97,7 @@ register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
 EOF
 
 register new Cfg::Section "Mail";
-register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
+register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
     config/shell-apps/mutt                 mutt
     personal/pub/config/shell-apps/mutt    mutt.pub
     personal/sec/config/shell-apps/mutt    mutt.sec
@@ -106,7 +107,7 @@ register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
 EOF
 
 register new Cfg::Section "Getting more comfortable";
-register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
+register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
     config/shell-apps/lftp                 lftp
     config/shell-apps/ncftp                ncftp
     config/shell-apps/wscan                wscan
@@ -122,7 +123,7 @@ $ENV{PATH} = "/sbin:$ENV{PATH}";
 system("moosehall-connection-p 2>/dev/null");
 if ($? >> 8 == 0 || $ENV{MOOSEHALL}) {
   register new Cfg::Section "For moosehall only";
-  register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
+  register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
     personal/pub/config/moosehall/shell-env       moosehall+shell-env
     personal/pub/config/moosehall/xsession        moosehall+xsession
     personal/pub/config/moosehall/shell-apps/ssh  moosehall+ssh.pub
@@ -133,7 +134,7 @@ EOF
 
 if (-e "$ENV{HOME}/ifolder") {
   register new Cfg::Section "For work only";
-  register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
+  register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
     config/work-tools                      work-tools
     personal/pub/config/novell/shell-env   novell+shell-env.pub
     personal/pub/config/novell/shell-apps/emacs  novell+emacs.pub
@@ -145,7 +146,7 @@ EOF
 }
 
 register new Cfg::Section "For play only";
-register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
+register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
     config/shell-apps/htmltidy             htmltidy
     config/shell-apps/palm                 palm
     config/Xwindows/graphics               graphics
@@ -159,12 +160,12 @@ EOF
 ## To obtain warnings requires a checkout, so you may want
 ## to leave these commented.
 if (hostname() =~ /^atlantic/) {
-  register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
+  register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
    config/personal-interest               personal-interest
 EOF
 
   register new Cfg::Section "Deprecated; warn if still using this stuff.";
-  register multi Cfg::Pkg::CVS $cvs_wd, <<EOF;
+  register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
     config/RETIRED/Xwindows/galeon         galeon
     config/RETIRED/Xwindows/gnome          gnome
     config/RETIRED/Xwindows/netscape       netscape
@@ -177,6 +178,6 @@ EOF
 EOF
 }
 
-alias 'mail', qw(mutt mutt.pub mutt.sec novell+mail.pub novell+mail.sec);
+alias 'mail' => qw(mutt mutt.pub mutt.sec novell+mail.pub novell+mail.sec);
 
 1;
