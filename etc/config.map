@@ -173,15 +173,15 @@ EOF
   register new Cfg::Section 'deprecated' =>
     "Deprecated; warn if still using this stuff.";
   register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
-    config/RETIRED/Xwindows/galeon         galeon
-    config/RETIRED/Xwindows/gnome          gnome
-    config/RETIRED/Xwindows/netscape       netscape
-    config/RETIRED/term                    term
-    config/RETIRED/shell-apps/mh           mh
-    config/RETIRED/shell-apps/sdf          sdf
-    config/RETIRED/shell-apps/bk2site      bk2site
-    config/RETIRED/shell-apps/lynx         lynx
-    config/RETIRED/shell-apps/ytalk        ytalk
+    config.RETIRED/Xwindows/galeon         galeon
+    config.RETIRED/Xwindows/gnome          gnome
+    config.RETIRED/Xwindows/netscape       netscape
+    config.RETIRED/term                    term
+    config.RETIRED/shell-apps/mh           mh
+    config.RETIRED/shell-apps/sdf          sdf
+    config.RETIRED/shell-apps/bk2site      bk2site
+    config.RETIRED/shell-apps/lynx         lynx
+    config.RETIRED/shell-apps/ytalk        ytalk
 EOF
 }
 
