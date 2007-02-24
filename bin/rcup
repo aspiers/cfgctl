@@ -1,35 +1,3 @@
 #!/bin/bash
 
-set -e
-
-#normalize-bookmarks
-
-if [ -z "$*" ]; then
-  echo "#>>> cvs updating META ..."
-  cd ~/.cvs/config/META
-  cvsuhq
-
-  echo "#>>> cvs updating config ..."
-  cd ~/.cvs/config
-  cvsuhq
-
-  echo "#>>> cvs updating personal ..."
-  cd ~/.cvs/personal
-  cvsuhq
-
-  echo "#>>> cfgctl ..."
-  cfgctl
-else
-  dirs=
-  for pkg in "$@"; do
-    dir=$HOME/.cfg/$pkg
-    if [ -d "$dir" ]; then
-      cd "$dir"
-      echo "#>>> cvs updating $pkg ..."
-      cvsuhq
-    fi
-    echo "#>>> cfgctl $pkg ..."
-    cfgctl "$pkg"
-  done
-fi
-
+cfgctl -u "$@"
