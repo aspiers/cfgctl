@@ -143,12 +143,6 @@ sub process_queue {
   }
 }
 
-sub to_string {
-  my $self = shift;
-  return $self->{src};
-  return sprintf "%s: %s -> %s", @$self{qw/co_root src dst/};
-}
-
 sub co_root     { shift->{co_root}    }
 sub archive     { shift->{archive}    }
 sub revision    { shift->{revision}   }
@@ -159,6 +153,7 @@ sub relocation  { shift->{relocate}   }
 sub description {
   my $self = shift;
   return $self->archive . '/' . $self->revision;
+#  return sprintf "%s: %s -> %s", @$self{qw/co_root src dst/};
 }
 
 # e.g. ~/.baz/mwolson@gnu.org--2006
