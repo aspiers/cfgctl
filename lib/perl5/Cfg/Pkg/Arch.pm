@@ -54,6 +54,11 @@ sub new {
   }, $class;
 }
 
+sub src_local {
+  my $self = shift;
+  return -d $self->_co_to;
+}
+
 sub ensure_src_local {
   my $self = shift;
 
