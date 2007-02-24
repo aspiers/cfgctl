@@ -146,14 +146,13 @@ sub install {
   open(STOW, "$cmd 2>&1 |") or die "open($human_cmd|) failed: $!\n";
   while (<STOW>) {
     if (/^CONFLICT: (.+) vs. (.+?)( \(.*?\))?$/) {
-      #print;
       my ($src, $symlink) = ($1, $2);
       preempt_conflict($src, $symlink);
       next;
     }
 
     debug(4, "! surplus stow -c output: $_");
-    print "$_";
+    warn $_;
   }
   close(STOW) or die "close($human_cmd|) failed: $!\n";
 
@@ -169,7 +168,7 @@ sub install {
 
   my $post_hook = File::Spec->join($cfg{TARGET_DIR}, '.cfg-post.d', $dst);
   if (-x $post_hook) {
-    print "# Running $post_hook ...\n";
+    debug(1, "# Running $post_hook ...\n");
     my $pkg_dir = File::Spec->join($cfg{PKG_DIR}, $dst);
     chdir($pkg_dir) or die "chdir($pkg_dir) failed: $!\n";
     system $post_hook;

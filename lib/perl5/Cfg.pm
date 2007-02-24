@@ -78,7 +78,7 @@ sub list_pkgs {
 }
 
 sub expand_aliases {
-  debug(2, "# Expanding aliases");
+  debug(2, "# Expanding aliases\n");
   my @result = ();
   foreach my $elt (@_) {
     if (my $expansion = $aliases{$elt}) {
@@ -92,7 +92,7 @@ sub expand_aliases {
 }
 
 sub get_pkg_queue {
-  debug(2, "# Getting package queue");
+  debug(2, "# Getting package queue\n");
 
   my %filter = map { $_ => 1 } expand_aliases(@ARGV);
   my $do_filter = @ARGV;
@@ -100,12 +100,13 @@ sub get_pkg_queue {
   my $queue = Cfg::PkgQueue->new;
 
   foreach my $section (@sections) {
+    debug (3, "#   section ", $section->name, "\n");
     my @section_queue;
     foreach my $pkg ($section->pkgs) {
       my $dst = $pkg->dst;
       die unless $dst;
       if ($do_filter and ! $filter{$dst}) {
-        debug(3, "#. skipping $dst - not on command-line pkg list\n");
+        debug(4, "#     skipping $dst - not on command-line pkg list\n");
         next;
       }
 
@@ -133,6 +134,8 @@ sub get_pkg_queue {
 sub update {
   my $class = shift;
   my @pkgs = @_;
+
+  debug(1, "# batch update");
   $class->_batch_get(
     sub {
       my $pkg = shift;
@@ -145,13 +148,14 @@ sub update {
 sub ensure_src_local {
   my $class = shift;
   my @pkgs = @_;
+  debug(1, "# Batch fetch\n");
   $class->_batch_get(
     sub {
       my $pkg = shift;
       if ($pkg->src_local) {
         my $src = $pkg->_src;
         my $wd = $pkg->_wd;
-        debug(2, "# $src already checked out in $wd\n");
+        debug(2, "#   $src already present in $wd\n");
         return undef;
       }
       return 'fetch';
@@ -171,12 +175,14 @@ sub _batch_get {
     next unless $mode;
     $class_queues{$mode}{ref($pkg)}++;
     my $method = "enqueue_$mode";
+    debug(2, "#   Enqueueing ", $pkg->description, " for $mode\n");
     $pkg->$method;
   }
 
   while (my ($mode, $class_queue) = each %class_queues) {
     my $method = "process_${mode}_queue";
     foreach my $class (keys %$class_queue) {
+      debug(2, "#   Batch fetch for $class\n");
       $class->$method;
     }
   }
