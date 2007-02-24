@@ -46,7 +46,7 @@ C<CATEGORY--BRANCH--VERSION--REVISION>.
 sub new {
   my $self = shift;
   my $class = ref($self) || $self;
-  my ($co_root, $archive, $revision, $dst, $relocate) = @_;
+  my ($co_root, $dst, $archive, $revision, $relocate) = @_;
 
   unless ($class->arch_cmd_ok) {
     my $ARCH_CMD = $class->ARCH_CMD;
