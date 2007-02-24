@@ -64,8 +64,10 @@ sub enqueue_op {
   $sub =~ s/.+:://;
   my $class = ref($self);
   my $me = "${class}::$sub";
+  my $plural = "${op}s";
+  $plural = 'fetches' if $op eq 'fetch';
   die <<EOF;
-$class does not yet support updates.
+$class does not yet support $plural.
 
 To add support, override ${class}::enqueue_$op and 
 ${class}::process_${op}_queue.
@@ -82,8 +84,10 @@ sub process_queue {
   $sub =~ s/.+:://;
   my $class = ref($self);
   my $me = "${class}::$sub";
+  my $plural = "${op}s";
+  $plural = 'fetches' if $op eq 'fetch';
   die <<EOF;
-$class does not yet support ${op}.
+$class does not yet support $plural.
 
 To add support, override ${class}::enqueue_$op and 
 ${class}::process_${op}_queue.
