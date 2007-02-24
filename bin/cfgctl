@@ -69,7 +69,7 @@ use Cfg::Utils qw(debug %opts %cfg);
 Getopt::Long::Configure('no_ignore_case', 'bundling');
 GetOptions(
   \%opts,
-  'dry-run|n', 'sources|s', 'destinations|d', 'verbose|v+',
+  'dry-run|n', 'sources|s', 'destinations|d', 'verbose|v:+',
   'pkg-dir|p=s', 'target|t=s', 'map|m=s',
   'update|u', 'delete|D', 'remove-dangling|r', 'thorough|T',
 )
