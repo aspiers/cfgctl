@@ -102,8 +102,6 @@ sub process_queue {
       system @cmd;
       my $exit = $? >> 8;
       die "command @cmd failed; aborting!\n" if $exit != 0;
-
-      $pkg->ensure_relocation if $op eq 'fetch' and $pkg->relocation;
     }
   }
 }

@@ -185,6 +185,10 @@ sub _batch_get {
       $class->$method;
     }
   }
+
+  foreach my $pkg (@pkgs) {
+    $pkg->ensure_relocation if $pkg->relocation;
+  }
 }
 
 sub sections { @sections }
