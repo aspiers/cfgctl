@@ -15,6 +15,7 @@ $ENV{CVSROOT} = '/home/adam/.CVSROOT' if hostname() eq 'f5';
 my $cvsroot  = $ENV{CVSROOT};
 my $cvs_wd   = "$ENV{HOME}/.cvs";
 my $baz_root = "$ENV{HOME}/.baz";
+my $bzr_root = "$ENV{HOME}/.bzr";
 
 ## register_cvs_pkgs arguments:
 ##   1. Source repository label as defined above.
@@ -124,6 +125,11 @@ register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
     personal/pub/config/dev-tools/hg       hg.pub
     config/dev-tools/dup-files             dup-files
 EOF
+
+register new Cfg::Pkg::Bzr $bzr_root, 'dvc',
+  'http://bzr.xsteve.at/dvc/',
+# 'http://www-verimag.imag.fr/~moy/bzr/dvc/moy/',
+  'lib/emacs/major-modes/$DST';
 
 $ENV{PATH} = "/sbin:$ENV{PATH}";
 system("moosehall-connection-p 2>/dev/null");
