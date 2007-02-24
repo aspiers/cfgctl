@@ -34,8 +34,6 @@ $me should be overridden to return the arch executable e.g. tla or baz
 EOF
 }
 
-#use overload '""' => \&to_str;
-
 =head1 CONSTRUCTORS
 
 =head2 new($co_root, $archive, $revision, $dst, $relocate)
