@@ -79,6 +79,12 @@ sub process_queue {
     my $wd = $pkgs->[0]->_wd;
     chdir($wd) or die "chdir($wd) failed: $!\n";
 
+    my @modules = map $_->_src, @$pkgs;
+
+    if ($opts{'dry-run'} && $op eq 'checkout') {
+      debug(1, "cvs -d $cvsroot $op @modules\n");
+    }
+
     my @cmd = (
       'cvs',
       '-d', $cvsroot,
@@ -87,7 +93,6 @@ sub process_queue {
       $opts{'verbose'} > 3 ? '-t' : (),
       $op
     );
-    my @modules = map $_->_src, @$pkgs;
     debug(1, "@cmd @modules");
     open(XARGS, "|-", 'xargs', @cmd)
       or die "Couldn't open(| xargs @cmd): $!\n";
