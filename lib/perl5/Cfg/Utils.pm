@@ -83,7 +83,7 @@ system.
 sub preempt_conflict {
   my ($src, $dst) = @_;
 
-  debug(2, "preempting conflict between $src and $dst\n");
+  debug(2, "# Preempting conflict between $src and $dst\n");
 
   # Shorter, human-readable versions of source and destination
   (my $human_src = $src) =~ s!^$ENV{HOME}/!~/!;
@@ -109,7 +109,7 @@ sub preempt_conflict {
   if (! $dst_dev || ! $dst_ino) {
     if (-l $dst) {
       if ($opts{'remove-dangling'}) {
-        debug(3, "! Removing dangling symlink $dst\n");
+        debug(2, "# !   Removing dangling symlink $dst\n");
         if (for_real()) {
           unlink($dst) or die "unlink($dst) failed: $!\n";
         }
@@ -125,14 +125,14 @@ sub preempt_conflict {
   }
 
   if ($src_dev == $dst_dev and $src_ino == $dst_ino) {
-    debug(1, "$human_src and $human_dst are the same file; must be false conflict (see 6.3 Conflicts section of manual)\n");
+    debug(3, "#   $human_src and $human_dst are the same file; must be false conflict (see 6.3 Conflicts section of manual)\n");
     return;
   }
 
   if (compare($src, $dst) == 0) {
     # same file contents - remove target so that stow can put a
     # symlink there instead.
-    debug(2, "# $human_dst == $src; remove to make way for symlink\n");
+    debug(3, "#   $human_dst == $src; remove to make way for symlink\n");
 #     my $same_dir = File::Spec->join($tempdir, 'same');
 #     die $same_dir unless -d $same_dir;
     if (for_real()) {
@@ -151,14 +151,15 @@ sub preempt_conflict {
       my $suffix = "cfgsave.$host.$$." . time();
       rename $src, "$src.$suffix"
         or die "rename($src, $src.$suffix) failed: $!\n";
-      debug(2, "mv pristine $human_src => $human_src.$suffix\n");
+      debug(3, "#   mv pristine $human_src => $human_src.$suffix\n");
       rename $dst, $src
 	or die "rename($dst, $src) to preempt conflict failed: $!\n";
-      debug(2, "mv modified $human_dst => $human_src\n");
+      debug(3, "#   mv modified $human_dst => $human_src\n");
       #move_with_subpath($cfg{TARGET_DIR}, $modified_dir, $sub_dst);
     }
   }
 }
+
 sub debug {
   my $level = shift;
   warn @_ if $opts{verbose} >= $level;

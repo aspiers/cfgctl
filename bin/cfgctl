@@ -150,22 +150,20 @@ foreach my $section_and_pkgs ($queue->sections_and_pkgs) {
     my $description = $pkg->description;
     my $dst         = $pkg->dst;
 
-    debug(1, "$description\n");
-
     $pkg->ensure_install_symlink;
 
     if ($pkg->deprecated) {
-      debug(1, "#! deprecating: $description\n");
+      debug(1, "#! DEPRECATING: $description\n");
       $pkg->deprecate;
       return;
     }
 
     if ($opts{delete}) {
-      debug(1, "# deinstalling: $description\n");
+      debug(1, "# Deinstalling: $description\n");
       $pkg->deinstall;
     }
     else {
-      debug(1, "# installing: $description\n");
+      debug(1, "# Installing: $description\n");
       $pkg->install;
     }
   }
