@@ -153,9 +153,8 @@ sub ensure_src_local {
     sub {
       my $pkg = shift;
       if ($pkg->src_local) {
-        my $src = $pkg->_src;
-        my $wd = $pkg->_wd;
-        debug(2, "#   $src already present in $wd\n");
+        debug(2, "#   ", $pkg->description, " already present in ",
+              $pkg->src, "\n");
         return undef;
       }
       return 'fetch';
