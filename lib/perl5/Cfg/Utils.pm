@@ -23,7 +23,7 @@ our @EXPORT_OK = qw(debug
                     for_real
                     %opts %cfg);
 
-our %opts = ( verbose => 0 );
+our %opts = ( verbose => 1 );
 our %cfg;
 
 sub for_real { $opts{'dry-run'} ? 0 : 1 }
