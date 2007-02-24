@@ -24,7 +24,7 @@ Options [defaults in square brackets]:
   -t, --target=TARGET-DIR    Change target directory [$cfg{TARGET_DIR}]
   -m, --map=MAP-FILE         Change config map file [$cfg{MAP_FILE}]
 
-  -v, --verbose              Increase verbosity
+  -v, --verbose[=N]          Increase [specify] verbosity
   -r, --remove-dangling      If conflicts with dangling symlinks
                              are found, delete them.
   -T, --thorough             Don't prune subdirectories not in packages.
@@ -98,7 +98,7 @@ Options [defaults in square brackets]:
   -t, --target=TARGET-DIR    Change target directory [$cfg{TARGET_DIR}]
   -m, --map=MAP-FILE         Change config map file [$cfg{MAP_FILE}]
 
-  -v, --verbose              Increase verbosity
+  -v, --verbose[=N]          Increase [specify] verbosity
   -r, --remove-dangling      If conflicts with dangling symlinks
                              are found, delete them.
   -T, --thorough             Don't prune subdirectories not in packages.
