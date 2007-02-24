@@ -8,17 +8,23 @@ cfgctl - configuration file controller
 
     $ cfgctl [options] [pkg [pkg...]]
 
-Installs the listed config packages, or all if none are specified.
+By default, installs the listed config packages, or all if none are
+specified.
 
 Options [defaults in square brackets]:
 
-  -n, --dry-run              Don't touch the disk
-  -d, --debug                Debug
-  -p, --pkg-dir=DIR          Change source package directory [$cfg{PKG_DIR}]
-  -t, --target=TARGET-DIR    Change target directory [$TARGET_DIR]
-  -m, --map=MAP-FILE         Change config map file [$cfg{MAP_FILE}]
+  -u, --update               Update or fetch the chosen packages, then install
   -D, --delete               Delete the chosen packages, not install
-  -u, --update               Update or fetch the chosen packages
+  -n, --dry-run              Don't touch the disk
+
+  -s, --sources              Only list source packages
+  -d, --destinations         Only list destination packages
+
+  -p, --pkg-dir=DIR          Change source package directory [$cfg{PKG_DIR}]
+  -t, --target=TARGET-DIR    Change target directory [$cfg{TARGET_DIR}]
+  -m, --map=MAP-FILE         Change config map file [$cfg{MAP_FILE}]
+
+  -v, --verbose              Increase verbosity
   -r, --remove-dangling      If conflicts with dangling symlinks
                              are found, delete them.
   -T, --thorough             Don't prune subdirectories not in packages.
@@ -79,17 +85,25 @@ $RealScript [options] [pkg [pkg...]]
 Installs the listed config packages, or all if none are specified.
 
 Options [defaults in square brackets]:
+
+  -u, --update               Update or fetch the chosen packages, then install
+  -D, --delete               Delete the chosen packages, not install
+  -n, --dry-run              Don't touch the disk
+
   -s, --sources              Only list source packages
   -d, --destinations         Only list destination packages
-  -n, --dry-run              Don't touch the disk
-  -v, --verbose              Increase verbosity
-  -p, --pkg-dir=DIR          Change source package [$cfg{PKG_DIR}]
+
+  -p, --pkg-dir=DIR          Change source package directory [$cfg{PKG_DIR}]
   -t, --target=TARGET-DIR    Change target directory [$cfg{TARGET_DIR}]
   -m, --map=MAP-FILE         Change config map file [$cfg{MAP_FILE}]
-  -u, --update               Update the chosen packages, then install
-  -D, --delete               Delete the chosen packages, not install
+
+  -v, --verbose              Increase verbosity
   -r, --remove-dangling      If conflicts with dangling symlinks
                              are found, delete them.
+  -T, --thorough             Don't prune subdirectories not in packages.
+                             This may leave symlinks pointing to old
+                             dirs which used to be in packages, but is
+                             a lot slower.
 EOUSAGE
 }
 
