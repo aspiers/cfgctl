@@ -122,6 +122,7 @@ if ($opts{sources} || $opts{destinations}) {
 my $queue = Cfg->get_pkg_queue;
 if ($opts{update}) {
   Cfg->update($queue->pkgs);
+  exit 0 if $opts{'dry-run'};
 }
 else {
   Cfg->ensure_src_local($queue->pkgs);
