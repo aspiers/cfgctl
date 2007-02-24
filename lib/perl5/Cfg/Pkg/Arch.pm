@@ -138,6 +138,7 @@ sub _co_to {
   return File::Spec->join($self->archive_path, $self->revision);
 }
 
+# e.g. ~/.baz-relocations/mwolson@gnu.org--2006/muse--main--1.0
 sub src {
   my $self = shift;
   return $self->_co_to unless $self->relocation;
