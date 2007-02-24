@@ -115,7 +115,8 @@ sub ensure_relocation {
   my $self = shift;
 
   my $relocation_prefix = $self->relocation_path;
-  
+  debug(1, "# Relocating ", $self->dst, " to .../$relocation_prefix\n");
+
   if (-d $relocation_prefix) {
     debug(2, "relocation_prefix $relocation_prefix already exists\n");
   }

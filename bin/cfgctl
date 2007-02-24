@@ -145,28 +145,28 @@ else {
 
 foreach my $section_and_pkgs ($queue->sections_and_pkgs) {
   my ($section, $pkgs) = @$section_and_pkgs;
-  print "#@ ", $section->to_string, "\n";
+  debug(1, "#>>> ", $section->to_string, "\n"); 
   foreach my $pkg (@$pkgs) {
     my $description = $pkg->description;
     my $dst         = $pkg->dst;
 
-    print "$description\n";
+    debug(1, "$description\n");
 
     $pkg->ensure_install_symlink;
 
     if ($pkg->deprecated) {
-      print "#! deprecating: $description\n";
+      debug(1, "#! deprecating: $description\n");
       $pkg->deprecate;
       return;
     }
 
     if ($opts{delete}) {
+      debug(1, "# deinstalling: $description\n");
       $pkg->deinstall;
-      print "# de-installed: $description\n";
     }
     else {
+      debug(1, "# installing: $description\n");
       $pkg->install;
-      print "# installed: $description\n";
     }
   }
 }

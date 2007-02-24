@@ -145,7 +145,7 @@ sub preempt_conflict {
     # can put a symlink there instead whilst still preserving
     # local changes
 #     my $modified_dir = File::Spec->join($tempdir, 'modified');
-    print "M $human_dst\n";
+    debug(1, "M $human_dst\n");
     if (for_real()) {
       my $host = hostname() || die "Couldn't get hostname";
       my $suffix = "cfgsave.$host.$$." . time();

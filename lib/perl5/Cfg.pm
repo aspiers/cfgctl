@@ -62,7 +62,7 @@ sub do_registration {
 
 sub list_pkgs {
   foreach my $section (@sections) {
-    print "#@ ", $section->to_string, "\n";
+    debug(1, "#>>> ", $section->to_string, "\n"); 
     foreach my $pkg ($section->pkgs) {
       if ($opts{sources})  {
         print $pkg->src, "\n";
@@ -135,7 +135,7 @@ sub update {
   my $class = shift;
   my @pkgs = @_;
 
-  debug(1, "# batch update");
+  debug(1, "# Batch update");
   $class->_batch_get(
     sub {
       my $pkg = shift;
@@ -182,7 +182,7 @@ sub _batch_get {
   while (my ($mode, $class_queue) = each %class_queues) {
     my $method = "process_${mode}_queue";
     foreach my $class (keys %$class_queue) {
-      debug(2, "#   Batch fetch for $class\n");
+      debug(2, "#   Processing $mode queue in batch for $class\n");
       $class->$method;
     }
   }
