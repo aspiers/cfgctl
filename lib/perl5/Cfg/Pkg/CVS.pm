@@ -100,7 +100,7 @@ sub process_queue {
 
 sub src_local {
   my $self = shift;
-  return -d $self->_wd;
+  return -d $self->src;
 }
 
 sub install {
