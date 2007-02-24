@@ -31,6 +31,7 @@ Options [defaults in square brackets]:
                              This may leave symlinks pointing to old
                              dirs which used to be in packages, but is
                              a lot slower.
+
 =cut
 
 # Now we define some sensible default settings for the top-level
