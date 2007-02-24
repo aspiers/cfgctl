@@ -76,7 +76,7 @@ sub new {
     archive  => $archive,  # e.g. mwolson@gnu.org--2006
     revision => $revision, # e.g. muse--main--1.0
     dst      => $dst,      # e.g. muse (stow package name)
-    relocate => $relocate, # e.g. lib/emacs/major-modes
+    relocate => $relocate, # e.g. lib/emacs/major-modes/muse
   }, $class;
 }
 
