@@ -47,6 +47,10 @@ sub new {
   my $self = shift;
   my $class = ref($self) || $self;
   my ($co_root, $archive, $revision, $dst, $relocate) = @_;
+
+  $relocate =~ s/\$DST/$dst/g;
+  $relocate =~ s/\$REV/$revision/g;
+
   return bless {
     co_root  => $co_root,  # e.g. ~/.baz
     archive  => $archive,  # e.g. mwolson@gnu.org--2006
