@@ -16,9 +16,11 @@ use warnings;
 use Carp qw(carp cluck croak confess);
 use File::Path;
 
-use Cfg::Utils qw(debug);
+use Cfg::Utils qw(debug %opts);
 
 use base qw(Cfg::Pkg::Relocatable Cfg::Pkg::Base);
+
+my %queues;
 
 sub ARCH_CMD {
   my $self = shift;
@@ -59,36 +61,51 @@ sub src_local {
   return -d $self->_co_to;
 }
 
-sub ensure_src_local {
+sub enqueue_op {
   my $self = shift;
-
-  $self->maybe_check_out;
-  $self->ensure_relocation if $self->relocation;
+  my ($op) = @_;
+  die unless $op eq 'update' or $op eq 'fetch';
+  push @{ $queues{$op}{$self->archive} }, $self;
 }
 
-sub maybe_check_out {
+sub process_queue {
   my $self = shift;
+  my ($op) = @_;
+  die unless $op eq 'update' or $op eq 'fetch';
+  $op = 'get' if $op eq 'fetch';
 
-  my $archive      = $self->archive;
-  my $revision     = $self->revision;
-  my $archrev      = "$archive/$revision";
-  my $archive_path = $self->archive_path;
+  my $ARCH_CMD = $self->ARCH_CMD;
 
-  my $co_to = $self->_co_to;
-  if (-d $co_to) {
-    debug("# $archrev already checked out in $co_to\n");
-    return;
+  foreach my $archive (keys %{ $queues{$op} }) {
+    my $pkgs = $queues{$op}{$archive};
+    foreach my $pkg (@$pkgs) {
+      my $archive      = $pkg->archive;
+      my $revision     = $pkg->revision;
+      my $archrev      = "$archive/$revision";
+      my $archive_path = $pkg->archive_path;
+      if (! -d $archive_path && ! $opts{'dry-run'}) {
+        mkpath($archive_path) or die "mkpath($archive_path) failed: $!\n";
+      }
+
+      my @cmd;
+      if ($op eq 'fetch') {
+        @cmd = ( $ARCH_CMD, 'get', '-A', $archive, $revision, $pkg->_co_to );
+        print "$ARCH_CMD get $revision to $archive_path ...\n";
+      }
+      elsif ($op eq 'update') {
+        die "arch update TODO";
+      }
+      else {
+        die "unknown op $op";
+      }
+
+      system @cmd;
+      my $exit = $? >> 8;
+      die "command @cmd failed; aborting!\n" if $exit != 0;
+
+      $pkg->ensure_relocation if $op eq 'fetch' and $pkg->relocation;
+    }
   }
-
-  if (! -d $archive_path) {
-    mkpath($archive_path) or die "mkpath($archive_path) failed: $!\n";
-  }
-  
-  print "Checking out $revision in $archive_path ...\n";
-  my @cmd = ( $self->ARCH_CMD, 'get', '-A', $archive, $revision, $co_to );
-  system @cmd;
-  my $exit = $? >> 8;
-  die "command @cmd failed; aborting!\n" if $exit != 0;
 }
 
 sub to_string {
