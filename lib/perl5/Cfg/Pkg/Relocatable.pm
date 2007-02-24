@@ -114,19 +114,24 @@ EOF
 sub ensure_relocation {
   my $self = shift;
 
-  my $relocation_prefix = $self->relocation_path;
-  debug(1, "# Relocating ", $self->description, " to .../", $self->relocation, "\n");
+  my $path = $self->relocation_path;
+  debug(1, "# Relocating ", $self->description, " to .../",
+           $self->relocation, "\n");
 
-  if (-d $relocation_prefix) {
-    debug(2, "relocation_prefix $relocation_prefix already exists\n");
+  my @dirs = File::Spec->splitdir($path);
+  my $symlink = pop @dirs;
+  my $container_dir = File::Spec->join(@dirs);
+
+  if (-d $container_dir) {
+    debug(2, "#   relocation_prefix $path already exists\n");
   }
   else {
-    mkpath($relocation_prefix);
-    debug(2, "created relocation_prefix $relocation_prefix\n");
+    mkpath($container_dir);
+    debug(2, "#   created $container_dir\n");
   }
   
   ensure_correct_symlink(
-    symlink => File::Spec->join($self->relocation_path, $self->dst),
+    symlink => $path,
     required_target => $self->_co_to,
   );
 }
