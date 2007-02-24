@@ -35,7 +35,7 @@ sub deprecate {
   my $self = shift;
   my $description = $self->description;
   my $dst = $self->dst;
-  debug(1, "$description is deprecated; checking not installed ...\n");
+  debug(1, "$description is deprecated; checking not installed ...");
   system $cfg{STOW},
       '-c',            # Dummy run, checking for conflicts.  If we're
                        # not using the deprecated package, there won't
@@ -128,7 +128,7 @@ sub deinstall {
     '-d', $cfg{PKG_DIR},
     $dst
   );
-  debug(3, "delete: $cfg{STOW} @args\n");
+  debug(3, "delete: $cfg{STOW} @args");
   system $cfg{STOW}, @args;
   my $exit = $? >> 8;
   warn "$cfg{STOW} -c failed; aborting!\n" if $exit != 0;
@@ -142,7 +142,7 @@ sub install {
   $stow_args = "-p $stow_args"   if ! $opts{thorough};
   my $cmd       = "$cfg{STOW} -c -R $stow_args";
   (my $human_cmd = $cmd) =~ s!\b$ENV{HOME}/!~/!g;
-  debug(3, "preempt: $cmd\n");
+  debug(3, "preempt: $cmd");
   open(STOW, "$cmd 2>&1 |") or die "open($human_cmd|) failed: $!\n";
   while (<STOW>) {
     if (/^CONFLICT: (.+) vs. (.+?)( \(.*?\))?$/) {
@@ -159,7 +159,7 @@ sub install {
   # Should have preempted all conflicts now; run for real.
   $cmd = "$cfg{STOW} -R $stow_args";
   ($human_cmd = $cmd) =~ s!(^|\s)$ENV{HOME}/!$1~/!g;
-  debug(3, "post-preempt: $human_cmd\n");
+  debug(3, "post-preempt: $human_cmd");
   if (for_real()) {
     system $cmd;
     my $exit = $? >> 8;
@@ -168,7 +168,7 @@ sub install {
 
   my $post_hook = File::Spec->join($cfg{TARGET_DIR}, '.cfg-post.d', $dst);
   if (-x $post_hook) {
-    debug(1, "# Running $post_hook ...\n");
+    debug(1, "# Running $post_hook ...");
     my $pkg_dir = File::Spec->join($cfg{PKG_DIR}, $dst);
     chdir($pkg_dir) or die "chdir($pkg_dir) failed: $!\n";
     system $post_hook;

@@ -52,7 +52,7 @@ sub new {
   unless ($class->archive_valid($archive)) {
     my $ARCH_CMD = $class->ARCH_CMD;
     my $reason = "$ARCH_CMD archive $archive not found";
-    debug(0, "# ! Disabling $dst - $reason\n");
+    debug(0, "# ! Disabling $dst - $reason");
     return Cfg::Pkg::Disabled->new(
       $dst, __PACKAGE__, $dst, $reason,
     );
@@ -98,7 +98,7 @@ sub process_queue {
   my $ARCH_CMD = $class->ARCH_CMD;
 
   foreach my $archive (keys %{ $queues{$op} }) {
-    debug(2, "#   Archive $archive in ${class}'s $op queue\n");
+    debug(2, "#   Archive $archive in ${class}'s $op queue");
     my $pkgs = $queues{$op}{$archive};
     foreach my $pkg (@$pkgs) {
       my $archive      = $pkg->archive;
@@ -112,7 +112,7 @@ sub process_queue {
       my @cmd;
       if ($op eq 'fetch') {
         @cmd = ( $ARCH_CMD, 'get', $archrev, $pkg->_co_to );
-        debug(1, "$ARCH_CMD get $revision to $archive_path ...\n");
+        debug(1, "$ARCH_CMD get $revision to $archive_path ...");
       }
       elsif ($op eq 'update') {
         die "arch update TODO";

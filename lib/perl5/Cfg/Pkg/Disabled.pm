@@ -54,7 +54,7 @@ sub ensure_install_symlink { }
 sub enqueue_op {
   my $self = shift;
   my ($op) = @_;
-  debug(1, sprintf "# ! Will not $op disabled %s (%s)\n",
+  debug(1, sprintf "# ! Will not $op disabled %s (%s)",
                    $self->description, $self->reason);
 }
 
@@ -62,12 +62,12 @@ sub process_queue { }
 
 sub deinstall {
   my $self = shift;
-  debug(0, "# ! Cannot deinstall disabled package ", $self->description, "\n");
+  debug(0, "# ! Cannot deinstall disabled package ", $self->description);
 }
 
 sub install {
   my $self = shift;
-  debug(0, "# ! Cannot install disabled package ", $self->description, "\n");
+  debug(0, "# ! Cannot install disabled package ", $self->description);
 }
 
 sub description { shift->{description} }

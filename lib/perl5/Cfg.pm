@@ -63,7 +63,7 @@ sub do_registration {
 
 sub list_pkgs {
   foreach my $section (@sections) {
-    debug(1, "#>>> ", $section->to_string, "\n"); 
+    debug(1, "#>>> ", $section->to_string); 
     foreach my $pkg ($section->pkgs) {
       next if $pkg->disabled;
       if ($opts{sources})  {
@@ -80,7 +80,7 @@ sub list_pkgs {
 }
 
 sub expand_aliases {
-  debug(2, "# Expanding aliases\n");
+  debug(2, "# Expanding aliases");
   my @result = ();
   foreach my $elt (@_) {
     if (my $expansion = $aliases{$elt}) {
@@ -94,7 +94,7 @@ sub expand_aliases {
 }
 
 sub get_pkg_queue {
-  debug(2, "# Getting package queue\n");
+  debug(2, "# Getting package queue");
 
   my %filter = map { $_ => 1 } expand_aliases(@ARGV);
   my $do_filter = @ARGV;
@@ -108,7 +108,7 @@ sub get_pkg_queue {
       my $dst = $pkg->dst;
       die unless $dst;
       if ($do_filter and ! $filter{$dst}) {
-        debug(4, "#     skipping $dst - not on command-line pkg list\n");
+        debug(4, "#     skipping $dst - not on command-line pkg list");
         next;
       }
 
@@ -150,13 +150,13 @@ sub update {
 sub ensure_src_local {
   my $class = shift;
   my @pkgs = @_;
-  debug(1, "# Batch fetch\n");
+  debug(1, "# Batch fetch");
   $class->_batch_get(
     sub {
       my $pkg = shift;
       if ($pkg->src_local) {
         debug(2, "#   ", $pkg->description, " already present in ",
-              $pkg->src, "\n");
+              $pkg->src);
         return undef;
       }
       return 'fetch';
@@ -176,14 +176,14 @@ sub _batch_get {
     next unless $mode;
     $class_queues{$mode}{ref($pkg)}++;
     my $method = "enqueue_$mode";
-    debug(2, "#   Enqueueing ", $pkg->description, " for $mode\n");
+    debug(2, "#   Enqueueing ", $pkg->description, " for $mode");
     $pkg->$method;
   }
 
   while (my ($mode, $class_queue) = each %class_queues) {
     my $method = "process_${mode}_queue";
     foreach my $class (keys %$class_queue) {
-      debug(2, "#   Processing $mode queue in batch for $class\n");
+      debug(2, "#   Processing $mode queue in batch for $class");
       $class->$method;
     }
   }

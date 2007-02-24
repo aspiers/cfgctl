@@ -116,18 +116,18 @@ sub ensure_relocation {
 
   my $path = $self->relocation_path;
   debug(1, "# Relocating ", $self->description, " to .../",
-           $self->relocation, "\n");
+           $self->relocation);
 
   my @dirs = File::Spec->splitdir($path);
   my $symlink = pop @dirs;
   my $container_dir = File::Spec->join(@dirs);
 
   if (-d $container_dir) {
-    debug(2, "#   relocation_prefix $path already exists\n");
+    debug(2, "#   relocation_prefix $path already exists");
   }
   else {
     mkpath($container_dir);
-    debug(2, "#   created $container_dir\n");
+    debug(2, "#   created $container_dir");
   }
   
   ensure_correct_symlink(

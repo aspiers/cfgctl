@@ -71,7 +71,7 @@ sub process_queue {
   die unless $op eq 'update' or $op eq 'fetch';
   $op = 'checkout' if $op eq 'fetch';
 
-  debug(1, "# Processing CVS ${op}s...\n");
+  debug(1, "# Processing CVS ${op}s...");
 
   foreach my $cvsroot (keys %{ $queues{$op} }) {
     my $pkgs = $queues{$op}{$cvsroot};
@@ -88,7 +88,7 @@ sub process_queue {
       $op
     );
     my @modules = map $_->_src, @$pkgs;
-    debug(1, "@cmd @modules\n");
+    debug(1, "@cmd @modules");
     open(XARGS, "|-", 'xargs', @cmd)
       or die "Couldn't open(| xargs @cmd): $!\n";
     print XARGS "$_\n" foreach @modules;
@@ -111,7 +111,7 @@ sub install {
       'chmod', 'go-rwx', '-R',
       File::Spec->join($self->_wd, $1),
     );
-    debug(1, "@chmod\n");
+    debug(1, "@chmod");
     system @chmod;
     my $exit = $? >> 8;
     warn "Warning: chmod failed\n" if $exit != 0;
