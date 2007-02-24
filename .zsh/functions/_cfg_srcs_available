@@ -1,6 +1,6 @@
 #autoload
 
-_cfg_srcs_available=( $( cfgctl -s ) )
+_cfg_srcs_available=( $( cfgctl -s 2>&1 | grep -v '^#' ) )
 
 local expl
 _description cfg_srcs expl 'config package sources available'

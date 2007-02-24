@@ -1,6 +1,6 @@
 #compdef cfgctl rcup rct rcq
 
-_cfg_dsts_available=( $( cfgctl -d | grep -v '^#' ) )
+_cfg_dsts_available=( $( cfgctl -d 2>&1 | grep -v '^#' ) )
 
 local expl
 _description cfg_dsts expl 'config package destinations available'
