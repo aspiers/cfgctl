@@ -166,7 +166,8 @@ sub _co_to {
   return File::Spec->join($self->archive_path, $self->revision);
 }
 
-# e.g. ~/.baz-relocations/mwolson@gnu.org--2006/muse--main--1.0
+# e.g. ~/.baz/mwolson@gnu.org--2006/muse--main--1.0
+#   or ~/.baz-relocations/mwolson@gnu.org--2006/muse--main--1.0
 sub src {
   my $self = shift;
   return $self->_co_to unless $self->relocation;
@@ -176,7 +177,7 @@ sub src {
   );
 }
 
-# e.g. ~/.baz-relocations/mwolson@gnu.org--2006/muse--main--1.0/lib/emacs/major-modes (note dst 'muse' is missing off the end)
+# e.g. ~/.baz-relocations/mwolson@gnu.org--2006/muse--main--1.0/lib/emacs/major-modes/muse
 sub relocation_path {
   my $self = shift;
   
