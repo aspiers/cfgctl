@@ -1,5 +1,5 @@
 #!/bin/bash
 
 cfgctl -un "$@" 2>&1 \
-  | egrep -v -- '-- ignored|^\? ' \
+  | grep -v -- '-- ignored' \
   | tty-colour-cvs
