@@ -94,7 +94,13 @@ sub process_queue {
       debug(1, "$BZR_CMD get $url to $co_to ...");
     }
     elsif ($op eq 'update') {
-      die "bzr update TODO";
+      chdir($co_to) or die "chdir($co_to) failed: $!\n";
+      if ($opts{'dry-run'}) {
+        @cmd = ( $BZR_CMD, 'missing', $url );
+      }
+      else {
+        @cmd = ( $BZR_CMD, 'merge', $url );
+      }
     }
     else {
       die "unknown op $op";
