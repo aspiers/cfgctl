@@ -1,0 +1,8 @@
+#!/bin/sh
+
+CFG=$HOME/.cfg
+CVS=$HOME/.cvs
+TLA=$HOME/.tla
+TLAR=$HOME/.tla-relocations
+BAZ=$HOME/.baz
+BAZR=$HOME/.baz-relocations
