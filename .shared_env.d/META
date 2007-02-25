@@ -3,8 +3,8 @@
 CFG=$HOME/.cfg
 CVS=$HOME/.cvs
 CONF=$CVS/config
-PUB=$CVS/personal/pub/config
-SEC=$CVS/personal/sec/config
+CPUB=$CVS/personal/pub/config
+CSEC=$CVS/personal/sec/config
 TLA=$HOME/.tla
 TLAR=$HOME/.tla-relocations
 BAZ=$HOME/.baz
