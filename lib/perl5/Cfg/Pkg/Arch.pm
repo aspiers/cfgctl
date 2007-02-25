@@ -36,7 +36,7 @@ EOF
 
 =head1 CONSTRUCTORS
 
-=head2 new($co_root, $archive, $revision, $dst, $relocate)
+=head2 new($co_root, $dst, $archive, $revision, $relocate)
 
 C<$revision> could be C<CATEGORY--BRANCH--VERSION> or
 C<CATEGORY--BRANCH--VERSION--REVISION>.
