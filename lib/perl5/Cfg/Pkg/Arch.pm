@@ -118,6 +118,7 @@ sub process_queue {
       my $revision     = $pkg->revision;
       my $archrev      = "$archive/$revision";
       my $archive_path = $pkg->archive_path;
+      my $co_to        = $pkg->_co_to;
       if (! -d $archive_path && ! $opts{'dry-run'}) {
         mkpath($archive_path) or die "mkpath($archive_path) failed: $!\n";
       }
@@ -128,7 +129,13 @@ sub process_queue {
         debug(1, "$ARCH_CMD get $revision to $archive_path ...");
       }
       elsif ($op eq 'update') {
-        die "arch update TODO";
+        chdir($co_to) or die "chdir($co_to) failed: $!\n";
+        if ($opts{'dry-run'}) {
+          @cmd = ( $ARCH_CMD, 'missing', $archrev );
+        }
+        else {
+          @cmd = ( $ARCH_CMD, 'merge', $archrev );
+        }
       }
       else {
         die "unknown op $op";
