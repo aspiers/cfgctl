@@ -1,4 +1,4 @@
-#autoload
+#compdef rcd
 
 local expl
 _description cfg_dsts expl 'config package destinations installed'
