@@ -24,11 +24,11 @@ Options [defaults in square brackets]:
   -v, --verbose[=N]          Increase [specify] verbosity
 
   -p, --pkg-dir=DIR          Change source package directory [$cfg{PKG_DIR}]
-  -t, --target=TARGET-DIR    Change target directory [$cfg{TARGET_DIR}]
+  -T, --target=TARGET-DIR    Change target directory [$cfg{TARGET_DIR}]
   -m, --map=MAP-FILE         Change config map file [$cfg{MAP_FILE}]
   -r, --remove-dangling      If conflicts with dangling symlinks
                              are found, delete them.
-  -T, --thorough             Don't prune subdirectories not in packages.
+      --thorough             Don't prune subdirectories not in packages.
                              This may leave symlinks pointing to old
                              dirs which used to be in packages, but is
                              a lot slower.
@@ -73,8 +73,8 @@ GetOptions(
   'install|i', 'freshen|F', 'update|U', 'erase|e',
   'sources|s', 'destinations|d',
   'test|t', 'verbose|v:+',
-  'pkg-dir|p=s', 'target|t=s', 'map|m=s',
-  'remove-dangling|r', 'thorough|T',
+  'pkg-dir|p=s', 'target|T=s', 'map|m=s',
+  'remove-dangling|r', 'thorough',
 )
   or usage();
 
@@ -101,11 +101,11 @@ Options [defaults in square brackets]:
   -v, --verbose[=N]          Increase [specify] verbosity
 
   -p, --pkg-dir=DIR          Change source package directory [$cfg{PKG_DIR}]
-  -t, --target=TARGET-DIR    Change target directory [$cfg{TARGET_DIR}]
+  -T, --target=TARGET-DIR    Change target directory [$cfg{TARGET_DIR}]
   -m, --map=MAP-FILE         Change config map file [$cfg{MAP_FILE}]
   -r, --remove-dangling      If conflicts with dangling symlinks
                              are found, delete them.
-  -T, --thorough             Don't prune subdirectories not in packages.
+      --thorough             Don't prune subdirectories not in packages.
                              This may leave symlinks pointing to old
                              dirs which used to be in packages, but is
                              a lot slower.
