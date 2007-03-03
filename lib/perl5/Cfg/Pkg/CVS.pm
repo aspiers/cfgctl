@@ -81,7 +81,7 @@ sub process_queue {
 
     my @modules = map $_->_src, @$pkgs;
 
-    if ($opts{'dry-run'} && $op eq 'checkout') {
+    if ($opts{'test'} && $op eq 'checkout') {
       debug(1, "cvs -d $cvsroot $op @modules\n");
     }
 
@@ -89,7 +89,7 @@ sub process_queue {
       'cvs',
       '-d', $cvsroot,
       $op eq 'update' ? '-q' : (),
-      $opts{'dry-run'} ? '-n' : (),
+      $opts{'test'} ? '-n' : (),
       $opts{'verbose'} > 3 ? '-t' : (),
       $op
     );

@@ -23,10 +23,18 @@ our @EXPORT_OK = qw(debug
                     for_real
                     %opts %cfg);
 
-our %opts = ( verbose => 1 );
+our %opts = (
+  verbose      => 1,
+  install      => 0,
+  freshen      => 0,
+  update       => 0,
+  erase        => 0,
+  sources      => 0,
+  destinations => 0,
+);
 our %cfg;
 
-sub for_real { $opts{'dry-run'} ? 0 : 1 }
+sub for_real { $opts{'test'} ? 0 : 1 }
 
 sub ensure_correct_symlink {
   my %p = @_;

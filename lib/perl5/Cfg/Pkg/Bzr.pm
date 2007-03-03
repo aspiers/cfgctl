@@ -95,7 +95,7 @@ sub process_queue {
     }
     elsif ($op eq 'update') {
       chdir($co_to) or die "chdir($co_to) failed: $!\n";
-      if ($opts{'dry-run'}) {
+      if ($opts{'test'}) {
         @cmd = ( $BZR_CMD, 'missing', $url );
       }
       else {

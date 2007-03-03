@@ -13,18 +13,19 @@ specified.
 
 Options [defaults in square brackets]:
 
-  -u, --update               Update or fetch the chosen packages, then install
-  -D, --delete               Delete the chosen packages, not install
-  -n, --dry-run              Don't touch the disk
+  -i, --install              Fetch the chosen packages, then install
+  -U, --update               Update or fetch the chosen packages, then re-install
+  -e, --erase                De-install the chosen packages
 
   -s, --sources              Only list source packages
   -d, --destinations         Only list destination packages
 
+  -t, --test                 Dry run, don't touch the disk
+  -v, --verbose[=N]          Increase [specify] verbosity
+
   -p, --pkg-dir=DIR          Change source package directory [$cfg{PKG_DIR}]
   -t, --target=TARGET-DIR    Change target directory [$cfg{TARGET_DIR}]
   -m, --map=MAP-FILE         Change config map file [$cfg{MAP_FILE}]
-
-  -v, --verbose[=N]          Increase [specify] verbosity
   -r, --remove-dangling      If conflicts with dangling symlinks
                              are found, delete them.
   -T, --thorough             Don't prune subdirectories not in packages.
@@ -69,9 +70,11 @@ use Cfg::Utils qw(debug %opts %cfg);
 Getopt::Long::Configure('no_ignore_case', 'bundling');
 GetOptions(
   \%opts,
-  'dry-run|n', 'sources|s', 'destinations|d', 'verbose|v:+',
+  'install|i', 'freshen|F', 'update|U', 'erase|e',
+  'sources|s', 'destinations|d',
+  'test|t', 'verbose|v:+',
   'pkg-dir|p=s', 'target|t=s', 'map|m=s',
-  'update|u', 'delete|D', 'remove-dangling|r', 'thorough|T',
+  'remove-dangling|r', 'thorough|T',
 )
   or usage();
 
@@ -83,22 +86,23 @@ sub usage {
   die <<EOUSAGE;
 $RealScript [options] [pkg [pkg...]]
 
-Installs the listed config packages, or all if none are specified.
+By default, installs the listed config packages, or all if none are
+specified.
 
 Options [defaults in square brackets]:
-
-  -u, --update               Update or fetch the chosen packages, then install
-  -D, --delete               Delete the chosen packages, not install
-  -n, --dry-run              Don't touch the disk
+  -i, --install              Fetch the chosen packages, then install
+  -U, --update               Update or fetch the chosen packages, then re-install
+  -e, --erase                De-install the chosen packages
 
   -s, --sources              Only list source packages
   -d, --destinations         Only list destination packages
 
+  -t, --test                 Dry run, don't touch the disk
+  -v, --verbose[=N]          Increase [specify] verbosity
+
   -p, --pkg-dir=DIR          Change source package directory [$cfg{PKG_DIR}]
   -t, --target=TARGET-DIR    Change target directory [$cfg{TARGET_DIR}]
   -m, --map=MAP-FILE         Change config map file [$cfg{MAP_FILE}]
-
-  -v, --verbose[=N]          Increase [specify] verbosity
   -r, --remove-dangling      If conflicts with dangling symlinks
                              are found, delete them.
   -T, --thorough             Don't prune subdirectories not in packages.
@@ -127,6 +131,14 @@ else {
   mkdir $cfg{PKG_DIR} or die "mkdir($cfg{PKG_DIR}) failed: $!\n";
 }
 
+my $total = $opts{sources} + $opts{destinations} + $opts{update} + $opts{erase};
+if ($total == 0) {
+  $opts{install}++;
+}
+elsif ($total > 1) {
+  usage("Only one of -i/-U/-e/-s/-d can be specified.\n");
+}
+
 Cfg->do_registration();
 
 if ($opts{sources} || $opts{destinations}) {
@@ -141,8 +153,11 @@ if ($opts{update}) {
   Cfg->update($queue->pkgs);
   exit 0 if $opts{'dry-run'};
 }
-else {
+elsif ($opts{install} || $opts{erase}) {
   Cfg->ensure_src_local($queue->pkgs);
+}
+else {
+  die "BUG";
 }
 
 foreach my $section_and_pkgs ($queue->sections_and_pkgs) {
@@ -160,7 +175,7 @@ foreach my $section_and_pkgs ($queue->sections_and_pkgs) {
       return;
     }
 
-    if ($opts{delete}) {
+    if ($opts{erase}) {
       debug(1, "# Deinstalling: $description");
       $pkg->deinstall;
     }

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cfgctl -u "$@" 2>&1 \
+cfgctl -U "$@" 2>&1 \
   | egrep -v -- '-- ignored|^\? ' \
   | tty-colour-cvs
 
