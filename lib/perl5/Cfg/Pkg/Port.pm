@@ -55,19 +55,24 @@ sub new {
     relocate => $relocate, # e.g. local
   }, $class;
 
-  # Ugh, but CBA to optimize.
-  foreach my $var (qw{ports port status build install}) {
-    my $dir = `make -f $cfg{PORTS_CONF} show-${var}-dir PORTNAME=$port`;
-    chomp $dir;
-    unless (-d $dir) {
-      my $reason = "$var dir not found for port $port";
-      debug(0, "# ! Disabling $dst - $reason");
-      return Cfg::Pkg::Disabled->new(
-        $dst, __PACKAGE__, $dst, $reason,
-      );
+  my $cmd = "make -f $cfg{PORTS_CONF} show-conf PORTNAME=$port";
+  my $conf = `$cmd`;
+  foreach my $type (qw{ports port status build install}) {
+    my $var = "\U${type}\E_DIR";
+    if ($conf =~ /^$var=(.+)/m) {
+      $new->{"${type}_dir"} = $1;
     }
+    else {
+      die "$var not found in output of \`$cmd\`:\n$conf";
+    }
+  }
 
-    $new->{"${var}_dir"} = $dir;
+  unless (-d $new->{port_dir}) {
+    my $reason = "port dir not found for port $port";
+    debug(0, "# ! Disabling $dst - $reason");
+    return Cfg::Pkg::Disabled->new(
+      $dst, __PACKAGE__, $dst, $reason,
+    );
   }
 
   return $new;
