@@ -45,7 +45,7 @@ sub new {
     );
   }
 
-  $relocate =~ s/\$DST/$dst/g;
+  $relocate =~ s/\$DST/$dst/g if $relocate;
 
   return bless {
     co_root  => $co_root,  # e.g. ~/.bzr

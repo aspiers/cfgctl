@@ -66,8 +66,10 @@ sub new {
     );
   }
 
-  $relocate =~ s/\$DST/$dst/g;
-  $relocate =~ s/\$REV/$revision/g;
+  if ($relocate) {
+    $relocate =~ s/\$DST/$dst/g;
+    $relocate =~ s/\$REV/$revision/g;
+  }
 
   return bless {
     co_root  => $co_root,  # e.g. ~/.baz

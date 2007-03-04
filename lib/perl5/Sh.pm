@@ -255,7 +255,7 @@ sub _find_common_tail_elements {
 
 sub glob_to_re {
   local $_ = shift;
-  s/([.{}^\$])/\\$1/g;
+  s/([.+{}^\$])/\\$1/g;
   s/\*/.*/g;
   s/\?/./g;
   s/^/^/;

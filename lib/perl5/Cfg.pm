@@ -21,6 +21,7 @@ use Cfg::Section;
 use Cfg::Pkg::CVS;
 use Cfg::Pkg::Baz;
 use Cfg::Pkg::Bzr;
+use Cfg::Pkg::Port;
 
 use Sh qw(abs_path move_with_subpath safe_cat);
 
