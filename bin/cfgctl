@@ -17,15 +17,16 @@ Options [defaults in square brackets]:
   -U, --update               Update or fetch the chosen packages, then re-install
   -e, --erase                De-install the chosen packages
 
+  -l, --list                 List all packages in tab-delimited format
   -s, --sources              Only list source packages
   -d, --destinations         Only list destination packages
 
   -t, --test                 Dry run, don't touch the disk
   -v, --verbose[=N]          Increase [specify] verbosity
 
-  -p, --pkg-dir=DIR          Change source package directory [$cfg{PKG_DIR}]
+  -P, --pkg-dir=DIR          Change source package directory [$cfg{PKG_DIR}]
   -T, --target=TARGET-DIR    Change target directory [$cfg{TARGET_DIR}]
-  -m, --map=MAP-FILE         Change config map file [$cfg{MAP_FILE}]
+  -M, --map=MAP-FILE         Change config map file [$cfg{MAP_FILE}]
   -r, --remove-dangling      If conflicts with dangling symlinks
                              are found, delete them.
       --thorough             Don't prune subdirectories not in packages.
@@ -71,9 +72,9 @@ Getopt::Long::Configure('no_ignore_case', 'bundling');
 GetOptions(
   \%opts,
   'install|i', 'freshen|F', 'update|U', 'erase|e',
-  'sources|s', 'destinations|d',
+  'list|l', 'sources|s', 'destinations|d',
   'test|t', 'verbose|v:+',
-  'pkg-dir|p=s', 'target|T=s', 'map|m=s',
+  'pkg-dir|P=s', 'target|T=s', 'map|M=s',
   'remove-dangling|r', 'thorough',
 )
   or usage();
@@ -94,15 +95,16 @@ Options [defaults in square brackets]:
   -U, --update               Update or fetch the chosen packages, then re-install
   -e, --erase                De-install the chosen packages
 
+  -l, --list                 List all packages in tab-delimited format
   -s, --sources              Only list source packages
   -d, --destinations         Only list destination packages
 
   -t, --test                 Dry run, don't touch the disk
   -v, --verbose[=N]          Increase [specify] verbosity
 
-  -p, --pkg-dir=DIR          Change source package directory [$cfg{PKG_DIR}]
+  -P, --pkg-dir=DIR          Change source package directory [$cfg{PKG_DIR}]
   -T, --target=TARGET-DIR    Change target directory [$cfg{TARGET_DIR}]
-  -m, --map=MAP-FILE         Change config map file [$cfg{MAP_FILE}]
+  -M, --map=MAP-FILE         Change config map file [$cfg{MAP_FILE}]
   -r, --remove-dangling      If conflicts with dangling symlinks
                              are found, delete them.
       --thorough             Don't prune subdirectories not in packages.
@@ -131,17 +133,20 @@ else {
   mkdir $cfg{PKG_DIR} or die "mkdir($cfg{PKG_DIR}) failed: $!\n";
 }
 
-my $total = $opts{sources} + $opts{destinations} + $opts{update} + $opts{erase};
+my $total =
+  $opts{list}
+  + $opts{sources} + $opts{destinations}
+  + $opts{update}  + $opts{erase};
 if ($total == 0) {
   $opts{install}++;
 }
 elsif ($total > 1) {
-  usage("Only one of -i/-U/-e/-s/-d can be specified.\n");
+  usage("Only one of -i/-U/-e/-l/-s/-d can be specified.\n");
 }
 
 Cfg->do_registration();
 
-if ($opts{sources} || $opts{destinations}) {
+if ($opts{list} || $opts{sources} || $opts{destinations}) {
   Cfg->list_pkgs();
   exit 0;
 }

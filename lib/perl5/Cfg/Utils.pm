@@ -29,6 +29,7 @@ our %opts = (
   freshen      => 0,
   update       => 0,
   erase        => 0,
+  list         => 0,
   sources      => 0,
   destinations => 0,
 );

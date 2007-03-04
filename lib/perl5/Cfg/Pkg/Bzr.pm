@@ -119,6 +119,11 @@ sub relocation  { shift->{relocate}   }
 
 sub description { shift->dst          }
 
+sub params {
+  my $self = shift;
+  return map $self->$_, qw(dst co_root url relocation);
+}
+
 # where to check out to, e.g. ~/.bzr/dvc
 sub _co_to {
   my $self = shift;

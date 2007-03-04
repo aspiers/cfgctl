@@ -189,6 +189,17 @@ of the package for use with debug lines like
 EOF
 }
 
+sub params {
+  my $self = shift;
+  my $sub = (caller(0))[3];
+  $sub =~ s/.+:://;
+  my $me = ref($self) . "::$sub";
+  confess <<EOF;
+$me should be overridden to return a list of the public parameters
+to be output when generating a machine-readable package map.
+EOF
+}
+
 sub dst {
   my $self = shift;
   my $sub = (caller(0))[3];

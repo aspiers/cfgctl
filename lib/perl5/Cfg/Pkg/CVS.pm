@@ -132,6 +132,11 @@ sub cvsroot     { shift->{root} }
 sub description { shift->{src}  } # human-readable
 sub dst         { shift->{dst}  } # e.g. perl+mine
 
+sub params {
+  my $self = shift;
+  return map $self->$_, qw(dst _src cvsroot _wd src);
+}
+
 sub src {
   my $self = shift;
   return File::Spec->join($self->_wd, $self->_src);

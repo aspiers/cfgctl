@@ -67,7 +67,10 @@ sub list_pkgs {
     debug(1, "#>>> ", $section->to_string); 
     foreach my $pkg ($section->pkgs) {
       next if $pkg->disabled;
-      if ($opts{sources})  {
+      if ($opts{list}) {
+        print join("\t", ref($pkg), $pkg->params), "\n";
+      }
+      elsif ($opts{sources})  {
         print $pkg->src, "\n";
       }
       elsif ($opts{destinations}) {

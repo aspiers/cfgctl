@@ -161,6 +161,11 @@ sub description {
 #  return sprintf "%s: %s -> %s", @$self{qw/co_root src dst/};
 }
 
+sub params {
+  my $self = shift;
+  return map $self->$_, qw(dst archive revision co_root relocation);
+}
+
 # e.g. ~/.baz/mwolson@gnu.org--2006
 sub archive_path {
   my $self = shift;
