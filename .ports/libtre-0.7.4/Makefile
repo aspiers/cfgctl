@@ -5,7 +5,7 @@ PORTNAME=      libtre-$(PORTVERSION)
 CRMDIR=${HOME}/roaming/mail/crm114/crm114-20061103-BlameDalkey.src
 CONFIGURE_COMMAND=$(CRMDIR)/tre-${PORTVERSION}/configure
 
-include ../lib/port.mk
+include ~/lib/port.mk
 
 prep:
 	@[ -d "$(BUILD_DIR)" ] || mkdir -p $(BUILD_DIR)

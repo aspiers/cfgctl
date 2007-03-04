@@ -23,6 +23,7 @@ use Cfg::Utils qw(debug %opts %cfg);
 
 use base qw(Cfg::Pkg::Relocatable Cfg::Pkg::Base);
 
+$cfg{make}       = 'make';
 $cfg{PORTS_CONF} = "$RealBin/../etc/ports.conf";
 
 my %queues;
@@ -55,7 +56,7 @@ sub new {
     relocate => $relocate, # e.g. local
   }, $class;
 
-  my $cmd = "make -f $cfg{PORTS_CONF} show-conf PORTNAME=$port";
+  my $cmd = "$cfg{make} -f $cfg{PORTS_CONF} show-conf PORTNAME=$port";
   my $conf = `$cmd`;
   foreach my $type (qw{ports port status build install}) {
     my $var = "\U${type}\E_DIR";
@@ -98,9 +99,8 @@ sub process_queue {
   foreach my $pkg (@{ $queues{$op} }) {
     my $description = $pkg->description;
     debug(2, "#   Package $description in ${class}'s $op queue");
-    my $url   = $pkg->url;
-    my $co_to = $pkg->_co_to;
-
+    chdir($pkg->_port_dir) or die "chdir($pkg->_port_dir) failed: $!\n";
+    system $cfg{make}, $op eq 'fetch'? 'install' : 'force-all';
   }
 }
 
@@ -109,6 +109,8 @@ sub relocations_root { shift->{ports_dir} . "-relocations" }
 sub dst         { shift->{dst}        }
 sub relocation  { shift->{relocate}   }
 sub _status_dir { shift->{status_dir} }
+sub _ports_dir  { shift->{ports_dir}  }
+sub _port_dir   { shift->{port_dir}   }
 
 sub description { shift->dst          }
 

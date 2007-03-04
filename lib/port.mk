@@ -14,7 +14,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-include ../lib/conf.mk
+include ~/etc/ports.conf
 
 all: download prep patch configure build install
 
@@ -39,7 +39,7 @@ ALL_TARGETS = $(foreach stage,$(STAGES),$(addprefix $(stage)-,$(NAMES)))
 #                Download targets                     #
 #######################################################
 force-download: 
-	@rm $(DISTFILES) $(PATCHFILES)
+	@echo $(DISTFILES) $(PATCHFILES) | xargs -r rm
 	@$(MAKE) download
 
 download: setup pre-download $(DISTFILES) $(PATCHFILES) post-download

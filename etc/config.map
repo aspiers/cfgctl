@@ -117,6 +117,8 @@ register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
 EOF
 
 register new Cfg::Pkg::Port 'libtre-0.7.4' => 'libtre';
+register new Cfg::Pkg::Port 'crm114-20061103' => 'crm114';
+alias crm => qw(libtre crm114 crm114-conf.sec);
 
 register new Cfg::Section std => "Getting more comfortable";
 register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
