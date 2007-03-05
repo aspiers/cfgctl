@@ -36,6 +36,7 @@ sub deprecate {
   my $description = $self->description;
   my $dst = $self->dst;
   debug(1, "$description is deprecated; checking not installed ...");
+  $self->ensure_install_symlink;
   system $cfg{STOW},
       '-c',            # Dummy run, checking for conflicts.  If we're
                        # not using the deprecated package, there won't
@@ -100,9 +101,14 @@ EOF
 sub ensure_install_symlink {
   my $self = shift;
   ensure_correct_symlink(
-    symlink => File::Spec->join($cfg{PKG_DIR}, $self->dst),
+    symlink => $self->install_symlink,
     required_target => $self->src,
   );
+}
+
+sub install_symlink {
+  my $self = shift;
+  return File::Spec->join($cfg{PKG_DIR}, $self->dst);
 }
 
 sub src_local {
@@ -119,6 +125,7 @@ EOF
 sub deinstall {
   my $self = shift;
   my $dst = $self->dst;
+  $self->ensure_install_symlink;
   my @args = (
     (for_real() ? () : ( '-n' )),
     ($opts{debug} ? '-vvv' : ()),
@@ -132,11 +139,16 @@ sub deinstall {
   system $cfg{STOW}, @args;
   my $exit = $? >> 8;
   warn "$cfg{STOW} -c failed; aborting!\n" if $exit != 0;
+  my $is = $self->install_symlink;
+  unlink($is) or die "unlink($is) failed: $!\n";
 }
 
 sub install {
   my $self = shift;
   my $dst = $self->dst;
+
+  $self->ensure_install_symlink;
+
   my $stow_args = qq{-t "$cfg{TARGET_DIR}" -d "$cfg{PKG_DIR}" "$dst"};
   $stow_args = "-vvv $stow_args" if $opts{debug};
   $stow_args = "-p $stow_args"   if ! $opts{thorough};

@@ -172,8 +172,6 @@ foreach my $section_and_pkgs ($queue->sections_and_pkgs) {
     my $description = $pkg->description;
     my $dst         = $pkg->dst;
 
-    $pkg->ensure_install_symlink;
-
     if ($pkg->deprecated) {
       debug(1, "#! DEPRECATING: $description");
       $pkg->deprecate;
