@@ -7,6 +7,8 @@ TARGZ        = $(CRMVER).src.tar.gz
 DISTFILES    = $(TARGZ)
 NO_CONFIGURE = 1
 TRE_PREFIX   = $(HOME)
+# Can do it this way too now:
+MAKE_INSTALL_OPTIONS = prefix=$(INSTALL_DIR)
 
 include ~/lib/port.mk
 
