@@ -14,12 +14,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-include ~/etc/ports.conf
-
 all: download prep patch configure build install
 
-force-all: clean-status
-	$(MAKE) all
+include ~/etc/ports.conf
+
+force-all: clean-status all
 
 setup:
 	@mkdir -p $(status)
@@ -75,6 +74,17 @@ $(status)/prep:
 
 prep-message:
 	@echo "===> Preparing ${PORTNAME}"
+	@[ -d "$(BUILD_DIR)" ] || mkdir -p "$(BUILD_DIR)"
+
+ifndef NO_UNPACK
+do-unpack:
+	@for i in $(patsubst %.bz2,%,${PATCHFILES}); do \
+		rm -f $$i; \
+	done
+	@for k in ${DISTFILES} ${PATCHFILES}; do \
+		spkgunpack $$k; \
+	done
+endif
 
 #######################################################
 #                  Patch targets                      #
@@ -144,8 +154,7 @@ endif
 #######################################################
 #               Install targets                       #
 #######################################################
-force-install: uninstall
-	@$(MAKE) install
+force-install: uninstall install
 
 install: build $(status)/install
 
@@ -155,6 +164,7 @@ $(status)/install:
 
 install-message:
 	@echo "===>  Installing ${PORTNAME}"
+	@[ -d "$(INSTALL_DIR)" ] || mkdir -p "$(INSTALL_DIR)"
 
 ifndef NO_INSTALL
 do-install: 
@@ -166,7 +176,7 @@ endif
 #######################################################
 clean-ports:
 ifndef NO_CLEAN
-	@rm -rf *.tar 2> /dev/null
+	@rm -rf *.tar
 endif
 
 clean-tarball:
@@ -177,20 +187,22 @@ endif
 clean-status:
 	@rm -rf status
 
+clean-source: clean-status
+ifndef NO_CLEAN
+	@rm -rf ${BUILD_DIR}
+endif
+
+clean-install:
+	@rm -rf $(INSTALL_DIR)
+
 clean: clean-status
 	@if [ -d ${BUILD_DIR} ]; then \
 	    cd ${BUILD_DIR} && \
 		$(MAKE) clean; \
 	fi
 
-clean-source: clean-status
-ifndef NO_CLEAN
-	@rm -rf ${BUILD_DIR} 2> /dev/null
-endif
-
-real-clean: clean-source 
-	@rm -f index.html 2> /dev/null
-	@rm -f ${PORTNAME}-${PORTVERSION}.port.tgz 2> /dev/null
+real-clean: clean-ports clean-tarball clean-source clean-install clean
+distclean: real-clean
 
 #######################################################
 #                 Other Targets                       #
@@ -223,3 +235,6 @@ uninstall: FIXME
 
 info-portsdir:
 	@echo "${PORTS_DIR}"
+
+info-distfiles:
+	@echo "$(DISTFILES)"
