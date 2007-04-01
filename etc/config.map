@@ -131,6 +131,7 @@ register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
     config/dev-tools/ruby                  ruby
     config/dev-tools/svn                   svn
     config/dev-tools/darcs                 darcs
+    config/dev-tools/hg                    hg
     personal/pub/config/dev-tools/hg       hg.pub
     config/dev-tools/dup-files             dup-files
 EOF
