@@ -124,6 +124,7 @@ alias crm => qw(libtre crm114 crm114-conf.sec);
 
 register new Cfg::Section std => "Getting more comfortable";
 register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
+    config/shell-apps/namazu               namazu
     config/shell-apps/lftp                 lftp
     config/shell-apps/ncftp                ncftp
     config/shell-apps/wscan                wscan
