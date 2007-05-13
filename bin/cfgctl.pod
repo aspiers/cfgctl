@@ -186,8 +186,9 @@ directory called F<config> for clean check-out.
 
 =item * Renaming
 
-This tool is not exclusively relevant to management of
-configuration-related data and code, so all the "Cfg" stuff should go.
+This tool is not relevant exclusively to management of
+configuration-related data and code, so all the "cfg" nomenclature
+should go.
 
 =item * Support more source code control systems.
 
