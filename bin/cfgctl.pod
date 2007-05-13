@@ -82,7 +82,7 @@ systems, some kind of configuration management tool is required.
 =head1 DESCRIPTION
 
 This program aims to be that tool.  It divides configuration into
-well-defined "chunks" (stow packages) which can be managed by the
+clearly delineated chunks (stow packages) which can be managed by the
 user's favourite source code control tool(s).  It then reuses the code
 and functionality of GNU stow in order to install the files within
 these packages into the expected location within the home directory
