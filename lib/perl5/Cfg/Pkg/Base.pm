@@ -230,8 +230,8 @@ sub src {
   $sub =~ s/.+:://;
   my $me = ref($self) . "::$sub";
   confess <<EOF;
-$me should be overridden to return the path to the cfg source, which the
-symlink under ~/.cfg points to, e.g. 
+$me should be overridden to return the path to the package source,
+which the symlink under ~/.cfg points to, e.g. 
 
    ~/.cvs/config/dev-tools/perl/mine
 
