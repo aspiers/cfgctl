@@ -45,7 +45,7 @@ sub deprecate {
       ($opts{thorough} ? () : '-p'),
       '-R',            # Remove any symlinks already there.
       '-t', $cfg{TARGET_DIR},
-      '-d', $cfg{PKG_DIR},
+      '-d', $cfg{PKGS_DIR},
       $dst;
   my $exit = $? >> 8;
   warn "$cfg{STOW} -c failed; aborting!\n" if $exit != 0;
@@ -108,7 +108,7 @@ sub ensure_install_symlink {
 
 sub install_symlink {
   my $self = shift;
-  return File::Spec->join($cfg{PKG_DIR}, $self->dst);
+  return File::Spec->join($cfg{PKGS_DIR}, $self->dst);
 }
 
 sub src_local {
@@ -132,7 +132,7 @@ sub deinstall {
     ($opts{thorough} ? () : '-p'),
     '-D',
     '-t', $cfg{TARGET_DIR},
-    '-d', $cfg{PKG_DIR},
+    '-d', $cfg{PKGS_DIR},
     $dst
   );
   debug(3, "delete: $cfg{STOW} @args");
@@ -149,7 +149,7 @@ sub install {
 
   $self->ensure_install_symlink;
 
-  my $stow_args = qq{-t "$cfg{TARGET_DIR}" -d "$cfg{PKG_DIR}" "$dst"};
+  my $stow_args = qq{-t "$cfg{TARGET_DIR}" -d "$cfg{PKGS_DIR}" "$dst"};
   $stow_args = "-vvv $stow_args" if $opts{debug};
   $stow_args = "-p $stow_args"   if ! $opts{thorough};
   my $cmd       = "$cfg{STOW} -c -R $stow_args";
@@ -178,10 +178,10 @@ sub install {
     warn "$cfg{STOW} failed; aborting!\n" if $exit != 0;
   }
 
-  my $post_hook = File::Spec->join($cfg{TARGET_DIR}, '.cfg-post.d', $dst);
+  my $post_hook = File::Spec->join($cfg{POST_DIR}, $dst);
   if (-x $post_hook) {
     debug(1, "# Running $post_hook ...");
-    my $pkg_dir = File::Spec->join($cfg{PKG_DIR}, $dst);
+    my $pkg_dir = File::Spec->join($cfg{PKGS_DIR}, $dst);
     chdir($pkg_dir) or die "chdir($pkg_dir) failed: $!\n";
     system $post_hook;
     my $exit = $? >> 8;
@@ -219,7 +219,7 @@ sub dst {
   my $me = ref($self) . "::$sub";
   confess <<EOF;
 $me should be overridden to return the package name as used by stow.
-It is the symlink which lives under the stow directory (F<~/.cfg>
+It is the symlink which lives under the stow directory (F<$cfg{PKGS_DIR}>
 typically).
 EOF
 }
@@ -231,13 +231,13 @@ sub src {
   my $me = ref($self) . "::$sub";
   confess <<EOF;
 $me should be overridden to return the path to the package source,
-which the symlink under ~/.cfg points to, e.g. 
+which the symlink under $cfg{PKGS_DIR} points to, e.g. 
 
    ~/.cvs/config/dev-tools/perl/mine
 
 is pointed to by
 
-   ~/.cfg/perl+mine
+   $cfg{PKGS_DIR}/perl+mine
 EOF
 }
 

@@ -24,7 +24,7 @@ Options [defaults in square brackets]:
   -t, --test                 Dry run, don't touch the disk
   -v, --verbose[=N]          Increase [specify] verbosity
 
-  -P, --pkg-dir=DIR          Change source package directory [$cfg{PKG_DIR}]
+  -P, --pkg-dir=DIR          Change source package directory [$cfg{PKGS_DIR}]
   -T, --target=TARGET-DIR    Change target directory [$cfg{TARGET_DIR}]
   -M, --map=MAP-FILE         Change config map file [$cfg{MAP_FILE}]
   -r, --remove-dangling      If conflicts with dangling symlinks
@@ -43,9 +43,9 @@ Options [defaults in square brackets]:
 # (1) Where the all-important end-user symlinks go.
 $cfg{TARGET_DIR}  = $ENV{HOME};
 
-# (2) Package directory ("stow directory" in stow terminology).
+# (2) Packages directory ("stow directory" in stow terminology).
 #     stow requires all packages live immediately under this.
-$cfg{PKG_DIR}     = "$ENV{HOME}/.cfg";
+$cfg{PKGS_DIR}     = "$ENV{HOME}/.cfg";
 
 # We use a slightly hacked-up version of GNU stow which ignores CVS/
 # directories and anything in ~/.cvsignore.
@@ -102,7 +102,7 @@ Options [defaults in square brackets]:
   -t, --test                 Dry run, don't touch the disk
   -v, --verbose[=N]          Increase [specify] verbosity
 
-  -P, --pkg-dir=DIR          Change source package directory [$cfg{PKG_DIR}]
+  -P, --pkg-dir=DIR          Change source package directory [$cfg{PKGS_DIR}]
   -T, --target=TARGET-DIR    Change target directory [$cfg{TARGET_DIR}]
   -M, --map=MAP-FILE         Change config map file [$cfg{MAP_FILE}]
   -r, --remove-dangling      If conflicts with dangling symlinks
@@ -114,9 +114,11 @@ Options [defaults in square brackets]:
 EOUSAGE
 }
 
-$cfg{PKG_DIR}     = $opts{'pkg-dir'} if $opts{'pkg-dir'};
+$cfg{PKGS_DIR}    = $opts{'pkg-dir'} if $opts{'pkg-dir'};
 $cfg{TARGET_DIR}  = $opts{'target' } if $opts{'target' };
 $cfg{MAP_FILE}    = $opts{'map'    } if $opts{'map'    };
+
+$cfg{POST_DIR} = "$cfg{PKGS_DIR}-post.d";
 
 -d $cfg{TARGET_DIR}
   or usage("$cfg{TARGET_DIR} is not a valid directory; aborting.\n");
@@ -125,12 +127,12 @@ $cfg{MAP_FILE}    = $opts{'map'    } if $opts{'map'    };
 -e $cfg{STOW}
   or usage("$cfg{STOW} not found!  Aborting.\n");
 
-lstat($cfg{PKG_DIR});
+lstat($cfg{PKGS_DIR});
 if (-e _) {
-  -d _ or usage("$cfg{PKG_DIR} must be a directory!  Aborting.\n");
+  -d _ or usage("$cfg{PKGS_DIR} must be a directory!  Aborting.\n");
 }
 else {
-  mkdir $cfg{PKG_DIR} or die "mkdir($cfg{PKG_DIR}) failed: $!\n";
+  mkdir $cfg{PKGS_DIR} or die "mkdir($cfg{PKGS_DIR}) failed: $!\n";
 }
 
 my $total =

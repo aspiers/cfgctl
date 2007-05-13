@@ -102,6 +102,7 @@ something which does not live directly under F<~>.
                                   |              "install symlinks"
                                   V
  (2)       ~/.cfg/perl+mine/bin/cpan             "install sources"
+           <----->                               "packages directory"
                   <------->                      "package name"
            <-------------->                      "package target"
                       \_____________
@@ -149,6 +150,8 @@ we certainly want it to remove stow symlinks from under F<~>.)
 
 =item * Clear exposition of package namespace
 
+
+
 =item * Flexibility
 
 The flexibility of this two-layer mapping lets us squash multiple
@@ -180,6 +183,11 @@ directory called F<config> for clean check-out.
 =head1 TODO
 
 =over 4
+
+=item * Renaming
+
+This tool is not exclusively relevant to management of
+configuration-related data and code, so all the "Cfg" stuff should go.
 
 =item * Support more source code control systems.
 
