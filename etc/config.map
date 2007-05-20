@@ -121,6 +121,7 @@ EOF
 register new Cfg::Pkg::Port 'libtre-0.7.5' => 'libtre';
 register new Cfg::Pkg::Port 'crm114-20070301' => 'crm114';
 alias crm => qw(libtre crm114 crm114-conf.sec);
+register new Cfg::Pkg::Port 'namazu-2.0.17' => 'namazu-2.0.17';
 
 register new Cfg::Section std => "Getting more comfortable";
 register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
@@ -135,6 +136,7 @@ register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
     config/dev-tools/hg                    hg
     personal/pub/config/dev-tools/hg       hg.pub
     config/dev-tools/dup-files             dup-files
+    config/pim                             pim
 EOF
 
 register new Cfg::Pkg::Bzr $bzr_root, 'dvc',
