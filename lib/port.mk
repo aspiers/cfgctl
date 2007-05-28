@@ -72,19 +72,11 @@ $(status)/prep:
 	@$(MAKE) prep-message checksums pre-prep do-prep post-prep
 	@touch $(status)/prep
 
-prep-message:
-	@echo "===> Preparing ${PORTNAME}"
+pre-prep:
 	@[ -d "$(BUILD_DIR)" ] || mkdir -p "$(BUILD_DIR)"
 
-ifndef NO_UNPACK
-do-unpack:
-	@for i in $(patsubst %.bz2,%,${PATCHFILES}); do \
-		rm -f $$i; \
-	done
-	@for k in ${DISTFILES} ${PATCHFILES}; do \
-		spkgunpack $$k; \
-	done
-endif
+prep-message:
+	@echo "===> Preparing ${PORTNAME}"
 
 #######################################################
 #                  Patch targets                      #
@@ -164,6 +156,8 @@ $(status)/install:
 
 install-message:
 	@echo "===>  Installing ${PORTNAME}"
+
+pre-install:
 	@[ -d "$(INSTALL_DIR)" ] || mkdir -p "$(INSTALL_DIR)"
 
 ifndef NO_INSTALL
@@ -233,8 +227,6 @@ md5: download
 
 uninstall: FIXME
 
-info-portsdir:
-	@echo "${PORTS_DIR}"
-
-info-distfiles:
+# There are a whole load more show-* targets included from ports.conf above.
+show-distfiles:
 	@echo "$(DISTFILES)"
