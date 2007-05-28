@@ -1,5 +1,23 @@
 package Cfg::Section;
+
 # Here's a perfect example of why Ruby is so much nicer than Perl.
+#
+#   class Cfg::Section
+#     attr_reader :ident, :name
+#     attr_writer :pkgs
+#
+#     def initialize(ident, name, pkgs)
+#       @ident = ident
+#       @name  = name
+#       @pkgs  = []
+#     end
+#
+#     def to_str
+#       @name
+#     end
+#   end
+#
+# 12 lines versus 29 ...
 
 =head1 NAME
 
