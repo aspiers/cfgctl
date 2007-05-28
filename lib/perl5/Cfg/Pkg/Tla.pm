@@ -15,7 +15,6 @@ use warnings;
 
 use File::Path;
 
-use Cfg::Utils qw(debug);
 use base 'Cfg::Pkg::Arch';
 
 sub ARCH_CMD { 'tla' };
