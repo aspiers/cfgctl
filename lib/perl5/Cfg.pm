@@ -16,14 +16,14 @@ use warnings;
 use Tie::RefHash;
 
 use Cfg::PkgQueue;
-use Cfg::Utils qw(debug %opts %cfg);
+use Cfg::CLI qw(debug %opts);
+use Cfg::Cfg qw(%cfg);
 use Cfg::Section;
 use Cfg::Pkg::CVS;
 use Cfg::Pkg::Baz;
 use Cfg::Pkg::Bzr;
 use Cfg::Pkg::Port;
-
-use Sh qw(abs_path move_with_subpath safe_cat);
+use Sh qw(safe_cat); # required by config.map
 
 =head1 ROUTINES
 
@@ -69,7 +69,7 @@ sub list_pkgs {
     foreach my $pkg ($section->pkgs) {
       next if $pkg->disabled;
       if ($opts{list}) {
-        print join("\t", ref($pkg), $pkg->params), "\n";
+        print join("\t", ref($pkg), map { $_ || '-' } $pkg->params), "\n";
       }
       elsif ($opts{sources})  {
         print $pkg->src, "\n";
@@ -107,13 +107,13 @@ sub get_pkg_queue {
   my $queue = Cfg::PkgQueue->new;
 
   foreach my $section (@sections) {
-    debug (3, "#   section ", $section->name, "\n");
+    debug (3, "#   Processing section: ", $section->name);
     my @section_queue;
     foreach my $pkg ($section->pkgs) {
       my $dst = $pkg->dst;
       die unless $dst;
       if ($do_filter and ! $filter{$dst}) {
-        debug(4, "#     skipping $dst - not on command-line pkg list");
+        debug(4, "#     Skipping $dst - not on command-line pkg list");
         next;
       }
 
@@ -135,10 +135,19 @@ sub get_pkg_queue {
   return $queue;
 }
 
-# Enable SCM classes to batch updates/checkouts together if desired,
-# for efficiency over high-latency links.
+=head2 batch_update(@pkgs)
 
-sub update {
+Updates each package, or fetches it if not previously local.
+
+It's a class method in order to enable SCM classes to batch
+updates/checkouts together if desired, for efficiency over
+high-latency links.  First it groups the packages into per-class
+queues, per-operation (i.e. update or fetch) queues, then each queue
+is processed.
+
+=cut
+
+sub batch_update {
   my $class = shift;
   my @pkgs = @_;
 
@@ -152,7 +161,19 @@ sub update {
   );
 }
 
-sub ensure_src_local {
+=head2 batch_fetch(@pkgs)
+
+Fetches each package if not previously local.
+
+It's a class method in order to enable SCM classes to batch
+updates/checkouts together if desired, for efficiency over
+high-latency links.  First it groups the packages into per-class
+queues, per-operation (i.e. update or fetch) queues, then each queue
+is processed.
+
+=cut
+
+sub batch_fetch {
   my $class = shift;
   my @pkgs = @_;
   debug(2, "# Batch fetch");
@@ -162,7 +183,7 @@ sub ensure_src_local {
       if ($pkg->src_local) {
         debug(2, "#   ", $pkg->description, " already present in ",
               $pkg->src);
-        return undef;
+        return undef; # nop
       }
       return 'fetch';
     },
@@ -170,26 +191,20 @@ sub ensure_src_local {
   );
 }
 
+# mode_calculator is a closure which returns 'fetch' if the package
+# needs to be fetched, 'update' if it needs to be updated, and undef
+# if nothing needs to be done.
 sub _batch_get {
   my $class = shift;
-  my $mode_block = shift;
+  my $mode_calculator = shift;
   my @pkgs = @_;
 
-  my %class_queues;
-  foreach my $pkg (@pkgs) {
-    my $mode = $mode_block->($pkg);
-    next unless $mode;
-    next if $mode eq 'fetch' and $pkg->deprecated;
-    $class_queues{$mode}{ref($pkg)}++;
-    my $method = "enqueue_$mode";
-    debug(2, "#   Enqueueing ", $pkg->description, " for $mode");
-    $pkg->$method;
-  }
+  my %class_queues = $class->_batch_enqueue($mode_calculator, @pkgs);
 
   while (my ($mode, $class_queue) = each %class_queues) {
     my $method = "process_${mode}_queue";
     foreach my $class (keys %$class_queue) {
-      debug(2, "#   Processing $mode queue in batch for $class");
+      debug(2, "#   Processing batch $mode queue for $class");
       $class->$method;
     }
   }
@@ -197,6 +212,27 @@ sub _batch_get {
   foreach my $pkg (@pkgs) {
     $pkg->ensure_relocation if $pkg->relocation && $pkg->src_local;
   }
+}
+
+sub _batch_enqueue {
+  my $class = shift;
+  my $mode_calculator = shift;
+  my %class_queues;
+  foreach my $pkg (@_) {
+    my $mode = $mode_calculator->($pkg);
+    next unless $mode;
+    my $pkg_class = ref $pkg;
+    unless ($pkg_class->batch) {
+      debug(3, "#   Skipping batch $mode for $pkg_class");
+      next;
+    }
+    next if $mode eq 'fetch' and $pkg->deprecated;
+    $class_queues{$mode}{$pkg_class}++;
+    my $method = "enqueue_$mode";
+    debug(2, "#   Enqueueing ", $pkg->description, " for $mode");
+    $pkg->$method;
+  }
+  return %class_queues;
 }
 
 sub sections { @sections }

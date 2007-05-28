@@ -16,9 +16,10 @@ process should be implemented as a sub-class of this base class.
 use strict;
 use warnings;
 
-use Cfg::Utils qw(debug
-                  ensure_correct_symlink preempt_conflict for_real
-                  %cfg %opts);
+use Sh qw(ensure_correct_symlink);
+use Cfg::CLI qw(debug for_real %opts);
+use Cfg::Cfg qw(%cfg);
+use Cfg::Pkg::Utils qw(preempt_conflict);
 use Carp qw(carp cluck croak confess);
 
 =head1 CONSTRUCTORS
@@ -51,6 +52,19 @@ sub deprecate {
   warn "$cfg{STOW} -c failed; aborting!\n" if $exit != 0;
 }
 
+sub _not_implemented {
+  my $self = shift;
+  my ($error) = @_;
+
+  my $class = ref($self) || $self;
+  my $sub = (caller(1))[3];
+  $sub =~ s/.+:://;
+  my $me = "${class}::$sub";
+  $error =~ s/CLASS/$class/g;
+  $error =~ s/ME/$me/g;
+  confess $error;
+}
+
 # Syntactic sugar, but some SCMs might not reuse code between update
 # and fetch operations, so we need to keep the interfaces separate.
 sub enqueue_update       { shift->enqueue_op('update');    }
@@ -61,17 +75,13 @@ sub process_fetch_queue  { shift->process_queue('fetch');  }
 sub enqueue_op {
   my $self = shift;
   my ($op) = @_;
-  my $sub = (caller(0))[3];
-  $sub =~ s/.+:://;
-  my $class = ref($self);
-  my $me = "${class}::$sub";
   my $plural = "${op}s";
   $plural = 'fetches' if $op eq 'fetch';
   die <<EOF;
-$class does not yet support $plural.
+CLASS does not yet support $plural.
 
-To add support, override ${class}::enqueue_$op and 
-${class}::process_${op}_queue.
+To add support, override CLASS::enqueue_$op and 
+CLASS::process_${op}_queue.
 
 Note that it will also be responsible for checking out any
 non-existing sources, etc.
@@ -81,17 +91,13 @@ EOF
 sub process_queue {
   my $self = shift;
   my ($op) = @_;
-  my $sub = (caller(0))[3];
-  $sub =~ s/.+:://;
-  my $class = ref($self);
-  my $me = "${class}::$sub";
   my $plural = "${op}s";
   $plural = 'fetches' if $op eq 'fetch';
   die <<EOF;
-$class does not yet support $plural.
+CLASS does not yet support $plural.
 
-To add support, override ${class}::enqueue_$op and 
-${class}::process_${op}_queue.
+To add support, override CLASS::enqueue_$op and 
+CLASS::process_${op}_queue.
 
 Note that it will also be responsible for checking out any
 non-existing sources, etc.
@@ -113,12 +119,8 @@ sub install_symlink {
 
 sub src_local {
   my $self = shift;
-  my $sub = (caller(0))[3];
-  $sub =~ s/.+:://;
-  my $class = ref($self);
-  my $me = "${class}::$sub";
-  die <<EOF;
-$me should be overridden to return true if the source exists locally.
+  $self->_not_implemented(<<EOF);
+ME should be overridden to return true if the source exists locally.
 EOF
 }
 
@@ -189,13 +191,22 @@ sub install {
   }
 }
 
+sub update {
+  my $self = shift;
+  my $class = ref $self;
+  debug(3, "# Skipping unimplemented per-instance update for $class");
+}
+
+sub pull {
+  my $self = shift;
+  my $class = ref $self;
+  debug(3, "# Skipping unimplemented per-instance pull for $class");
+}
+
 sub description {
   my $self = shift;
-  my $sub = (caller(0))[3];
-  $sub =~ s/.+:://;
-  my $me = ref($self) . "::$sub";
-  confess <<EOF;
-$me should be overridden to return a human-readable description
+  $self->_not_implemented(<<EOF);
+ME should be overridden to return a human-readable description
 of the package for use with debug lines like
   Installed: <description>
 EOF
@@ -203,22 +214,16 @@ EOF
 
 sub params {
   my $self = shift;
-  my $sub = (caller(0))[3];
-  $sub =~ s/.+:://;
-  my $me = ref($self) . "::$sub";
-  confess <<EOF;
-$me should be overridden to return a list of the public parameters
+  $self->_not_implemented(<<EOF);
+ME should be overridden to return a list of the public parameters
 to be output when generating a machine-readable package map.
 EOF
 }
 
 sub dst {
   my $self = shift;
-  my $sub = (caller(0))[3];
-  $sub =~ s/.+:://;
-  my $me = ref($self) . "::$sub";
-  confess <<EOF;
-$me should be overridden to return the package name as used by stow.
+  $self->_not_implemented(<<EOF);
+ME should be overridden to return the package name as used by stow.
 It is the symlink which lives under the stow directory (F<$cfg{PKGS_DIR}>
 typically).
 EOF
@@ -226,11 +231,8 @@ EOF
 
 sub src {
   my $self = shift;
-  my $sub = (caller(0))[3];
-  $sub =~ s/.+:://;
-  my $me = ref($self) . "::$sub";
-  confess <<EOF;
-$me should be overridden to return the path to the package source,
+  $self->_not_implemented(<<EOF);
+ME should be overridden to return the path to the package source,
 which the symlink under $cfg{PKGS_DIR} points to, e.g. 
 
    ~/.cvs/config/dev-tools/perl/mine
@@ -241,15 +243,20 @@ is pointed to by
 EOF
 }
 
+sub batch    {
+  my $self = shift;
+  $self->_not_implemented(<<EOF);
+ME should be overridden to return true or false depending on whether
+updates/fetches should be batched or processed per package.
+EOF
+}
+
 sub disabled { 0 }
 
 sub deprecated  {
   my $self = shift;
-  my $sub = (caller(0))[3];
-  $sub =~ s/.+:://;
-  my $me = ref($self) . "::$sub";
-  confess <<EOF;
-$me should be overridden to return true if the package is deprecated.
+  $self->_not_implemented(<<EOF);
+ME should be overridden to return true if the package is deprecated.
 EOF
 }
 

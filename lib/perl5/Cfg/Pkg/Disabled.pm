@@ -16,9 +16,7 @@ e.g. if it is unable to retrieve the source.
 use strict;
 use warnings;
 
-use Cfg::Utils qw(debug
-                  ensure_correct_symlink preempt_conflict for_real
-                  %cfg %opts);
+use Cfg::CLI qw(debug);
 
 use base 'Cfg::Pkg::Base';
 

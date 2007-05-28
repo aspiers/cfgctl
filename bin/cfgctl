@@ -6,147 +6,26 @@ cfgctl - configuration file controller
 
 =head1 SYNOPSIS
 
-    $ cfgctl [options] [pkg [pkg...]]
-
-By default, installs the listed config packages, or all if none are
-specified.
-
-Options [defaults in square brackets]:
-
-  -i, --install              Fetch the chosen packages, then install
-  -U, --update               Update or fetch the chosen packages, then re-install
-  -e, --erase                De-install the chosen packages
-
-  -l, --list                 List all packages in tab-delimited format
-  -s, --sources              Only list source packages
-  -d, --destinations         Only list destination packages
-
-  -t, --test                 Dry run, don't touch the disk
-  -v, --verbose[=N]          Increase [specify] verbosity
-
-  -P, --pkg-dir=DIR          Change source package directory [$cfg{PKGS_DIR}]
-  -T, --target=TARGET-DIR    Change target directory [$cfg{TARGET_DIR}]
-  -M, --map=MAP-FILE         Change config map file [$cfg{MAP_FILE}]
-  -r, --remove-dangling      If conflicts with dangling symlinks
-                             are found, delete them.
-      --thorough             Don't prune subdirectories not in packages.
-                             This may leave symlinks pointing to old
-                             dirs which used to be in packages, but is
-                             a lot slower.
+    $ cfgctl --help
 
 =cut
-
-# Now we define some sensible default settings for the top-level
-# container directories corresponding to each level described in the
-# architecture document:
-
-# (1) Where the all-important end-user symlinks go.
-$cfg{TARGET_DIR}  = $ENV{HOME};
-
-# (2) Packages directory ("stow directory" in stow terminology).
-#     stow requires all packages live immediately under this.
-$cfg{PKGS_DIR}     = "$ENV{HOME}/.cfg";
-
-# We use a slightly hacked-up version of GNU stow which ignores CVS/
-# directories and anything in ~/.cvsignore.
-$cfg{STOW}        = "$RealBin/stow";
-
-# This is where we configure which config packages we want installed locally.
-$cfg{MAP_FILE}    = abs_path("$RealBin/../etc/config.map");
-
-##############################################################################
 
 use strict;
 use warnings;
 
 use File::Spec;
 use FindBin qw($RealBin $RealScript);
-use Getopt::Long;
 
 use lib "$RealBin/../lib/perl5";
 use Sh qw(abs_path);
 use Cfg;
-use Cfg::Utils qw(debug %opts %cfg);
+use Cfg::Cfg qw(%cfg);
+use Cfg::CLI qw(debug %opts);
 
-Getopt::Long::Configure('no_ignore_case', 'bundling');
-GetOptions(
-  \%opts,
-  'install|i', 'freshen|F', 'update|U', 'erase|e',
-  'list|l', 'sources|s', 'destinations|d',
-  'test|t', 'verbose|v:+',
-  'pkg-dir|P=s', 'target|T=s', 'map|M=s',
-  'remove-dangling|r', 'thorough',
-)
-  or usage();
-
-sub usage {
-  warn @_, "\n" if @_;
-
-  ### N.B.!  If you change the below, don't forget to update the
-  ### SYNOPSIS too!
-  die <<EOUSAGE;
-$RealScript [options] [pkg [pkg...]]
-
-By default, installs the listed config packages, or all if none are
-specified.
-
-Options [defaults in square brackets]:
-  -i, --install              Fetch the chosen packages, then install
-  -U, --update               Update or fetch the chosen packages, then re-install
-  -e, --erase                De-install the chosen packages
-
-  -l, --list                 List all packages in tab-delimited format
-  -s, --sources              Only list source packages
-  -d, --destinations         Only list destination packages
-
-  -t, --test                 Dry run, don't touch the disk
-  -v, --verbose[=N]          Increase [specify] verbosity
-
-  -P, --pkg-dir=DIR          Change source package directory [$cfg{PKGS_DIR}]
-  -T, --target=TARGET-DIR    Change target directory [$cfg{TARGET_DIR}]
-  -M, --map=MAP-FILE         Change config map file [$cfg{MAP_FILE}]
-  -r, --remove-dangling      If conflicts with dangling symlinks
-                             are found, delete them.
-      --thorough             Don't prune subdirectories not in packages.
-                             This may leave symlinks pointing to old
-                             dirs which used to be in packages, but is
-                             a lot slower.
-EOUSAGE
-}
-
-$cfg{PKGS_DIR}    = $opts{'pkg-dir'} if $opts{'pkg-dir'};
-$cfg{TARGET_DIR}  = $opts{'target' } if $opts{'target' };
-$cfg{MAP_FILE}    = $opts{'map'    } if $opts{'map'    };
-
-$cfg{POST_DIR} = "$cfg{PKGS_DIR}-post.d";
-
--d $cfg{TARGET_DIR}
-  or usage("$cfg{TARGET_DIR} is not a valid directory; aborting.\n");
--e $cfg{MAP_FILE}
-  or usage("$cfg{MAP_FILE} does not exist; did you copy from $cfg{MAP_FILE}.template?\n");
--e $cfg{STOW}
-  or usage("$cfg{STOW} not found!  Aborting.\n");
-
-lstat($cfg{PKGS_DIR});
-if (-e _) {
-  -d _ or usage("$cfg{PKGS_DIR} must be a directory!  Aborting.\n");
-}
-else {
-  mkdir $cfg{PKGS_DIR} or die "mkdir($cfg{PKGS_DIR}) failed: $!\n";
-}
-
-my $total =
-  $opts{list}
-  + $opts{sources} + $opts{destinations}
-  + $opts{update}  + $opts{erase};
-if ($total == 0) {
-  $opts{install}++;
-}
-elsif ($total > 1) {
-  usage("Only one of -i/-U/-e/-l/-s/-d can be specified.\n");
-}
-
-Cfg->do_registration();
+Cfg::CLI->process_options;
+Cfg::CLI->check_options;
+Cfg::Cfg->check;
+Cfg->do_registration;
 
 if ($opts{list} || $opts{sources} || $opts{destinations}) {
   Cfg->list_pkgs();
@@ -157,11 +36,13 @@ my $queue = Cfg->get_pkg_queue;
 exit 1 if $queue->empty;
 
 if ($opts{update}) {
-  Cfg->update($queue->pkgs);
+  Cfg->batch_update($queue->pkgs);
   exit 0 if $opts{'dry-run'};
 }
 elsif ($opts{install} || $opts{erase}) {
-  Cfg->ensure_src_local($queue->pkgs);
+  Cfg->batch_fetch($queue->pkgs);
+}
+elsif ($opts{pull}) {
 }
 else {
   die "BUG";
@@ -169,7 +50,7 @@ else {
 
 foreach my $section_and_pkgs ($queue->sections_and_pkgs) {
   my ($section, $pkgs) = @$section_and_pkgs;
-  debug(1, "#>>> ", $section->to_string); 
+  debug(1, "# >> ", $section->to_string); 
   foreach my $pkg (@$pkgs) {
     my $description = $pkg->description;
     my $dst         = $pkg->dst;
@@ -177,14 +58,26 @@ foreach my $section_and_pkgs ($queue->sections_and_pkgs) {
     if ($pkg->deprecated) {
       debug(1, "#! DEPRECATING: $description");
       $pkg->deprecate;
-      return;
+      next;
+    }
+
+    if (! $pkg->src_local) {
+      $pkg->fetch;
+    }
+    else {
+      if ($opts{update}) {
+        $pkg->update;
+      }
+      elsif ($opts{pull}) {
+        $pkg->pull;
+      }
     }
 
     if ($opts{erase}) {
       debug(1, "# Deinstalling: $description");
       $pkg->deinstall;
     }
-    else {
+    elsif ($opts{install}) {
       debug(1, "# Installing: $description");
       $pkg->install;
     }

@@ -15,11 +15,11 @@ use warnings;
 
 use Carp qw(carp cluck croak confess);
 use File::Path;
-use File::Which;
 use FindBin qw($RealBin $RealScript);
 
 use Cfg::Pkg::Disabled;
-use Cfg::Utils qw(debug %opts %cfg);
+use Cfg::Cfg qw(%cfg);
+use Cfg::CLI qw(debug);
 
 use base qw(Cfg::Pkg::Relocatable Cfg::Pkg::Base);
 
@@ -84,24 +84,19 @@ sub src_local {
   return -f File::Spec->join($self->_status_dir, 'install');
 }
 
-sub enqueue_op {
+sub update { shift->update_or_fetch('update') }
+sub fetch  { shift->update_or_fetch('fetch')  }
+
+sub update_or_fetch {
   my $self = shift;
   my ($op) = @_;
   die unless $op eq 'update' or $op eq 'fetch';
-  push @{ $queues{$op} }, $self;
-}
 
-sub process_queue {
-  my $class = shift;
-  my ($op) = @_;
-  die unless $op eq 'update' or $op eq 'fetch';
-
-  foreach my $pkg (@{ $queues{$op} }) {
-    my $description = $pkg->description;
-    debug(2, "#   Package $description in ${class}'s $op queue");
-    chdir($pkg->_port_dir) or die "chdir($pkg->_port_dir) failed: $!\n";
-    system $cfg{make}, $op eq 'fetch'? 'install' : 'force-all';
-  }
+  my $class = ref($self);
+  my $description = $self->description;
+  debug(2, "#   Package $description in ${class}'s $op queue");
+  chdir($self->_port_dir) or die "chdir($self->_port_dir) failed: $!\n";
+  system $cfg{make}, $op eq 'fetch' ? 'install' : 'force-all';
 }
 
 sub relocations_root { shift->{ports_dir} . "-relocations" }
@@ -109,10 +104,16 @@ sub relocations_root { shift->{ports_dir} . "-relocations" }
 sub dst         { shift->{dst}        }
 sub relocation  { shift->{relocate}   }
 sub _status_dir { shift->{status_dir} }
+sub port        { shift->{port}       }
 sub _ports_dir  { shift->{ports_dir}  }
 sub _port_dir   { shift->{port_dir}   }
 
 sub description { shift->dst          }
+
+sub params {
+  my $self = shift;
+  return map $self->$_, qw(port dst _port_dir relocation);
+}
 
 # where port installs to, e.g. ~/.ports/libtre/install
 sub _co_to { # FIXME wrong method name
@@ -141,6 +142,7 @@ sub relocation_path {
   );
 }
 
+sub batch      { 0 }
 sub deprecated { 0 }
 
 =head1 BUGS

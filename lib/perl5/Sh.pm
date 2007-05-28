@@ -9,6 +9,7 @@ Sh - Utility routines for common shell operations
 use strict;
 use warnings;
 
+use Carp qw(carp cluck croak confess);
 use Cwd;
 use Digest::MD5;
 use File::Basename;
@@ -23,6 +24,8 @@ our @EXPORT_OK = qw(
   md5hex_file md5b64_file
   move_with_subpath move_with_common_subpath
   glob_to_re
+  safe_sys sys_or_warn sys_or_die
+  ensure_correct_symlink
 );
 
 sub get_absolute_path {
@@ -261,6 +264,60 @@ sub glob_to_re {
   s/^/^/;
   s/$/\$/;
   return $_;
+}
+
+sub safe_sys {
+  my %p = @_;
+  my @cmd = ref($p{cmd}) eq 'ARRAY' ? @{ $p{cmd} } : ($p{cmd});
+  confess "_safe_sys called without 'fail' coderef"
+    unless ref($p{fail}) eq 'CODE';
+  $p{msg} ||= "command @cmd failed; aborting.\n";
+  system @cmd;
+  my $exit = $? >> 8;
+  $exit == 0 or $p{fail}->($p{msg});
+}
+
+sub sys_or_warn {
+  my ($cmd, $msg) = @_;
+  safe_sys(
+    cmd  => $cmd,
+    msg  => $msg,
+    fail => sub { warn $_[0] },
+  );
+}
+
+sub sys_or_die {
+  my ($cmd, $msg) = @_;
+  safe_sys(
+    cmd  => $cmd,
+    msg  => $msg,
+    fail => sub { die $_[0] },
+  );
+}
+
+sub ensure_correct_symlink {
+  my %p = @_;
+  confess "ensure_correct_symlink was not passed a symlink" unless $p{symlink};
+  confess "ensure_correct_symlink was not passed a required_target" unless $p{required_target};
+  
+  if (! lstat $p{symlink}) {
+    symlink $p{required_target}, $p{symlink}
+      or die "symlink($p{required_target}, $p{symlink}) failed: $!\n";
+    return;
+  }
+
+  if (! -l $p{symlink}) {
+    die "$p{symlink} already exists but is not a symlink; aborting!\n";
+  }
+
+  my ($a_dev, $a_ino) = stat($p{symlink}) # stat automatically follows symlinks
+    or die "stat($p{symlink}) failed ($!); invalid symlink?\n";
+  
+  my ($r_dev, $r_ino) = stat($p{required_target})
+    or confess "stat($p{required_target}) failed: $!";
+  if ($a_dev != $r_dev or $a_ino != $r_ino) {
+    die "$p{symlink} already exists and points to the wrong place; aborting!\n";
+  }
 }
 
 =head1 BUGS

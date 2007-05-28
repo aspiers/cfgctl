@@ -25,11 +25,12 @@ choosing, we could do something like
 
     $ cvs checkout lib/emacs/major-modes/muse
 
-But it's not, and in contrast to CVS, most modern SCMs enforce a flat
-storage model, so that checkouts never have any directory depth.  So
-if we use C<tla> or C<baz> to check out the upstream C<muse> package,
-the required "extra depth" (i.e. lib/emacs/major-modes) has to be
-ensured out of band with respect to the SCM involved.
+But it's not, and in contrast to CVS, most modern SCMs (svn excluded)
+enforce a flat storage model, so that checkouts never have any
+directory depth.  So if we use C<tla> or C<baz> to check out the
+upstream C<muse> package, the required "extra depth"
+(i.e. lib/emacs/major-modes) has to be ensured out of band with
+respect to the SCM involved.
 
 So first we check out to a predictable location indexed initially by
 the particular SCM being used:
@@ -95,7 +96,8 @@ use Carp qw(carp cluck croak confess);
 use File::Path;
 use File::Spec;
 
-use Cfg::Utils qw(debug ensure_correct_symlink);
+use Cfg::CLI qw(debug);
+use Sh qw(ensure_correct_symlink);
 
 sub relocation       { shift->{relocation}               }
 sub relocations_root { shift->{co_root} . "-relocations" }

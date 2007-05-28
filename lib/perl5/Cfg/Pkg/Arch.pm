@@ -15,10 +15,12 @@ use warnings;
 
 use Carp qw(carp cluck croak confess);
 use File::Path;
+use File::Spec;
 use File::Which;
 
 use Cfg::Pkg::Disabled;
-use Cfg::Utils qw(debug %opts);
+use Cfg::CLI qw(debug %opts for_real);
+use Sh qw(sys_or_warn sys_or_die);
 
 use base qw(Cfg::Pkg::Relocatable Cfg::Pkg::Base);
 
@@ -98,55 +100,42 @@ sub src_local {
   return -d $self->_co_to;
 }
 
-sub enqueue_op {
+sub _ensure_archive_path_exists {
   my $self = shift;
-  my ($op) = @_;
-  die unless $op eq 'update' or $op eq 'fetch';
-  push @{ $queues{$op}{$self->archive} }, $self;
+
+  my $archive_path = $self->archive_path;
+  if (for_real() && ! -d $archive_path) {
+    mkpath($archive_path) or die "mkpath($archive_path) failed: $!\n";
+  }
 }
 
-sub process_queue {
-  my $class = shift;
-  my ($op) = @_;
-  die unless $op eq 'update' or $op eq 'fetch';
+sub fetch {
+  my $self = shift;
+  my $ARCH_CMD = $self->ARCH_CMD;
+  my @cmd = ( $ARCH_CMD, 'get', $self->archrev, $self->_co_to );
+  my $revision = $self->revision;
+  my $archive_path = $self->archive_path;
+  debug(1, "$ARCH_CMD get $revision to $archive_path ...");
+  sys_or_die(cmd => \@cmd) if for_real();
+}
 
-  my $ARCH_CMD = $class->ARCH_CMD;
+sub update {
+  my $self = shift;
 
-  foreach my $archive (keys %{ $queues{$op} }) {
-    debug(2, "#   Archive $archive in ${class}'s $op queue");
-    my $pkgs = $queues{$op}{$archive};
-    foreach my $pkg (@$pkgs) {
-      my $archive      = $pkg->archive;
-      my $revision     = $pkg->revision;
-      my $archrev      = "$archive/$revision";
-      my $archive_path = $pkg->archive_path;
-      my $co_to        = $pkg->_co_to;
-      if (! -d $archive_path && ! $opts{'test'}) {
-        mkpath($archive_path) or die "mkpath($archive_path) failed: $!\n";
-      }
+  my $co_to = $self->_co_to;
+  chdir($co_to) or die "chdir($co_to) failed: $!\n";
 
-      my @cmd;
-      if ($op eq 'fetch') {
-        @cmd = ( $ARCH_CMD, 'get', $archrev, $pkg->_co_to );
-        debug(1, "$ARCH_CMD get $revision to $archive_path ...");
-      }
-      elsif ($op eq 'update') {
-        chdir($co_to) or die "chdir($co_to) failed: $!\n";
-        if ($opts{'test'}) {
-          @cmd = ( $ARCH_CMD, 'missing', $archrev );
-        }
-        else {
-          @cmd = ( $ARCH_CMD, 'merge', $archrev );
-        }
-      }
-      else {
-        die "unknown op $op";
-      }
+  my @cmd = (
+    $self->ARCH_CMD,
+    for_real() ? 'merge' : 'missing',
+    $self->archrev
+  );
 
-      system @cmd;
-      my $exit = $? >> 8;
-      die "command @cmd failed; aborting!\n" if $exit != 0;
-    }
+  if ($self->src_local) {
+    sys_or_die(cmd => \@cmd);
+  }
+  elsif (! for_real()) {
+    debug(2, "#   if src was local, would have done @cmd");
   }
 }
 
@@ -155,6 +144,13 @@ sub archive     { shift->{archive}    }
 sub revision    { shift->{revision}   }
 sub dst         { shift->{dst}        }
 sub relocation  { shift->{relocate}   }
+
+sub archrev {
+  my $self = shift;
+  my $archive  = $self->archive;
+  my $revision = $self->revision;
+  return File::Spec->join($archive, $revision);
+}
 
 # e.g. mwolson@gnu.org--2006/muse--main--1.0
 sub description {
@@ -201,6 +197,7 @@ sub relocation_path {
   );
 }
 
+sub batch      { 0 }
 sub deprecated { 0 }
 
 =head1 BUGS

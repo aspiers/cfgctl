@@ -15,143 +15,50 @@ use warnings;
 
 use Carp qw(carp cluck croak confess);
 use File::Path;
-use File::Which;
 
 use Cfg::Pkg::Disabled;
-use Cfg::Utils qw(debug %opts);
+use Cfg::CLI qw(debug for_real);
+use Sh qw(sys_or_die);
 
-use base qw(Cfg::Pkg::Relocatable Cfg::Pkg::Base);
+use base qw(Cfg::Pkg::DVCS);
 
-my %queues;
-
-my $BZR_CMD = 'bzr';
-
-=head1 CONSTRUCTORS
-
-=head2 new($co_root, $url, $dst, $relocate)
-
-=cut
-
-sub new {
+sub update {
   my $self = shift;
-  my $class = ref($self) || $self;
-  my ($co_root, $dst, $url, $relocate) = @_;
 
-  unless ($class->bzr_cmd_ok) {
-    my $reason = "$BZR_CMD not found";
-    debug(0, "# ! Disabling $dst - $reason");
-    return Cfg::Pkg::Disabled->new(
-      $dst, __PACKAGE__, $dst, $reason,
+  my $co_to = $self->_co_to;
+  chdir($co_to) or die "chdir($co_to) failed: $!\n";
+
+  if (for_real()) {
+    my @cmd = (
+      $self->DVCS_CMD,
+      'merge',
+      $self->upstream,
     );
+    debug(1, "@cmd");
+    sys_or_die(\@cmd);
   }
-
-  $relocate =~ s/\$DST/$dst/g if $relocate;
-
-  return bless {
-    co_root  => $co_root,  # e.g. ~/.bzr
-    url      => $url,
-    dst      => $dst,      # e.g. dvc (stow package name)
-    relocate => $relocate, # e.g. lib/emacs/major-modes/dvc
-  }, $class;
-}
-
-sub bzr_cmd_ok {
-  my $class = shift;
-  return which($BZR_CMD);
-}
-
-sub src_local {
-  my $self = shift;
-  return -d $self->_co_to;
-}
-
-sub enqueue_op {
-  my $self = shift;
-  my ($op) = @_;
-  die unless $op eq 'update' or $op eq 'fetch';
-  push @{ $queues{$op} }, $self;
-}
-
-sub process_queue {
-  my $class = shift;
-  my ($op) = @_;
-  die unless $op eq 'update' or $op eq 'fetch';
-
-  foreach my $pkg (@{ $queues{$op} }) {
-    my $description = $pkg->description;
-    debug(2, "#   Package $description in ${class}'s $op queue");
-    my $url   = $pkg->url;
-    my $co_to = $pkg->_co_to;
-
-    my $root = $pkg->co_root;
-    if (! -d $root) {
-      mkdir $root or die "mkdir($root) failed: $!\n";
-    }
-
-    my @cmd;
-    if ($op eq 'fetch') {
-      @cmd = ( $BZR_CMD, 'get', $url, $co_to );
-      debug(1, "$BZR_CMD get $url to $co_to ...");
-    }
-    elsif ($op eq 'update') {
-      chdir($co_to) or die "chdir($co_to) failed: $!\n";
-      if ($opts{'test'}) {
-        @cmd = ( $BZR_CMD, 'missing', $url );
-      }
-      else {
-        @cmd = ( $BZR_CMD, 'merge', $url );
-      }
-    }
-    else {
-      die "unknown op $op";
-    }
-
+  else {
+    my @cmd = (
+      $self->DVCS_CMD,
+      'missing', '--short',
+      $self->upstream,
+    );
+    debug(1, "@cmd");
+    # bzr missing exits non-zero for some reason.
     system @cmd;
-    my $exit = $? >> 8;
-    die "command @cmd failed; aborting!\n" if $exit != 0;
   }
 }
 
-sub co_root     { shift->{co_root}    }
-sub url         { shift->{url}        }
-sub dst         { shift->{dst}        }
-sub relocation  { shift->{relocate}   }
-
-sub description { shift->dst          }
-
-sub params {
+# In bzr, bzr pull only works as a 2-way merge, i.e. if only one of
+# the two sides has unique changes.  For 3-way, bzr merge is required.
+# See <http://doc.bazaar-vcs.org/bzr.dev/tutorial.htm> for more.
+sub pull {
   my $self = shift;
-  return map $self->$_, qw(dst co_root url relocation);
 }
 
-# where to check out to, e.g. ~/.bzr/dvc
-sub _co_to {
-  my $self = shift;
-  return File::Spec->join($self->co_root, $self->dst);
-}
 
-# e.g. ~/.bzr/dvc
-#   or ~/.bzr-relocations/dvc
-sub src {
-  my $self = shift;
-  return $self->_co_to unless $self->relocation;
-  return File::Spec->join(
-    $self->relocations_root,
-    $self->dst,
-  );
-}
-
-# e.g. ~/.baz-relocations/dvc/lib/emacs/major-modes/dvc
-sub relocation_path {
-  my $self = shift;
-  
-  return File::Spec->join(
-    $self->src,
-    $self->relocation
-  );
-}
-
-sub deprecated { 0 }
+sub DVCS_CMD         { 'bzr'     }
+sub DVCS_FETCH_CMD   { 'get'     }
 
 =head1 BUGS
 

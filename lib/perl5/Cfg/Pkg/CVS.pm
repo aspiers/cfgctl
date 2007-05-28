@@ -13,7 +13,7 @@ Cfg::Pkg::CVS - subclass for cfgctl configuration packages managed by CVS
 use strict;
 use warnings;
 
-use Cfg::Utils qw(debug %opts);
+use Cfg::CLI qw(debug %opts for_real);
 use base 'Cfg::Pkg::Base';
 
 use overload '""' => \&to_str;
@@ -71,7 +71,7 @@ sub process_queue {
   die unless $op eq 'update' or $op eq 'fetch';
   $op = 'checkout' if $op eq 'fetch';
 
-  debug(1, "# Processing CVS ${op}s...");
+  debug(1, "#   Processing CVS ${op}s...");
 
   foreach my $cvsroot (keys %{ $queues{$op} }) {
     my $pkgs = $queues{$op}{$cvsroot};
@@ -81,15 +81,15 @@ sub process_queue {
 
     my @modules = map $_->_src, @$pkgs;
 
-    if ($opts{'test'} && $op eq 'checkout') {
+    if (! for_real() && $op eq 'checkout') {
       debug(1, "cvs -d $cvsroot $op @modules\n");
     }
 
     my @cmd = (
       'cvs',
       '-d', $cvsroot,
-      $op eq 'update' ? '-q' : (),
-      $opts{'test'} ? '-n' : (),
+      $op eq 'update'      ? '-q' : (),
+      for_real()           ?   () : '-n',
       $opts{'verbose'} > 3 ? '-t' : (),
       $op
     );
@@ -146,6 +146,8 @@ sub deprecated {
   my $self = shift;
   return $self->_src =~ /RETIRE/;
 }
+
+sub batch { 1 }
 
 sub to_str2 {
   my $self = shift;

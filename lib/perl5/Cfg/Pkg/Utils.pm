@@ -1,66 +1,28 @@
-package Cfg::Utils;
+package Cfg::Pkg::Utils;
 
 =head1 NAME
 
-Cfg::Utils -
+Cfg::Pkg::Utils - name
 
 =head1 SYNOPSIS
 
+synopsis
+
 =head1 DESCRIPTION
+
+description
 
 =cut
 
 use strict;
 use warnings;
 
-use Carp qw(carp cluck croak confess);
-use File::Compare;
-use Net::Domain qw(hostname);
+use Cfg::Cfg qw(%cfg);
+use Cfg::CLI qw(%opts);
+use Sh qw(move_with_subpath);
 
 use base 'Exporter';
-our @EXPORT_OK = qw(debug
-                    ensure_correct_symlink preempt_conflict
-                    for_real
-                    %opts %cfg);
-
-our %opts = (
-  verbose      => 1,
-  install      => 0,
-  freshen      => 0,
-  update       => 0,
-  erase        => 0,
-  list         => 0,
-  sources      => 0,
-  destinations => 0,
-);
-our %cfg;
-
-sub for_real { $opts{'test'} ? 0 : 1 }
-
-sub ensure_correct_symlink {
-  my %p = @_;
-  confess "ensure_correct_symlink was not passed a symlink" unless $p{symlink};
-  confess "ensure_correct_symlink was not passed a required_target" unless $p{required_target};
-  
-  if (! lstat $p{symlink}) {
-    symlink $p{required_target}, $p{symlink}
-      or die "symlink($p{required_target}, $p{symlink}) failed: $!\n";
-    return;
-  }
-
-  if (! -l $p{symlink}) {
-    die "$p{symlink} already exists but is not a symlink; aborting!\n";
-  }
-
-  my ($a_dev, $a_ino) = stat($p{symlink}) # stat automatically follows symlinks
-    or die "stat($p{symlink}) failed ($!); invalid symlink?\n";
-  
-  my ($r_dev, $r_ino) = stat($p{required_target})
-    or confess "stat($p{required_target}) failed: $!";
-  if ($a_dev != $r_dev or $a_ino != $r_ino) {
-    die "$p{symlink} already exists and points to the wrong place; aborting!\n";
-  }
-}
+our @EXPORT_OK = qw(preempt_conflict);
 
 =head2 preempt_conflict($src, $dst)
 
@@ -167,11 +129,6 @@ sub preempt_conflict {
       #move_with_subpath($cfg{TARGET_DIR}, $modified_dir, $sub_dst);
     }
   }
-}
-
-sub debug {
-  my $level = shift;
-  warn @_, "\n" if $opts{verbose} >= $level;
 }
 
 =head1 BUGS
