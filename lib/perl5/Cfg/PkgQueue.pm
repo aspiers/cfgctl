@@ -3,7 +3,7 @@ package Cfg::PkgQueue;
 
 =head1 NAME
 
-Cfg::PkgQueue - 
+Cfg::PkgQueue - queue of packages to be processed
 
 =head1 SYNOPSIS
 
