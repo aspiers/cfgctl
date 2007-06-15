@@ -14,10 +14,8 @@ use strict;
 use warnings;
 
 use Carp qw(carp cluck croak confess);
-use File::Compare;
 use FindBin qw($RealScript);
 use Getopt::Long;
-use Net::Domain qw(hostname);
 
 use base 'Exporter';
 use Cfg::Cfg qw(%cfg);

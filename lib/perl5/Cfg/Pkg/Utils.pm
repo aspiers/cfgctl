@@ -18,7 +18,9 @@ use strict;
 use warnings;
 
 use Cfg::Cfg qw(%cfg);
-use Cfg::CLI qw(%opts debug);
+use Cfg::CLI qw(%opts debug for_real);
+use File::Compare;
+use Net::Domain qw(hostname);
 use Sh qw(move_with_subpath);
 
 use base 'Exporter';
