@@ -149,11 +149,12 @@ system("moosehall-connection-p 2>/dev/null");
 if ($? >> 8 == 0 || $ENV{MOOSEHALL}) {
   register new Cfg::Section 'moosehall' => "For moosehall only";
   register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
-    personal/pub/config/moosehall/shell-env       moosehall+shell-env
-    personal/pub/config/moosehall/xsession        moosehall+xsession
-    personal/pub/config/moosehall/shell-apps/ssh  moosehall+ssh.pub
-    personal/pub/config/moosehall/ldap            moosehall+ldap.pub
-    personal/sec/config/moosehall/ldap            moosehall+ldap.sec
+    personal/pub/config/moosehall/shell-env             moosehall+shell-env
+    personal/pub/config/moosehall/xsession              moosehall+xsession
+    personal/pub/config/moosehall/shell-apps/ssh        moosehall+ssh.pub
+    personal/pub/config/moosehall/shell-apps/watchlogs  moosehall+watchlogs.pub
+    personal/pub/config/moosehall/ldap                  moosehall+ldap.pub
+    personal/sec/config/moosehall/ldap                  moosehall+ldap.sec
 EOF
 }
 
