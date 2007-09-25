@@ -14,10 +14,10 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-all: download prep patch configure build install
-
 include ~/etc/ports.conf
 
+default: install
+all: download prep patch configure build install
 force-all: clean-status all
 
 setup:
