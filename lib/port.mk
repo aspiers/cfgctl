@@ -46,7 +46,7 @@ download: setup pre-download $(DISTFILES) $(PATCHFILES) post-download
 $(DISTFILES) $(PATCHFILES):
 	@for k in ${MASTER_SITES}; do \
 		echo -n "===> Downloading $@ from $$k ... "; \
-		wget -P ./ ${WGET_OPTIONS} $$k/$@; \
+		wget -P ./ ${WGET_OPTIONS} $${k%/}/$@; \
 		if [ -f $@ ]; then \
 			echo "Success"; \
 			break; \
