@@ -117,8 +117,9 @@ register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
 EOF
 
 #register new Cfg::Pkg::Port 'libtre-0.7.4' => 'libtre';
-#register new Cfg::Pkg::Port 'crm114-20061103' => 'crm114';
 register new Cfg::Pkg::Port 'libtre-0.7.5' => 'libtre';
+#register new Cfg::Pkg::Port 'crm114-20061103' => 'crm114';
+#register new Cfg::Pkg::Port 'crm114-20070301' => 'crm114';
 register new Cfg::Pkg::Port 'crm114-20070810' => 'crm114';
 alias crm => qw(libtre crm114 crm114-conf.sec);
 register new Cfg::Pkg::Port 'namazu-2.0.17' => 'namazu-2.0.17';
