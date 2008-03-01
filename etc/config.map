@@ -17,14 +17,22 @@ my $cvs_wd   = "$ENV{HOME}/.cvs";
 my $baz_root = "$ENV{HOME}/.baz";
 my $bzr_root = "$ENV{HOME}/.bzr";
 
+my $localhost_nick_file = "$ENV{HOME}/.localhost-nickname";
+chomp(my $host_nickname = safe_cat($localhost_nick_file));
+warn "$localhost_nick_file empty; skipping some packages.\n"
+  unless $host_nickname;
+
+my $secure_machine = $host_nickname =~ /^(atlantic|pacific)$/;
+
 ## register_cvs_pkgs arguments:
 ##   1. Source repository label as defined above.
 ##   2. Column 1: Source directory within the repository or working dir.
 ##      Column 2: Target namespace as controlled by stow or similar
 ##                (therefore must be unique).
 
+#############################################################
 register new Cfg::Section 'boot' => "Bootstrapping";
-register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
+secure_multi_register(<<EOF);
     config/META                            META
 
     config/shell-env                       shell-env
@@ -47,17 +55,16 @@ register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
     config/dev-tools/rpm                   rpm
 EOF
 
+#############################################################
 register new Cfg::Section 'basics' => "Bare essentials";
-register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
+secure_multi_register(<<EOF);
     config/shell-apps/ssh                  ssh
     personal/sec/config/shell-apps/ssh     ssh.adam_spiers.sec
     config/shell-apps/screen               screen
     config/shell-apps/emacs                emacs
 EOF
 
-my $localhost_nick_file = "$ENV{HOME}/.localhost-nickname";
-chomp(my $host_suffix = safe_cat($localhost_nick_file));
-if ($host_suffix) {
+if ($host_nickname) {
   register new Cfg::Pkg::Baz $baz_root,
     'muse-mwolson' =>
       'mwolson@gnu.org--2006',
@@ -66,7 +73,7 @@ if ($host_suffix) {
 
 #   register new Cfg::Pkg::Baz $baz_root,
 #     'muse-aspiers' =>
-#       "arch\@adamspiers.org--upstream-2006-$host_suffix",
+#       "arch\@adamspiers.org--upstream-2006-$host_nickname",
 #       'muse--main--1.0',
 #       'lib/emacs/major-modes/$REV';
 
@@ -74,14 +81,12 @@ if ($host_suffix) {
 
 #   register new Cfg::Pkg::Baz $baz_root,
 #     xkeycaps => 
-#     "arch\@adamspiers.org--upstream-2006-$host_suffix",
+#     "arch\@adamspiers.org--upstream-2006-$host_nickname",
 #     'xkeycaps--aspiers--2.46',
 #     'lib/emacs/xkeycaps';
 }
-else {
-  warn "$localhost_nick_file empty; skipping some packages.\n";
-}
 
+#############################################################
 register new Cfg::Section 'dist' => "Distribution-specific";
 if (-e "/etc/SuSE-release") {
   my $rel = safe_cat("/etc/SuSE-release");
@@ -102,8 +107,9 @@ else {
   die "Didn't find /etc/redhat-release or /etc/SuSE-release!\n";
 }
 
+#############################################################
 register new Cfg::Section 'X' => "X environment";
-register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
+secure_multi_register(<<EOF);
     config/Xwindows/SESSION                SESSION
     config/Xwindows/kde                    kde
     config/shell-apps/watchlogs            watchlogs
@@ -113,8 +119,9 @@ register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
     config/Xwindows/fonts                  fonts
 EOF
 
+#############################################################
 register new Cfg::Section 'mail' => "Mail";
-register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
+secure_multi_register(<<EOF);
     config/shell-apps/mutt                 mutt
     personal/pub/config/shell-apps/mutt    mutt.pub
     personal/sec/config/shell-apps/mutt    mutt.sec
@@ -131,9 +138,9 @@ register new Cfg::Pkg::Port 'crm114-20070810' => 'crm114';
 alias crm => qw(libtre crm114 crm114-conf.sec);
 register new Cfg::Pkg::Port 'namazu-2.0.17' => 'namazu-2.0.17';
 
+#############################################################
 register new Cfg::Section std => "Getting more comfortable";
-register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
-    config/shell-apps/namazu               namazu
+secure_multi_register(<<EOF);
     config/shell-apps/lftp                 lftp
     config/shell-apps/ncftp                ncftp
     config/shell-apps/wscan                wscan
@@ -144,6 +151,10 @@ register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
     config/dev-tools/hg                    hg
     personal/pub/config/dev-tools/hg       hg.pub
     config/dev-tools/dup-files             dup-files
+EOF
+
+secure_multi_register(<<EOF);
+    config/shell-apps/namazu               namazu
     config/pim                             pim
 EOF
 
@@ -152,11 +163,12 @@ register new Cfg::Pkg::Bzr $bzr_root, 'dvc',
 # 'http://www-verimag.imag.fr/~moy/bzr/dvc/moy/',
   'lib/emacs/major-modes/$DST';
 
+#############################################################
 $ENV{PATH} = "/sbin:$ENV{PATH}";
 system("moosehall-connection-p 2>/dev/null");
 if ($? >> 8 == 0 || $ENV{MOOSEHALL}) {
   register new Cfg::Section 'moosehall' => "For moosehall only";
-  register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
+  secure_multi_register(<<EOF);
     personal/pub/config/moosehall/shell-env             moosehall+shell-env
     personal/pub/config/moosehall/xsession              moosehall+xsession
     personal/pub/config/moosehall/shell-apps/ssh        moosehall+ssh.pub
@@ -166,9 +178,10 @@ if ($? >> 8 == 0 || $ENV{MOOSEHALL}) {
 EOF
 }
 
+#############################################################
 if (-e "$ENV{HOME}/ifolder") {
   register new Cfg::Section 'novell' => "For work only";
-  register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
+  secure_multi_register(<<EOF);
     config/work-tools                      work-tools
     personal/pub/config/novell/shell-env   novell+shell-env.pub
     personal/pub/config/novell/shell-apps/emacs  novell+emacs.pub
@@ -179,8 +192,9 @@ if (-e "$ENV{HOME}/ifolder") {
 EOF
 }
 
+#############################################################
 register new Cfg::Section 'play' => "For play only";
-register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
+secure_multi_register(<<EOF);
     config/shell-apps/htmltidy             htmltidy
     config/shell-apps/palm                 palm
     config/Xwindows/graphics               graphics
@@ -191,16 +205,17 @@ register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
     config/Xwindows/xchat                  xchat
 EOF
 
+#############################################################
 ## To obtain warnings requires a checkout, so you may want
 ## to leave these commented.
 if (hostname() =~ /^atlantic/) {
-  register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
+  secure_multi_register(<<EOF);
    config/personal-interest               personal-interest
 EOF
 
   register new Cfg::Section 'deprecated' =>
     "Deprecated; warn if still using this stuff.";
-  register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
+  secure_multi_register(<<EOF);
     config.RETIRED/Xwindows/galeon         galeon
     config.RETIRED/Xwindows/gnome          gnome
     config.RETIRED/Xwindows/netscape       netscape
@@ -214,5 +229,14 @@ EOF
 }
 
 #alias 'mail' => qw(mutt mutt.pub mutt.sec novell+mail.pub novell+mail.sec);
+
+#############################################################
+
+sub secure_multi_register {
+  my ($block) = @_;
+  $block =~ s!^\s*personal/sec/.*!!m unless $secure_machine;
+  register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, $block;
+}
+
 
 1;
