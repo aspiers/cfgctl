@@ -153,11 +153,6 @@ secure_multi_register(<<EOF);
     config/dev-tools/dup-files             dup-files
 EOF
 
-secure_multi_register(<<EOF);
-    config/shell-apps/namazu               namazu
-    config/pim                             pim
-EOF
-
 register new Cfg::Pkg::Bzr $bzr_root, 'dvc',
   'http://bzr.xsteve.at/dvc/',
 # 'http://www-verimag.imag.fr/~moy/bzr/dvc/moy/',
@@ -175,6 +170,13 @@ if ($? >> 8 == 0 || $ENV{MOOSEHALL}) {
     personal/pub/config/moosehall/shell-apps/watchlogs  moosehall+watchlogs.pub
     personal/pub/config/moosehall/ldap                  moosehall+ldap.pub
     personal/sec/config/moosehall/ldap                  moosehall+ldap.sec
+EOF
+}
+
+#############################################################
+if (-e "$ENV{HOME}/roaming") {
+  secure_multi_register(<<EOF);
+    config/pim                             pim
 EOF
 }
 
@@ -203,6 +205,7 @@ secure_multi_register(<<EOF);
     config/Xwindows/backgrounds            backgrounds
     config/Xwindows/rxvt                   rxvt
     config/Xwindows/xchat                  xchat
+    config/shell-apps/namazu               namazu
 EOF
 
 #############################################################
