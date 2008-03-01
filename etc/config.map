@@ -25,14 +25,21 @@ my $bzr_root = "$ENV{HOME}/.bzr";
 
 register new Cfg::Section 'boot' => "Bootstrapping";
 register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, <<EOF;
-    config/dev-tools/cvs                   cvs
-    config/dev-tools/arch                  arch
     config/META                            META
-# This one required to stop stow folding some high-level directories
-# which are safer left unfolded (in case I accidentally put new files
-# in there and they unintentionally go in a package directory).
-    config/ANTIFOLD                        ANTIFOLD
+
     config/shell-env                       shell-env
+
+    # N.B. cvs requires glob-to-re from shell-env
+    config/dev-tools/cvs                   cvs
+
+    config/dev-tools/arch                  arch
+
+    # This one required to stop stow folding some high-level
+    # directories which are safer left unfolded (in case I
+    # accidentally put new files in there and they unintentionally go
+    # in a package directory).
+    config/ANTIFOLD                        ANTIFOLD
+
     personal/pub/config/shell-env          shell-env.adam_spiers.pub
     personal/sec/config/shell-env          shell-env.adam_spiers.sec
     config/dev-tools/perl/mine             perl+mine
