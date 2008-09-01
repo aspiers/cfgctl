@@ -10,8 +10,8 @@ use Sh qw(cat);
 
 ## First we define the source repository or working directory.  We
 ## only support cvs so far.
-$ENV{CVSROOT} = 'adam@f5.mandolinarchive.com:/home/adam/.CVSROOT';
-$ENV{CVSROOT} = '/home/adam/.CVSROOT' if hostname() eq 'f5';
+$ENV{CVSROOT} = 'adam@cvs.adamspiers.org:/home/adam/.CVSROOT';
+$ENV{CVSROOT} = '/home/adam/.CVSROOT' if hostname() eq 'arctic';
 my $cvsroot  = $ENV{CVSROOT};
 my $cvs_wd   = "$ENV{HOME}/.cvs";
 my $baz_root = "$ENV{HOME}/.baz";
