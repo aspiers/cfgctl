@@ -18,7 +18,7 @@ use File::Path;
 use FindBin qw($RealBin $RealScript);
 
 use Cfg::Cfg qw(%cfg);
-use Cfg::CLI qw(debug);
+use Cfg::CLI qw(debug for_real);
 
 use base qw(Cfg::Pkg::Relocatable Cfg::Pkg::Base);
 
@@ -57,9 +57,11 @@ sub new {
 
   my $cmd = "$cfg{make} -f $cfg{PORTS_CONF} show-conf PORTNAME=$port";
   my $conf = `$cmd`;
+  debug(2, "# Port $port");
   foreach my $type (qw{ports port status build install}) {
     my $var = "\U${type}\E_DIR";
     if ($conf =~ /^$var=(.+)/m) {
+      debug(3, "#   ${type}_dir = $1");
       $pkg->{"${type}_dir"} = $1;
     }
     else {
@@ -91,7 +93,13 @@ sub update_or_fetch {
   my $description = $self->description;
   debug(2, "#   Package $description in ${class}'s $op queue");
   chdir($self->_port_dir) or die "chdir($self->_port_dir) failed: $!\n";
-  system $cfg{make}, $op eq 'fetch' ? 'install' : 'force-all';
+  my $make_arg = $op eq 'fetch' ? 'install' : 'force-all';
+  if (for_real()) {
+    system $cfg{make}, $make_arg;
+  }
+  else {
+    debug(1, "#   Would run $cfg{make} $make_arg");
+  }
 }
 
 sub relocations_root { shift->{ports_dir} . "-relocations" }
