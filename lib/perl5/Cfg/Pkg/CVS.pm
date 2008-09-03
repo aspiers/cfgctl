@@ -41,10 +41,11 @@ sub multi {
   my $self = shift;
   my $class = ref($self) || $self;
   my ($cvsroot, $wd, $block) = @_;
-  debug(3, "# CVS::multi($cvsroot, $wd)");
+  debug(3, "# CVS::multi($cvsroot, $wd, [$block])");
   my @new;
   die unless $block;
-  for my $line (split /\n/, $block) {
+  my @lines = split /\n/, $block;
+  for my $line (@lines) {
     debug(5, "     line [$line]");
     $line =~ s/^\s+//;
     $line =~ s/\s+$//;
