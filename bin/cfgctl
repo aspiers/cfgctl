@@ -80,7 +80,7 @@ foreach my $section_and_pkgs ($queue->sections_and_pkgs) {
       debug(1, "# Deinstalling: $description");
       $pkg->deinstall;
     }
-    elsif ($opts{install}) {
+    elsif ($opts{install} || $opts{update}) {
       debug(1, "# Installing: $description");
       $pkg->install;
     }
