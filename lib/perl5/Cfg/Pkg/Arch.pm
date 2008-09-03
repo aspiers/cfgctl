@@ -67,11 +67,13 @@ sub new {
     my $reason = "$ARCH_CMD not found";
     debug(0, "# ! Disabling $dst - $reason");
     $pkg->disable($reason);
+    return $pkg;
   }
 
   unless ($class->archive_valid($archive)) {
     my $ARCH_CMD = $class->ARCH_CMD;
     $pkg->disable("$ARCH_CMD archive $archive not found");
+    return $pkg;
   }
 
   return $pkg;
