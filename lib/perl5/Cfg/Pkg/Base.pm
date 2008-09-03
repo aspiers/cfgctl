@@ -184,12 +184,17 @@ sub install {
 
   my $post_hook = File::Spec->join($cfg{POST_DIR}, $dst);
   if (-x $post_hook) {
-    debug(1, "# Running $post_hook ...");
-    my $pkg_dir = File::Spec->join($cfg{PKGS_DIR}, $dst);
-    chdir($pkg_dir) or die "chdir($pkg_dir) failed: $!\n";
-    system $post_hook;
-    my $exit = $? >> 8;
-    warn "Warning: $post_hook failed\n" if $exit != 0;
+    if (for_real()) {
+      debug(1, "# Running $post_hook ...");
+      my $pkg_dir = File::Spec->join($cfg{PKGS_DIR}, $dst);
+      chdir($pkg_dir) or die "chdir($pkg_dir) failed: $!\n";
+      system $post_hook;
+      my $exit = $? >> 8;
+      warn "Warning: $post_hook failed\n" if $exit != 0;
+    }
+    else {
+      debug(1, "# Would run $post_hook");
+    }
   }
 }
 
