@@ -1,3 +1,11 @@
+=head1 NAME
+
+cfgctl - configuration file controller
+
+=head1 SYNOPSIS
+
+    $ cfgctl --help
+
 =head1 MOTIVATION
 
 Home directories on UNIX-like systems contain a wealth of
