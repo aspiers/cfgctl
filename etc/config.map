@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Cfg::Utils qw(debug);
+use Cfg::CLI qw(debug);
 use File::Which;
 use Net::Hostname qw(hostname);
 use Sh qw(cat);
