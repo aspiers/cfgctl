@@ -69,8 +69,10 @@ sub _not_implemented {
 # and fetch operations, so we need to keep the interfaces separate.
 sub enqueue_update       { shift->enqueue_op('update');    }
 sub enqueue_fetch        { shift->enqueue_op('fetch');     }
+sub enqueue_push         { shift->enqueue_op('push');      }
 sub process_update_queue { shift->process_queue('update'); }
 sub process_fetch_queue  { shift->process_queue('fetch');  }
+sub process_push_queue   { shift->process_queue('push');   }
 
 sub enqueue_op {
   my $self = shift;
@@ -203,6 +205,12 @@ sub pull {
   debug(3, "# Skipping unimplemented per-instance pull for $class");
 }
 
+sub push_upstream {
+  my $self = shift;
+  my $class = ref $self;
+  debug(3, "# Skipping unimplemented per-instance push_upstream for $class");
+}
+
 sub description {
   my $self = shift;
   $self->_not_implemented(<<EOF);
@@ -251,7 +259,19 @@ updates/fetches should be batched or processed per package.
 EOF
 }
 
-sub disabled { 0 }
+# Allow disabling per instance.  Switched from reblessing into
+# Cfg::Pkg::Disabled because:
+#  - no real benefit to implementing disabled checks all within
+#    a disabled class vs within Cfg run logic
+#  - can retain potentially useful class-specific package state
+#  - treating the package's class as if it was a variable is ugly
+sub disabled { shift->{disabled} || 0 }
+sub disable {
+  my ($self, $reason) = @_;
+  my $dst = $self->dst;
+  debug(0, "# ! Disabling $dst - $reason");
+  shift->{disabled} = $reason;
+}
 
 sub deprecated  {
   my $self = shift;

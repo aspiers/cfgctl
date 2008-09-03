@@ -18,7 +18,6 @@ use File::Path;
 use File::Spec;
 use File::Which;
 
-use Cfg::Pkg::Disabled;
 use Cfg::CLI qw(debug %opts for_real);
 use Sh qw(sys_or_warn sys_or_die);
 
@@ -50,36 +49,32 @@ sub new {
   my $class = ref($self) || $self;
   my ($co_root, $dst, $archive, $revision, $relocate) = @_;
 
-  unless ($class->arch_cmd_ok) {
-    my $ARCH_CMD = $class->ARCH_CMD;
-    my $reason = "$ARCH_CMD not found";
-    debug(0, "# ! Disabling $dst - $reason");
-    return Cfg::Pkg::Disabled->new(
-      $dst, __PACKAGE__, $dst, $reason,
-    );
-  }
-
-  unless ($class->archive_valid($archive)) {
-    my $ARCH_CMD = $class->ARCH_CMD;
-    my $reason = "$ARCH_CMD archive $archive not found";
-    debug(0, "# ! Disabling $dst - $reason");
-    return Cfg::Pkg::Disabled->new(
-      $dst, __PACKAGE__, $dst, $reason,
-    );
-  }
-
   if ($relocate) {
     $relocate =~ s/\$DST/$dst/g;
     $relocate =~ s/\$REV/$revision/g;
   }
 
-  return bless {
+  my $pkg = bless {
     co_root  => $co_root,  # e.g. ~/.baz
     archive  => $archive,  # e.g. mwolson@gnu.org--2006
     revision => $revision, # e.g. muse--main--1.0
     dst      => $dst,      # e.g. muse (stow package name)
     relocate => $relocate, # e.g. lib/emacs/major-modes/muse
   }, $class;
+
+  unless ($class->arch_cmd_ok) {
+    my $ARCH_CMD = $class->ARCH_CMD;
+    my $reason = "$ARCH_CMD not found";
+    debug(0, "# ! Disabling $dst - $reason");
+    $pkg->disable($reason);
+  }
+
+  unless ($class->archive_valid($archive)) {
+    my $ARCH_CMD = $class->ARCH_CMD;
+    $pkg->disable("$ARCH_CMD archive $archive not found");
+  }
+
+  return $pkg;
 }
 
 sub arch_cmd_ok {

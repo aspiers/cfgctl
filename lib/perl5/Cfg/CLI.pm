@@ -26,6 +26,8 @@ our %opts = (
   install      => 0,
   freshen      => 0,
   update       => 0,
+  pull         => 0,
+  push         => 0,
   erase        => 0,
   list         => 0,
   sources      => 0,
@@ -55,8 +57,9 @@ Options [defaults in square brackets]:
                              package store, then install.
   -U, --update               Ensure chosen packages are uptodate, then re-install.
                              (This involves pulling/merging for DVC backends.)
-  -e, --erase                De-install the chosen packages.
-  -p, --pull                 (DVC backends only) Pull latest changes but don't merge.
+  -e, --erase                De-install the chosen packages
+  -p, --pull                 (DVC backends only) Pull latest changes but don't merge
+  -P, --push                 (DVC backends only) Push changes upstream
 
   -l, --list                 List all packages in tab-delimited format
   -s, --sources              Only list source packages
@@ -65,7 +68,7 @@ Options [defaults in square brackets]:
   -t, --test                 Dry run, don't touch the disk
   -v, --verbose[=N]          Increase [specify] verbosity
 
-  -P, --pkg-dir=DIR          Change source package directory [$cfg{PKGS_DIR}]
+      --pkg-dir=DIR          Change source package directory [$cfg{PKGS_DIR}]
   -T, --target=TARGET-DIR    Change target directory [$cfg{TARGET_DIR}]
   -M, --map=MAP-FILE         Change config map file [$cfg{MAP_FILE}]
   -r, --remove-dangling      If conflicts with dangling symlinks
@@ -84,10 +87,10 @@ sub process_options {
   Getopt::Long::Configure('no_ignore_case', 'bundling');
   GetOptions(
     \%opts,
-    'install|i', 'freshen|F', 'update|U', 'erase|e', 'pull|p',
+    'install|i', 'freshen|F', 'update|U', 'erase|e', 'pull|p', 'push|P',
     'list|l', 'sources|s', 'destinations|d',
     'test|t', 'verbose|v:+',
-    'pkg-dir|P=s', 'target|T=s', 'map|M=s',
+    'pkg-dir=s', 'target|T=s', 'map|M=s',
     'remove-dangling|r', 'thorough',
   )
     or usage();
@@ -102,12 +105,12 @@ sub process_options {
 sub check_options {
   my $total = 0;
   $total += ($opts{$_} || 0)
-    foreach qw(list sources destinations update pull erase);
+    foreach qw(list sources destinations update pull push erase);
   if ($total == 0) {
     $opts{install}++;
   }
   elsif ($total > 1) {
-    usage("Only one of -i/-U/-e/-p/-l/-s/-d can be specified.\n");
+    usage("Only one of -i/-U/-e/-p/-P/-l/-s/-d can be specified.\n");
   }
 }
 

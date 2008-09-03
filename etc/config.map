@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Net::Domain qw(hostname);
+use Net::Hostname qw(hostname);
 use Sh qw(cat);
 
 ## Adam's config packages.  Listed in suggested installation order.
@@ -14,6 +14,7 @@ $ENV{CVSROOT} = 'adam@cvs.adamspiers.org:/home/adam/.CVSROOT';
 $ENV{CVSROOT} = '/home/adam/.CVSROOT' if hostname() eq 'arctic';
 my $cvsroot  = $ENV{CVSROOT};
 my $cvs_wd   = "$ENV{HOME}/.cvs";
+my $hg_root  = "$ENV{HOME}/.HG";
 my $baz_root = "$ENV{HOME}/.baz";
 my $bzr_root = "$ENV{HOME}/.bzr";
 
@@ -236,6 +237,9 @@ EOF
 }
 
 #alias 'mail' => qw(mutt mutt.pub mutt.sec novell+mail.pub novell+mail.sec);
+
+register new Cfg::Pkg::Mercurial $hg_root, 'hgtest',
+  "$ENV{HOME}/tmp/upstream/hgtest";
 
 #############################################################
 

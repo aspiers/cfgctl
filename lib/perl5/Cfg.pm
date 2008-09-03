@@ -2,7 +2,7 @@ package Cfg;
 
 =head1 NAME
 
-Cfg -
+Cfg - Manages Cfg::Pkg instances
 
 =head1 SYNOPSIS
 
@@ -22,6 +22,7 @@ use Cfg::Section;
 use Cfg::Pkg::CVS;
 use Cfg::Pkg::Baz;
 use Cfg::Pkg::Bzr;
+use Cfg::Pkg::Mercurial;
 use Cfg::Pkg::Port;
 use Sh qw(safe_cat); # required by config.map
 
@@ -89,6 +90,7 @@ sub expand_aliases {
   my @result = ();
   foreach my $elt (@_) {
     if (my $expansion = $aliases{$elt}) {
+      debug(3, "    $elt -> @$expansion");
       push @result, @$expansion;
     }
     else {
@@ -191,6 +193,32 @@ sub batch_fetch {
   );
 }
 
+=head2 batch_push(@pkgs)
+
+Placeholder for any SCM which could push local changes upstream in
+batch (i.e. many changes across multiple packages).  This currently
+only makes sense for CVS and is not implemented yet.
+
+=cut
+
+sub batch_push {
+  my $class = shift;
+  my @pkgs = @_;
+  debug(2, "# Batch push");
+  $class->_batch_get(
+    sub {
+      my $pkg = shift;
+      if ($pkg->src_local) {
+        return 'push';
+      }
+      debug(2, "#   ", $pkg->description, " not present locally in ",
+               $pkg->src, "; cannot push upstream");
+      return undef; # nop
+    },
+    @pkgs
+  );
+}
+
 # mode_calculator is a closure which returns 'fetch' if the package
 # needs to be fetched, 'update' if it needs to be updated, and undef
 # if nothing needs to be done.
@@ -208,10 +236,6 @@ sub _batch_get {
       $class->$method;
     }
   }
-
-  foreach my $pkg (@pkgs) {
-    $pkg->ensure_relocation if $pkg->relocation && $pkg->src_local;
-  }
 }
 
 sub _batch_enqueue {
@@ -224,6 +248,10 @@ sub _batch_enqueue {
     my $pkg_class = ref $pkg;
     unless ($pkg_class->batch) {
       debug(3, "#   Skipping batch $mode for $pkg_class");
+      next;
+    }
+    if ($pkg->disabled) {
+      debug(3, "#   Not enqueueing disabled package $pkg for $pkg_class");
       next;
     }
     next if $mode eq 'fetch' and $pkg->deprecated;

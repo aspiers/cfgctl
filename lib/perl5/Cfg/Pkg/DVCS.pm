@@ -45,22 +45,21 @@ sub new {
   my $class = ref($self) || $self;
   my ($co_root, $dst, $upstream, $relocate) = @_;
 
-  unless ($class->_cmd_ok) {
-    my $reason = $class->DVCS_CMD . " not found";
-    debug(0, "# ! Disabling $dst - $reason");
-    return Cfg::Pkg::Disabled->new(
-      $dst, __PACKAGE__, $dst, $reason,
-    );
-  }
-
   $relocate =~ s/\$DST/$dst/g if $relocate;
 
-  return bless {
+  my $pkg = bless {
     co_root  => $co_root,  # e.g. ~/.bzr
-    upstream => $upstream,
     dst      => $dst,      # e.g. dvc (stow package name)
+    upstream => $upstream,
     relocate => $relocate, # e.g. lib/emacs/major-modes/dvc
   }, $class;
+
+  unless ($class->_cmd_ok) {
+    my $reason = $class->DVCS_CMD . " not found";
+    $pkg->disable($reason);
+  }
+
+  return $pkg;
 }
 
 sub _cmd_ok {
@@ -115,7 +114,9 @@ sub params {
 # where to check out to, e.g. ~/.bzr/dvc
 sub _co_to {
   my $self = shift;
-  return File::Spec->join($self->co_root, $self->dst);
+  my $quoted_upstream = $self->upstream;
+  $quoted_upstream =~ tr,/,_,;
+  return File::Spec->join($self->co_root, $quoted_upstream);
 }
 
 # e.g. ~/.bzr/dvc

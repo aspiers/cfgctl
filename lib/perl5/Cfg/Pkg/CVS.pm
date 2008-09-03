@@ -60,7 +60,8 @@ sub multi {
 sub enqueue_op {
   my $self = shift;
   my ($op) = @_;
-  die unless $op eq 'update' or $op eq 'fetch';
+  die "batch operation '$op' not supported"
+    unless $op eq 'update' or $op eq 'fetch';
   $op = 'checkout' if $op eq 'fetch';
   push @{ $queues{$op}{$self->cvsroot} }, $self;
 }
@@ -68,7 +69,8 @@ sub enqueue_op {
 sub process_queue {
   my $self = shift;
   my ($op) = @_;
-  die unless $op eq 'update' or $op eq 'fetch';
+  die "batch operation '$op' not supported"
+    unless $op eq 'update' or $op eq 'fetch';
   $op = 'checkout' if $op eq 'fetch';
 
   debug(1, "#   Processing CVS ${op}s...");

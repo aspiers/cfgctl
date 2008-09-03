@@ -17,7 +17,6 @@ use Carp qw(carp cluck croak confess);
 use File::Path;
 use FindBin qw($RealBin $RealScript);
 
-use Cfg::Pkg::Disabled;
 use Cfg::Cfg qw(%cfg);
 use Cfg::CLI qw(debug);
 
@@ -50,7 +49,7 @@ sub new {
 
   $relocate =~ s/\$PORT/$port/g if $relocate;
 
-  my $new = bless {
+  my $pkg = bless {
     port     => $port,
     dst      => $dst,
     relocate => $relocate, # e.g. local
@@ -61,22 +60,18 @@ sub new {
   foreach my $type (qw{ports port status build install}) {
     my $var = "\U${type}\E_DIR";
     if ($conf =~ /^$var=(.+)/m) {
-      $new->{"${type}_dir"} = $1;
+      $pkg->{"${type}_dir"} = $1;
     }
     else {
       die "$var not found in output of \`$cmd\`:\n$conf";
     }
   }
 
-  unless (-d $new->{port_dir}) {
-    my $reason = "port dir not found for port $port";
-    debug(0, "# ! Disabling $dst - $reason");
-    return Cfg::Pkg::Disabled->new(
-      $dst, __PACKAGE__, $dst, $reason,
-    );
+  unless (-d $pkg->{port_dir}) {
+    $pkg->disable("port dir not found for port $port");
   }
 
-  return $new;
+  return $pkg;
 }
 
 sub src_local {

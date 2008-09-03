@@ -16,7 +16,6 @@ use warnings;
 use Carp qw(carp cluck croak confess);
 use File::Path;
 
-use Cfg::Pkg::Disabled;
 use Cfg::CLI qw(debug for_real);
 use Sh qw(sys_or_die);
 
@@ -44,8 +43,7 @@ sub update {
       $self->upstream,
     );
     debug(1, "@cmd");
-    # bzr missing exits non-zero for some reason.
-    system @cmd;
+    system @cmd; # bzr missing exits non-zero for some reason.
   }
 }
 
