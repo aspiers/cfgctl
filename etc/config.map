@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 
+use File::Which;
 use Net::Hostname qw(hostname);
 use Sh qw(cat);
 
@@ -114,15 +115,15 @@ else {
 
 #############################################################
 register new Cfg::Section 'X' => "X environment";
-secure_multi_register(<<EOF);
+
+if (which('kdeinit')) {
+  secure_multi_register(<<EOF);
     config/Xwindows/SESSION                SESSION
-    config/Xwindows/kde                    kde
-    config/shell-apps/watchlogs            watchlogs
-    config/Xwindows/Eterm                  Eterm
-    config/Xwindows/gkrellm                gkrellm
-    config/Xwindows/sawfish                sawfish
     config/Xwindows/fonts                  fonts
+    config/Xwindows/gkrellm                gkrellm
+    config/Xwindows/kde                    kde
 EOF
+}
 
 #############################################################
 register new Cfg::Section 'mail' => "Mail";
@@ -156,6 +157,7 @@ secure_multi_register(<<EOF);
     config/dev-tools/hg                    hg
     personal/pub/config/dev-tools/hg       hg.pub
     config/dev-tools/dup-files             dup-files
+    config/shell-apps/watchlogs            watchlogs
 EOF
 
 register new Cfg::Pkg::Bzr $bzr_root, 'dvc',
@@ -223,6 +225,11 @@ EOF
 
   register new Cfg::Section 'deprecated' =>
     "Deprecated; warn if still using this stuff.";
+
+  # TODO: retire these:
+  # config/Xwindows/Eterm                  Eterm
+  # config/Xwindows/sawfish                sawfish
+
   secure_multi_register(<<EOF);
     config.RETIRED/Xwindows/galeon         galeon
     config.RETIRED/Xwindows/gnome          gnome
