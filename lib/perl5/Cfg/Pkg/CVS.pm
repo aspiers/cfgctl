@@ -28,6 +28,7 @@ sub new {
   my $self = shift;
   my $class = ref($self) || $self;
   my ($root, $wd, $src, $dst) = @_;
+  debug(4, "#   CVS::new($root, $wd, $src, $dst)");
   return bless {
     root => $root, # e.g. 'adam@f5.mandolinarchive.com:/home/adam/.CVSROOT'
     wd   => $wd,   # e.g. "$ENV{HOME}/.cvs"            
@@ -40,6 +41,7 @@ sub multi {
   my $self = shift;
   my $class = ref($self) || $self;
   my ($cvsroot, $wd, $block) = @_;
+  debug(3, "# CVS::multi($cvsroot, $wd)");
   my @new;
   die unless $block;
   for my $line (split /\n/, $block) {
