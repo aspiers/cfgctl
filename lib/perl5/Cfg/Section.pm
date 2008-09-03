@@ -32,14 +32,24 @@ Cfg::Section - section containing cfgctl configuration packages
 use strict;
 use warnings;
 
+use Carp qw(carp cluck croak confess);
+
 =head1 CONSTRUCTORS
 
 =cut
+
+my (%all_sections, %all_pkgs);
 
 sub new {
   my $self = shift;
   my $class = ref($self) || $self;
   my ($ident, $name) = @_;
+
+  if ($all_sections{$ident}) {
+    die "Section '$ident' already registered once\n";
+  }
+
+  $all_sections{$ident}++;
   return bless {
     ident => $ident,
     name  => $name,
@@ -54,6 +64,11 @@ sub new {
 sub add_pkg {
   my $self = shift;
   my ($pkg) = @_;
+  my $name = $pkg->dst;
+  if ($all_pkgs{$name}) {
+    die "Package '$name' already registered once\n";
+  }
+  $all_pkgs{$name}++;
   push @{ $self->{pkgs} }, $pkg;
 }
 
