@@ -103,6 +103,9 @@ elsif (-e "/etc/redhat-release") {
     register new Cfg::Pkg::CVS $cvsroot, $cvs_wd, "config/dists/FC4", "FC4";
   }
 }
+elsif (-e "/etc/debian_version") {
+  my $rel = safe_cat("/etc/debian_version");
+  # nothing for Debian yet
 else {
   die "Didn't find /etc/redhat-release or /etc/SuSE-release!\n";
 }
