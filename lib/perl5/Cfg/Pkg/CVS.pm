@@ -45,6 +45,7 @@ sub multi {
   my @new;
   die unless $block;
   for my $line (split /\n/, $block) {
+    debug(5, "     line [$line]");
     $line =~ s/^\s+//;
     $line =~ s/\s+$//;
     next unless $line;
