@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 
+use Cfg::Utils qw(debug);
 use File::Which;
 use Net::Hostname qw(hostname);
 use Sh qw(cat);
@@ -25,6 +26,9 @@ warn "$localhost_nick_file empty; skipping some packages.\n"
   unless $host_nickname;
 
 my $secure_machine = $host_nickname =~ /^(atlantic|pacific)$/;
+unless ($secure_machine) {
+  debug(1, "# WARNING! Not on a secure machine; skipping secure packages");
+}
 
 ## register_cvs_pkgs arguments:
 ##   1. Source repository label as defined above.
