@@ -89,7 +89,7 @@ patch: prep $(status)/patch
 
 $(status)/patch:
 	@$(MAKE) patch-message pre-patch do-patch post-patch
-	@touch $(status)/patch
+	@touch $@
 
 patch-message:
 	@echo "===>  Patching ${PORTNAME}"
@@ -112,7 +112,7 @@ configure: patch $(status)/configure
 
 $(status)/configure:
 	@$(MAKE) configure-message pre-configure do-configure post-configure
-	@touch $(status)/configure
+	@touch $@
 
 configure-message:
 	@echo "===>  Configuring ${PORTNAME}"
@@ -133,7 +133,7 @@ build: configure $(status)/build
 
 $(status)/build:
 	@$(MAKE) build-message pre-build do-build post-build
-	@touch $(status)/build
+	@touch $@
 
 build-message:
 	@echo "===>  Building ${PORTNAME}"
@@ -152,7 +152,7 @@ install: build $(status)/install
 
 $(status)/install:
 	@$(MAKE) install-message check-installed pre-install do-install post-install
-	@touch $(status)/install
+	@touch $@
 
 install-message:
 	@echo "===>  Installing ${PORTNAME}"
