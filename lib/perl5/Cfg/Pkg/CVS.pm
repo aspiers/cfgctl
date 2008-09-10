@@ -13,6 +13,8 @@ Cfg::Pkg::CVS - subclass for cfgctl configuration packages managed by CVS
 use strict;
 use warnings;
 
+use File::Which;
+
 use Cfg::CLI qw(debug %opts for_real);
 use base 'Cfg::Pkg::Base';
 
@@ -30,7 +32,7 @@ sub new {
   my ($root, $wd, $src, $dst) = @_;
   debug(4, "#   CVS::new($root, $wd, $src, $dst)");
 
-  unless ($class->_cmd_ok) {
+  unless (which('cvs')) {
     my $reason = "cvs not found";
     $pkg->disable($reason);
   }
@@ -41,11 +43,6 @@ sub new {
     src  => $src,  # e.g. config/dev-tools/perl/mine   
     dst  => $dst,  # e.g. perl+mine
   }, $class;
-}
-
-sub _cmd_ok {
-  my $class = shift;
-  return which('cvs');
 }
 
 sub multi {
