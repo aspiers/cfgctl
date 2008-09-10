@@ -15,6 +15,7 @@ use warnings;
 
 use Carp qw(carp cluck croak confess);
 use File::Path;
+use File::Which;
 use FindBin qw($RealBin $RealScript);
 
 use Cfg::Cfg qw(%cfg);
@@ -45,6 +46,11 @@ sub new {
     return Cfg::Pkg::Disabled->new(
       $dst, __PACKAGE__, $dst, $reason,
     );
+  }
+
+  unless (which('make')) {
+    my $reason = "make not found";
+    $pkg->disable($reason);
   }
 
   $relocate =~ s/\$PORT/$port/g if $relocate;
