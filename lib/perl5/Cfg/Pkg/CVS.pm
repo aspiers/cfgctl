@@ -29,12 +29,23 @@ sub new {
   my $class = ref($self) || $self;
   my ($root, $wd, $src, $dst) = @_;
   debug(4, "#   CVS::new($root, $wd, $src, $dst)");
+
+  unless ($class->_cmd_ok) {
+    my $reason = "cvs not found";
+    $pkg->disable($reason);
+  }
+
   return bless {
     root => $root, # e.g. 'adam@f5.mandolinarchive.com:/home/adam/.CVSROOT'
     wd   => $wd,   # e.g. "$ENV{HOME}/.cvs"            
     src  => $src,  # e.g. config/dev-tools/perl/mine   
     dst  => $dst,  # e.g. perl+mine
   }, $class;
+}
+
+sub _cmd_ok {
+  my $class = shift;
+  return which('cvs');
 }
 
 sub multi {
