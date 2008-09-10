@@ -32,17 +32,19 @@ sub new {
   my ($root, $wd, $src, $dst) = @_;
   debug(4, "#   CVS::new($root, $wd, $src, $dst)");
 
-  unless (which('cvs')) {
-    my $reason = "cvs not found";
-    $pkg->disable($reason);
-  }
-
-  return bless {
+  my $pkg = bless {
     root => $root, # e.g. 'adam@f5.mandolinarchive.com:/home/adam/.CVSROOT'
     wd   => $wd,   # e.g. "$ENV{HOME}/.cvs"            
     src  => $src,  # e.g. config/dev-tools/perl/mine   
     dst  => $dst,  # e.g. perl+mine
   }, $class;
+
+  unless (which('cvs')) {
+    my $reason = "cvs not found";
+    $pkg->disable($reason);
+  }
+
+  return $pkg;
 }
 
 sub multi {
