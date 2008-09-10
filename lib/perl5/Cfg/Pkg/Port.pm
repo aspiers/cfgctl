@@ -48,11 +48,6 @@ sub new {
     );
   }
 
-  unless (which('make')) {
-    my $reason = "make not found";
-    $pkg->disable($reason);
-  }
-
   $relocate =~ s/\$PORT/$port/g if $relocate;
 
   my $pkg = bless {
@@ -60,6 +55,11 @@ sub new {
     dst      => $dst,
     relocate => $relocate, # e.g. local
   }, $class;
+
+  unless (which('make')) {
+    my $reason = "make not found";
+    $pkg->disable($reason);
+  }
 
   my $cmd = "$cfg{make} -f $cfg{PORTS_CONF} show-conf PORTNAME=$port";
   my $conf = `$cmd`;
