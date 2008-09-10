@@ -59,6 +59,7 @@ sub new {
   unless (which('make')) {
     my $reason = "make not found";
     $pkg->disable($reason);
+    return $pkg;
   }
 
   my $cmd = "$cfg{make} -f $cfg{PORTS_CONF} show-conf PORTNAME=$port";
