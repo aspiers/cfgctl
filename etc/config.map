@@ -95,6 +95,7 @@ if ($host_nickname) {
 #############################################################
 register new Cfg::Section 'dist' => "Distribution-specific";
 if (-e "/etc/SuSE-release") {
+  register new Cfg::Pkg::CVS $cvsroot, $cvs_wd, "config/dists/SUSE", "SUSE";
   my $rel = safe_cat("/etc/SuSE-release");
   if ($rel =~ /SUSE Linux.*VERSION *= *10/is) {
     register new Cfg::Pkg::CVS $cvsroot, $cvs_wd, "config/dists/SL10", "SL10";
