@@ -124,6 +124,9 @@ sub src_local {
   return -d $self->src;
 }
 
+# This is a nop, since we batch fetch instead.
+sub fetch { }
+
 sub install {
   my $self = shift;
   $self->SUPER::install(@_);
