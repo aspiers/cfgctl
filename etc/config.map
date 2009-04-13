@@ -46,8 +46,6 @@ secure_multi_register(<<EOF);
     # N.B. cvs requires glob-to-re from shell-env
     config/dev-tools/cvs                   cvs
 
-    config/dev-tools/arch                  arch
-
     # This one required to stop stow folding some high-level
     # directories which are safer left unfolded (in case I
     # accidentally put new files in there and they unintentionally go
@@ -159,10 +157,12 @@ secure_multi_register(<<EOF);
     config/shell-apps/wscan                wscan
     config/dev-tools/perl/pmtools          pmtools
     config/dev-tools/ruby                  ruby
-    config/dev-tools/svn                   svn
-    config/dev-tools/darcs                 darcs
     config/dev-tools/hg                    hg
     personal/pub/config/dev-tools/hg       hg.pub
+    config/dev-tools/git                   git
+    config/dev-tools/svn                   svn
+    config/dev-tools/arch                  arch
+    config/dev-tools/darcs                 darcs
     config/dev-tools/dup-files             dup-files
     config/shell-apps/watchlogs            watchlogs
 EOF
