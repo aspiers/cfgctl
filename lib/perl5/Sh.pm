@@ -62,30 +62,32 @@ sub abs_path_by_chdir {
 sub abs_path_by_chasing {
   my $path = shift;
   
-  # The below was written during my "don't comment unobvious stuff"
-  # phase, so I can't remember what the hell it does on top of
-  # Cwd::abs_path().  Attempting to find out by just using
-  # Cwd::abs_path() and seeing what breaks.
-  return Cwd::abs_path($path);
-  
   -d $path and return Cwd::abs_path($path);
+
+  # If the path doesn't exist, or the EUID can't see it (e.g. parent
+  # directory isn't executable for EUID) we can still try to resolve
+  # symlinks in the path.
 
   my ($vol, $dir, $file) = File::Spec->splitpath($path);
   # Don't know how to handle volumes.
   die "$0: splitpath returned vol '$vol'\n" if $vol;
 
-  $dir = Cwd::abs_path($dir);
+  my $abs = Cwd::abs_path($dir);
+  unless (defined $abs) { 
+    warn "Cwd::abs_path($dir) returned undef; does $dir exist?\n";
+    return $dir;
+  }
 
   # keep chasing links until we arrive at a non-link
   while (-l $path) {
-    $path = File::Spec->rel2abs(readlink $path, $dir);
+    $path = File::Spec->rel2abs(readlink $path, $abs);
     $path = File::Spec->canonpath($path);
     1 while $path =~ s!/[^/]+/\.\./!/!g; # can't believe canonpath doesn't do this
-    ($dir, $file) = $path =~ m!(.+)/(.+)!;
-    $dir = Cwd::abs_path($dir);
+    ($abs, $file) = $path =~ m!(.+)/(.+)!;
+    $abs = Cwd::abs_path($abs);
   }
 
-  return "$dir/$file";
+  return "$abs/$file";
 }
 
 sub cat {
