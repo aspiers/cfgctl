@@ -268,6 +268,24 @@ sub glob_to_re {
   return $_;
 }
 
+=head2 safe_sys
+
+  safe_sys(
+    cmd => 'date',
+    # or an array ref
+    cmd => [ 'date', '-d', 'tomorrow' ],
+
+    msg => 'failure message', 
+
+    # above message gets passed to failure call-back:
+    fail => sub {
+      my $msg = shift;
+      # handle failure here
+    }
+  );
+
+=cut
+
 sub safe_sys {
   my %p = @_;
   my @cmd = ref($p{cmd}) eq 'ARRAY' ? @{ $p{cmd} } : ($p{cmd});
@@ -276,14 +294,14 @@ sub safe_sys {
   $p{msg} ||= "command @cmd failed; aborting.\n";
   system @cmd;
   my $exit = $? >> 8;
-  $exit == 0 or $p{fail}->($p{msg});
+  $p{fail}->($p{msg}) if $exit != 0;
 }
 
 sub sys_or_warn {
   my ($cmd, $msg) = @_;
   safe_sys(
     cmd  => $cmd,
-    msg  => $msg,
+    msg  => $msg || undef,
     fail => sub { warn $_[0] },
   );
 }
@@ -292,7 +310,7 @@ sub sys_or_die {
   my ($cmd, $msg) = @_;
   safe_sys(
     cmd  => $cmd,
-    msg  => $msg,
+    msg  => $msg || undef,
     fail => sub { die $_[0] },
   );
 }
