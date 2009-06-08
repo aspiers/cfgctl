@@ -113,7 +113,7 @@ sub fetch {
   my $revision = $self->revision;
   my $archive_path = $self->archive_path;
   debug(1, "$ARCH_CMD get $revision to $archive_path ...");
-  sys_or_die(cmd => \@cmd) if for_real();
+  sys_or_die(\@cmd) if for_real();
 }
 
 sub update {
@@ -129,7 +129,7 @@ sub update {
   );
 
   if ($self->src_local) {
-    sys_or_die(cmd => \@cmd);
+    sys_or_die(\@cmd);
   }
   elsif (! for_real()) {
     debug(2, "#   if src was local, would have done @cmd");
