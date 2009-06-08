@@ -299,6 +299,8 @@ sub safe_sys {
 
 sub sys_or_warn {
   my ($cmd, $msg) = @_;
+  confess "sys_or_warn API changed: 2nd argument needs to be a scalar"
+    if ref $msg;
   safe_sys(
     cmd  => $cmd,
     msg  => $msg || undef,
@@ -308,6 +310,8 @@ sub sys_or_warn {
 
 sub sys_or_die {
   my ($cmd, $msg) = @_;
+  confess "sys_or_die API changed: 2nd argument needs to be a scalar"
+    if ref $msg;
   safe_sys(
     cmd  => $cmd,
     msg  => $msg || undef,
