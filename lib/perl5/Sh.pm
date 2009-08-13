@@ -23,7 +23,7 @@ our @EXPORT_OK = qw(
   grep_quiet line_count
   md5hex_file md5b64_file
   move_with_subpath move_with_common_subpath
-  glob_to_re
+  glob_to_unanchored_re glob_to_anchored_re glob_to_re
   safe_sys sys_or_warn sys_or_die
   ensure_correct_symlink
 );
@@ -258,15 +258,23 @@ sub _find_common_tail_elements {
   return (\@common, \@a, \@b);
 }
 
-sub glob_to_re {
+sub glob_to_unanchored_re {
   local $_ = shift;
   s/([.+{}^\$])/\\$1/g;
   s/\*/.*/g;
   s/\?/./g;
+  return $_;
+}
+
+sub glob_to_anchored_re {
+  local $_ = glob_to_unanchored_re(shift);
   s/^/^/;
   s/$/\$/;
   return $_;
 }
+
+# For backwards compatability
+*glob_to_re = \&glob_to_anchored_re;
 
 =head2 safe_sys
 
