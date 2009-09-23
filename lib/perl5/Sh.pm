@@ -25,7 +25,7 @@ our @EXPORT_OK = qw(
   move_with_subpath move_with_common_subpath
   glob_to_unanchored_re glob_to_anchored_re glob_to_re
   safe_sys sys_or_warn sys_or_die
-  ensure_correct_symlink
+  ensure_correct_symlink qqexpand
 );
 
 sub get_absolute_path {
@@ -350,6 +350,19 @@ sub ensure_correct_symlink {
   if ($a_dev != $r_dev or $a_ino != $r_ino) {
     die "$p{symlink} already exists and points to the wrong place; aborting!\n";
   }
+}
+
+=head2 qqexpand($text_with_escapes)
+
+Replaces all escape codes (C<\n>, C<\e>, C<\x012> etc.) with the
+characters they actually represent.
+
+=cut
+
+sub qqexpand {
+  my ($text_with_escapes) = @_;
+  $text_with_escapes =~ s!\\([efnrt]|x\d\d?|0\d{2,3})!qq["$&"]!gee;
+  return $text_with_escapes;
 }
 
 =head1 BUGS
