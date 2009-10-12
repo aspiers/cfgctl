@@ -162,6 +162,7 @@ secure_multi_register(<<EOF);
     config/shell-apps/wscan                wscan
     config/dev-tools/perl/pmtools          pmtools
     config/dev-tools/ruby                  ruby
+    config/dev-tools/java                  java
     config/dev-tools/hg                    hg
     personal/pub/config/dev-tools/hg       hg.pub
     config/dev-tools/git                   git
