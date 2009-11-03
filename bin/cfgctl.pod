@@ -18,7 +18,7 @@ uncontrolled manner.
 
 There appears to be no reasonable justification for this inequality of
 treatment with respect to configuration based in home directories.  It
-is this writer's belief that it exists for the following reasons:
+is the author's belief that it exists for the following reasons:
 
 =over 4
 
