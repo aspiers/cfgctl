@@ -201,7 +201,7 @@ EOF
 }
 
 #############################################################
-if (-e "$ENV{HOME}/ifolder") {
+if (-e "$ENV{HOME}/ifolder" or hostname() =~ /lab\.novell\.com$/) {
   register new Cfg::Section 'novell' => "For work only";
   secure_multi_register(<<EOF);
     config/work-tools                      work-tools
