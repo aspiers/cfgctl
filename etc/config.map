@@ -273,3 +273,12 @@ sub secure_multi_register {
 
 
 1;
+
+__DATA__
+
+TODO - things to be added:
+
+git://github.com/tomtt/elisp_behave.git
+git://github.com/remvee/emacs-rails.git
+find-recursive.el
+snippet.el
