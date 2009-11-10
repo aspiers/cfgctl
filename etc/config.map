@@ -217,11 +217,8 @@ EOF
 #############################################################
 register new Cfg::Section 'play' => "For play only";
 secure_multi_register(<<EOF);
-    config/shell-apps/htmltidy             htmltidy
-    config/shell-apps/palm                 palm
     config/Xwindows/graphics               graphics
     config/Xwindows/audio                  audio
-    config/Xwindows/xwrits                 xwrits
     config/Xwindows/backgrounds            backgrounds
     config/Xwindows/rxvt                   rxvt
     config/Xwindows/xchat                  xchat
@@ -244,6 +241,9 @@ if (hostname() =~ /^atlantic/) {
   # config/Xwindows/sawfish                sawfish
 
   secure_multi_register(<<EOF);
+    config/shell-apps/htmltidy             htmltidy
+    config/shell-apps/palm                 palm
+    config/Xwindows/xwrits                 xwrits
     config.RETIRED/Xwindows/galeon         galeon
     config.RETIRED/Xwindows/gnome          gnome
     config.RETIRED/Xwindows/netscape       netscape
