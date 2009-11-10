@@ -228,9 +228,11 @@ EOF
 #############################################################
 ## To obtain warnings requires a checkout, so you may want
 ## to leave these commented.
-secure_multi_register(<<EOF);
+if ($secure_machine) {
+    secure_multi_register(<<EOF);
    config/personal-interest               personal-interest
 EOF
+}
 
 if (hostname() =~ /^atlantic/) {
   register new Cfg::Section 'deprecated' =>
