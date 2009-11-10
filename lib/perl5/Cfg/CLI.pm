@@ -47,10 +47,10 @@ sub usage {
   ### N.B.!  If you change the below, don't forget to update the
   ### SYNOPSIS too!
   my $usage = <<EOUSAGE;
-$RealScript [options] [pkg [pkg...]]
+$RealScript [options] [PKG [PKG...]]
 
 By default, installs the listed config packages, or all if none are
-specified.
+specified.  PKG can be a package name, alias, or /regexp/.
 
 Options [defaults in square brackets]:
   -i, --install              Ensure chosen package(s) are in the local
