@@ -5,7 +5,7 @@ use warnings;
 
 use Cfg::CLI qw(debug);
 use File::Which;
-use Net::Hostname qw(hostname);
+use Net::Domain qw(hostname);
 use Sh qw(cat);
 
 ## Adam's config packages.  Listed in suggested installation order.
@@ -201,7 +201,7 @@ EOF
 }
 
 #############################################################
-if (-e "$ENV{HOME}/ifolder" or hostname() =~ /lab\.novell\.com$/) {
+if (-e "$ENV{HOME}/ifolder" or hostdomain() =~ /lab\.novell\.com$/) {
   register new Cfg::Section 'novell' => "For work only";
   secure_multi_register(<<EOF);
     config/work-tools                      work-tools
