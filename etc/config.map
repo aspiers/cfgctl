@@ -5,7 +5,7 @@ use warnings;
 
 use Cfg::CLI qw(debug);
 use File::Which;
-use Net::Domain qw(hostname);
+use Net::Domain qw(hostname hostdomain);
 use Sh qw(cat);
 
 ## Adam's config packages.  Listed in suggested installation order.
