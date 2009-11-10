@@ -103,8 +103,12 @@ sub expand_aliases {
 sub get_pkg_queue {
   debug(2, "# Getting package queue");
 
-  my %filter = map { $_ => 1 } expand_aliases(@ARGV);
   my $do_filter = @ARGV;
+  my @pkgs = expand_aliases(grep ! m!^/.+/$!, @ARGV);
+  my @regexps =             grep   m!^/.+/$!, @ARGV;
+  debug(4, "#   Packages to include: @pkgs");
+  debug(4, "#   Package regexps to use: @regexps");
+  my %filter = map { $_ => 1 } @pkgs;
   my %pkg_found;
   my $queue = Cfg::PkgQueue->new;
 
@@ -114,9 +118,14 @@ sub get_pkg_queue {
     foreach my $pkg ($section->pkgs) {
       my $dst = $pkg->dst;
       die unless $dst;
-      if ($do_filter and ! $filter{$dst}) {
-        debug(4, "#     Skipping $dst - not on command-line pkg list");
-        next;
+      if ($do_filter) {
+        if (_include_pkg($dst, \%filter, \@regexps)) {
+          debug(3, "#     Including $dst");
+        }
+        else {
+          debug(4, "#     Skipping $dst - not on command-line pkg list");
+          next;
+        }
       }
 
       push @section_queue, $pkg;
@@ -136,6 +145,24 @@ sub get_pkg_queue {
 
   return $queue;
 }
+
+sub _include_pkg {
+  my ($pkg, $filter, $regexps) = @_;
+  if ($filter->{$pkg}) {
+    debug(4, "#       $pkg listed on CLI");
+    return 1;
+  }
+  foreach my $re (@$regexps) {
+    die "re [$re]" unless $re =~ m!^/(.+)/$!;
+    my $parsed_re = $1;
+    if ($pkg =~ $parsed_re) {
+      debug(4, "#       $pkg listed on CLI as regexp");
+      return 1;
+    }
+  }
+  return 0;
+}
+
 
 =head2 batch_update(@pkgs)
 
