@@ -49,7 +49,7 @@ EOF
 fi
 
 echo "Checking passwordless ssh works ..."
-if [ "`ssh -n $cvsroot_user_at_host hostname`" != "$cvsroot_local_hostname"]; then
+if [ "`ssh -n $cvsroot_user_at_host hostname`" != "$cvsroot_local_hostname" ]; then
     echo "ssh -n $cvsroot_local_hostname hostname didn't return $cvsroot_local_hostname; aborting." >&2
     exit 1
 fi
