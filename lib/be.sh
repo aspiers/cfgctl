@@ -27,10 +27,11 @@ else
 fi
 echo "exported PERL5LIB=$PERL5LIB"
 
+[ -d ~/.ssh ] || mkdir ~/.ssh
+chmod 755 ~/.ssh
+
 if ! [ -f "$HOME/.ssh/config" ]; then
     echo "~/.ssh/config does not exist."
-    mkdir ~/.ssh
-    chmod 755 ~/.ssh
     cat <<EOF > ~/.ssh/config
 Host $CVSROOT_HOST
    ControlMaster auto
