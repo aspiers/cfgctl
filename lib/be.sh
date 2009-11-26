@@ -1,11 +1,18 @@
 #!/bin/bash
+#
+# Bootstrap Environment using cfgctl
 
 set -e
 
-META=$HOME/.cvs/config/META
-export CVSROOT=adam@cvs.adamspiers.org:/home/adam/.CVSROOT
-CONFIG=$META/etc/config.map
+cvsroot_host=cvs.adamspiers.org
+cvsroot_local_hostname=arctic
+cvsroot_user=adam
+cvsroot_user_at_host=$cvsroot_user@$cvsroot_host
+export CVSROOT=$cvsroot_user_at_host:/home/adam/.CVSROOT
 export CVS_RSH=ssh
+
+meta=$HOME/.cvs/config/META
+config=$meta/etc/config.map
 
 ${EDITOR:-vi} ~/.zdotuser
 ${EDITOR:-vi} ~/.localhost-nickname
@@ -20,8 +27,31 @@ else
 fi
 echo "exported PERL5LIB=$PERL5LIB"
 
-echo "Press Enter if ssh is set up ..."
-read
+if ! [ -f "$HOME/.ssh/config" ]; then
+    echo "~/.ssh/config does not exist."
+    mkdir ~/.ssh
+    chmod 755 ~/.ssh
+    cat <<EOF > ~/.ssh/config
+Host $CVSROOT_HOST
+   ControlMaster auto
+
+Host *
+   ControlPath ~/.ssh/master-%r@%h:%p
+EOF
+    echo "Wrote ~/.ssh/config:"
+    echo
+    cat ~/.ssh/config
+    echo
+    echo "Executing ssh -NMf $cvsroot_user_at_host"
+    ssh -NMf $cvsroot_user_at_host
+    echo
+fi
+
+echo "Checking passwordless ssh works ..."
+if [ "`ssh -n $cvsroot_user_at_host hostname`" != "$cvsroot_local_hostname"]; then
+    echo "ssh -n $cvsroot_local_hostname hostname didn't return $cvsroot_local_hostname; aborting." >&2
+    exit 1
+fi
 
 if [ -d ~/.cfg ]; then
   echo "~/.cfg already exists!  Press Enter to continue anyway, or Ctrl-c to cancel..."
@@ -46,15 +76,15 @@ do
     fi
 done
 
-if ! [ -e $CONFIG ]; then
-    echo "Press enter to edit $CONFIG ..."
+if ! [ -e $config ]; then
+    echo "Press enter to edit $config ..."
     read foo
-    ${EDITOR:-vi} $CONFIG
+    ${EDITOR:-vi} $config
 fi
 
-echo "* Using config file $CONFIG"
+echo "* Using config file $config"
 
-echo "Running $META/bin/cfgctl ..."
-$META/bin/cfgctl #--dry-run
+echo "Running $meta/bin/cfgctl ..."
+$meta/bin/cfgctl #--dry-run
 
 #echo dsa > ~/.zshrc.local
