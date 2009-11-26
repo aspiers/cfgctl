@@ -30,6 +30,10 @@ EOF
 
 EOF
 
+    # Ensure we have $ZDOT_FIND_HOOKS; if this is being invoked from
+    # be.sh then we probably don't.
+    source $ZDOTDIR/.shared_env 
+
     $ZDOT_FIND_HOOKS "$hookdir" | while read conf; do
         echo "#   Appending $conf"
         echo "# Include of $conf follows:" >> "$config"
