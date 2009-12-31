@@ -107,24 +107,25 @@ used.
 
 =head1 DIFFERENCES FROM OTHER PACKAGE MANAGEMENT SYSTEMS
 
-This tool is similar in concept to tools such as C<rpm>, but has a
-slightly different scope.
+This tool is similar in concept to tools such as C<rpm> and C<dpkg>,
+but has a slightly different scope.
 
 =over 4
 
 =item * It is intended to be used by (many) non-root users.
 
-Yes, you can run C<rpm> non-root, and create relocatable packages, but
-ultimately it's designed for managing an OS install.
+Yes, you can run C<rpm> and C<dpkg> non-root, and create relocatable
+packages, but ultimately they're designed for managing an OS install.
 
 =item * It is intended for fluid environments.
 
 C<rpm> is part of a stricter release cycle.  To make a change to the
 system, you need to update or patch the "pristine source", rebuild the
-rpm, then install the newer version.  This tool relies on symlinks, so
-you can edit the source files, or update them from their upstream
-provider via a unified interface to the revision control system
-backends, and the new version will instantly become active.
+F<.rpm> or F<.deb>, then install the newer version.  This tool relies
+on symlinks, so you can edit the source files, or update them from
+their upstream provider via a unified interface to the revision
+control system backends, and the new version will instantly become
+active.
 
 =back
 
