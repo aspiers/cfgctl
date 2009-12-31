@@ -283,6 +283,14 @@ __DATA__
 
 TODO - things to be added:
 
+dependencies
+
+move all 3rd party emacs packages out to separate packages
+  color-theme
+  org
+  epg
+  etc.
+
 git://github.com/tomtt/elisp_behave.git
 git://github.com/remvee/emacs-rails.git
 find-recursive.el
