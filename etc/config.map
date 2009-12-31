@@ -124,6 +124,8 @@ if (which('xinit')) {
     config/Xwindows/SESSION                SESSION
     config/Xwindows/fonts                  fonts
     config/Xwindows/gkrellm                gkrellm
+    config/Xwindows/rxvt                   rxvt
+    config/Xwindows/graphics               graphics
 EOF
 }
 
@@ -137,7 +139,10 @@ EOF
 register new Cfg::Section 'mail' => "Mail";
 secure_multi_register(<<EOF);
     config/shell-apps/mutt                 mutt
+
+# depends on shell-env for sort-by-filename
     personal/pub/config/shell-apps/mutt    mutt.pub
+
     personal/sec/config/shell-apps/mutt    mutt.sec
     config/shell-apps/mailcap              mailcap
     config/shell-apps/gnupg                gnupg
@@ -215,15 +220,15 @@ EOF
 }
 
 #############################################################
-register new Cfg::Section 'play' => "For play only";
-secure_multi_register(<<EOF);
-    config/Xwindows/graphics               graphics
+if ($host_nickname =~ /^atlantic/) {
+  register new Cfg::Section 'play' => "For play only";
+  secure_multi_register(<<EOF);
     config/Xwindows/audio                  audio
     config/Xwindows/backgrounds            backgrounds
-    config/Xwindows/rxvt                   rxvt
     config/Xwindows/xchat                  xchat
     config/shell-apps/namazu               namazu
 EOF
+}
 
 #############################################################
 ## To obtain warnings requires a checkout, so you may want
@@ -234,7 +239,7 @@ if ($secure_machine) {
 EOF
 }
 
-if (hostname() =~ /^atlantic/) {
+if ($host_nickname =~ /^atlantic/) {
   register new Cfg::Section 'deprecated' =>
     "Deprecated; warn if still using this stuff.";
 
