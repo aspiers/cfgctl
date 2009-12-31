@@ -77,6 +77,7 @@ foreach my $section_and_pkgs ($queue->sections_and_pkgs) {
     $pkg->ensure_relocation if $pkg->relocation && $pkg->src_local;
 
     if ($opts{erase}) {
+      # FIXME: erase depends on package being in config.map
       debug(1, "# Deinstalling: $description");
       $pkg->deinstall;
     }
