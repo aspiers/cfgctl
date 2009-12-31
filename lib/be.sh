@@ -33,6 +33,7 @@ chmod 755 ~/.ssh
 if ! [ -f "$HOME/.ssh/config" ]; then
     echo "~/.ssh/config does not exist."
     cat <<EOF > ~/.ssh/config
+# be.sh-magic-cookie <- indicates can be automatically removed by be.sh
 Host $CVSROOT_HOST
    ControlMaster auto
 
@@ -84,6 +85,18 @@ if ! [ -e $config ]; then
 fi
 
 echo "* Using config file $config"
+
+# ~/bin probably doesn't exist yet, but it will be created early on
+# in the below run, and various .cfg-post.d will rely on it being there.
+export PATH=~/bin:$PATH
+
+if grep -q 'be.sh-magic-cookie' ~/.ssh/config; then
+    # Allow cfgctl to rebuild ssh config from scratch
+    rm ~/.ssh/config
+else
+    echo "be.sh magic cookie missing from ~/.ssh/config; aborting!" >&2
+    exit 1
+fi
 
 echo "Running $meta/bin/cfgctl ..."
 $meta/bin/cfgctl #--dry-run
