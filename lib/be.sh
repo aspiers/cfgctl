@@ -14,6 +14,11 @@ export CVS_RSH=ssh
 meta=$HOME/.cvs/config/META
 config=$meta/etc/config.map
 
+if ! which cvs >/dev/null 2>&1; then
+    echo 'cvs not found on $PATH; aborting!' >&2
+    exit 1
+fi
+
 ${EDITOR:-vi} ~/.zdotuser
 ${EDITOR:-vi} ~/.localhost-nickname
 
