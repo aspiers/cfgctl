@@ -48,26 +48,27 @@ EOF
     echo "Wrote ~/.ssh/config:"
     echo
     cat ~/.ssh/config
-    echo
-    echo "Executing ssh -NMf $cvsroot_user_at_host"
-    ssh -NMf $cvsroot_user_at_host
-    echo
 fi
 
+echo "Executing ssh -NMf $cvsroot_user_at_host"
+ssh -NMf $cvsroot_user_at_host
+echo
+
 echo "Checking passwordless ssh works ..."
-if [ "`ssh -n $cvsroot_user_at_host hostname`" != "$cvsroot_local_hostname" ]; then
-    echo "ssh -n $cvsroot_local_hostname hostname didn't return $cvsroot_local_hostname; aborting." >&2
+cmd="ssh -n -o PasswordAuthentication=no $cvsroot_user_at_host hostname"
+if [ "`$cmd`" != "$cvsroot_local_hostname" ]; then
+    echo "$cmd didn't return $cvsroot_local_hostname; aborting." >&2
     exit 1
 fi
 
 if [ -d ~/.cfg ]; then
   echo "~/.cfg already exists!  Press Enter to continue anyway, or Ctrl-c to cancel..."
-  read
+  read foo
 fi
 
 if [ -d ~/.cvs ]; then
   echo "~/.cvs already exists!  Press Enter to continue anyway, or Ctrl-c to cancel..."
-  read
+  read foo
 fi
 
 mkdir -p ~/.cvs
