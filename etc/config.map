@@ -202,6 +202,7 @@ EOF
 if (-e "$ENV{HOME}/roaming") {
   secure_multi_register(<<EOF);
     config/pim                             pim
+    personal/sec/config/pim                pim.sec
 EOF
 }
 
