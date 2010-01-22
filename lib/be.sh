@@ -74,10 +74,10 @@ fi
 mkdir -p ~/.cvs
 cd ~/.cvs
 
-for dir in config/dev-tools/{cvs,arch} \
+for dir in config/dev-tools/cvs \
            config/{META,ANTIFOLD} \
            config/shell-env \
-           config/shell-apps/{ssh,screen,emacs}
+           config/shell-apps/{ssh,screen}
 do
     if ! [ -d $dir ]; then
         cvs checkout $dir
@@ -96,13 +96,29 @@ echo "* Using config file $config"
 # in the below run, and various .cfg-post.d will rely on it being there.
 export PATH=~/bin:$PATH
 
-if grep -q 'be.sh-magic-cookie' ~/.ssh/config; then
-    # Allow cfgctl to rebuild ssh config from scratch
-    rm ~/.ssh/config
-else
+echo "Running $meta/bin/cfgctl cvs to set up .cvsrc ..."
+$meta/bin/cfgctl cvs
+echo
+
+echo "Running $meta/bin/cfgctl META shell-env to install lib/libhooks.sh ..."
+$meta/bin/cfgctl META shell-env
+echo
+
+echo "Running $meta/bin/cfgctl /ssh/ to retrieve all ssh config ..."
+$meta/bin/cfgctl /ssh/
+echo
+
+if ! grep -q 'be.sh-magic-cookie' ~/.ssh/config; then
     echo "be.sh magic cookie missing from ~/.ssh/config; aborting!" >&2
     exit 1
 fi
+
+echo "Allowing cfgctl to rebuild ssh config from scratch ..."
+echo "rm ~/.ssh/config"
+rm ~/.ssh/config
+echo
+echo "Running $meta/bin/cfgctl /ssh/ to build config ..."
+$meta/bin/cfgctl /ssh/ #--dry-run
 
 echo "Running $meta/bin/cfgctl ..."
 $meta/bin/cfgctl #--dry-run
