@@ -37,6 +37,8 @@ EOF
     $ZDOT_FIND_HOOKS "$hookdir" | while read conf; do
         echo "#   Appending $conf"
         echo "# Include of $conf follows:" >> "$config"
+        # Allow for executable hooks, for generating content dynamically,
+        # triggered by including a magic cookie in the hook file.
         if grep -q '%% Executable hook %%' "$conf"; then
             "$conf" >> "$config"
         else
