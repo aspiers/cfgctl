@@ -122,6 +122,7 @@ register new Cfg::Section 'X' => "X environment";
 if (which('xinit')) {
   secure_multi_register(<<EOF);
     config/Xwindows/SESSION                SESSION
+    config/Xwindows/xwrits                 xwrits
     config/Xwindows/fonts                  fonts
     config/Xwindows/gkrellm                gkrellm
     config/Xwindows/rxvt                   rxvt
@@ -251,7 +252,6 @@ if ($host_nickname =~ /^atlantic/) {
   secure_multi_register(<<EOF);
     config/shell-apps/htmltidy             htmltidy
     config/shell-apps/palm                 palm
-    config/Xwindows/xwrits                 xwrits
     config.RETIRED/Xwindows/galeon         galeon
     config.RETIRED/Xwindows/gnome          gnome
     config.RETIRED/Xwindows/netscape       netscape
