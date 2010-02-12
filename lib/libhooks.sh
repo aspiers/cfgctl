@@ -37,7 +37,11 @@ EOF
     $ZDOT_FIND_HOOKS "$hookdir" | while read conf; do
         echo "#   Appending $conf"
         echo "# Include of $conf follows:" >> "$config"
-        cat "$conf" >> "$config"
+        if grep -q '%% Executable hook %%' "$conf"; then
+            "$conf" >> "$config"
+        else
+            cat "$conf" >> "$config"
+        fi
         echo >> "$config"
     done
 }
