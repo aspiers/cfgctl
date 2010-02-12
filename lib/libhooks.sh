@@ -34,7 +34,12 @@ EOF
     # be.sh then we probably don't.
     source $ZDOTDIR/.shared_env 
 
-    $ZDOT_FIND_HOOKS "$hookdir" | while read conf; do
+    # sort by filename not by path
+    $ZDOT_FIND_HOOKS "$hookdir" | \
+    sed 's/\(.\+\)\/\(.\+\)/\2 -%- \1\/\2/' | \
+    sort -k1 | \
+    sed 's/.* -%- //' | \
+    while read conf; do
         echo "#   Appending $conf"
         # Allow for executable hooks, for generating content dynamically,
         # triggered by including a magic cookie in the hook file.
