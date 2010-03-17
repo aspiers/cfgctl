@@ -127,6 +127,7 @@ if (which('xinit')) {
     config/Xwindows/gkrellm                gkrellm
     config/Xwindows/rxvt                   rxvt
     config/Xwindows/graphics               graphics
+    config/Xwindows/audio                  audio
 EOF
 }
 
@@ -225,7 +226,6 @@ EOF
 if ($host_nickname =~ /^atlantic/) {
   register new Cfg::Section 'play' => "For play only";
   secure_multi_register(<<EOF);
-    config/Xwindows/audio                  audio
     config/Xwindows/backgrounds            backgrounds
     config/Xwindows/xchat                  xchat
     config/shell-apps/namazu               namazu
