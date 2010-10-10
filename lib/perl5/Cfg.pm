@@ -20,10 +20,11 @@ use Cfg::CLI qw(debug %opts);
 use Cfg::Cfg qw(%cfg);
 use Cfg::Section;
 use Cfg::Pkg::CVS;
-use Cfg::Pkg::Baz;
-use Cfg::Pkg::Bzr;
+use Cfg::Pkg::Git;
 use Cfg::Pkg::Mercurial;
 use Cfg::Pkg::Port;
+use Cfg::Pkg::Bzr;
+use Cfg::Pkg::Baz;
 use Sh qw(safe_cat); # required by config.map
 
 =head1 ROUTINES
