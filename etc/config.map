@@ -16,9 +16,10 @@ $ENV{CVSROOT} = 'adam@cvs.adamspiers.org:/home/adam/.CVSROOT';
 $ENV{CVSROOT} = '/home/adam/.CVSROOT' if hostname() eq 'arctic';
 my $cvsroot  = $ENV{CVSROOT};
 my $cvs_wd   = "$ENV{HOME}/.cvs";
+my $git_root = "$ENV{HOME}/.git";
 my $hg_root  = "$ENV{HOME}/.HG";
-my $baz_root = "$ENV{HOME}/.baz";
 my $bzr_root = "$ENV{HOME}/.bzr";
+my $baz_root = "$ENV{HOME}/.baz";
 
 my $localhost_nick_file = "$ENV{HOME}/.localhost-nickname";
 chomp(my $host_nickname = safe_cat($localhost_nick_file));
@@ -67,6 +68,28 @@ secure_multi_register(<<EOF);
     config/shell-apps/screen               screen
     config/shell-apps/emacs                emacs
 EOF
+
+# FIXME: reference my local org-mode git repo instead ...
+#
+# register new Cfg::Pkg::Git $git_root,
+#   'orgmode' =>
+#     'git://repo.or.cz/org-mode.git',
+#     'lib/emacs/major-modes/org-mode.git';
+
+register new Cfg::Pkg::Git $git_root,
+  'cucumber-el' =>
+    'git://github.com/michaelklishin/cucumber.el.git',
+    'lib/emacs/major-modes/cucumber';
+
+register new Cfg::Pkg::Git $git_root,
+  'elisp-behave' =>
+    'git://github.com/tomtt/elisp_behave.git',
+    'lib/emacs/major-modes/elisp-behave';
+
+register new Cfg::Pkg::Git $git_root,
+  'emacs-rails' =>
+    'git://github.com/remvee/emacs-rails.git',
+    'lib/emacs/major-modes/emacs-rails.remvee.git';
 
 if ($host_nickname) {
   register new Cfg::Pkg::Baz $baz_root,
@@ -292,7 +315,5 @@ move all 3rd party emacs packages out to separate packages
   epg
   etc.
 
-git://github.com/tomtt/elisp_behave.git
-git://github.com/remvee/emacs-rails.git
 find-recursive.el
 snippet.el
