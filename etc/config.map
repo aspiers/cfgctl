@@ -39,7 +39,7 @@ unless ($secure_machine) {
 
 #############################################################
 register new Cfg::Section 'boot' => "Bootstrapping";
-secure_multi_register(<<EOF);
+secure_multi_register('CVS', <<EOF);
     config/META                            META
 
     config/shell-env                       shell-env
@@ -62,7 +62,7 @@ EOF
 
 #############################################################
 register new Cfg::Section 'basics' => "Bare essentials";
-secure_multi_register(<<EOF);
+secure_multi_register('CVS', <<EOF);
     config/shell-apps/ssh                  ssh
     personal/sec/config/shell-apps/ssh     ssh.adam_spiers.sec
     config/shell-apps/screen               screen
@@ -143,7 +143,7 @@ else {
 register new Cfg::Section 'X' => "X environment";
 
 if (which('xinit')) {
-  secure_multi_register(<<EOF);
+  secure_multi_register('CVS', <<EOF);
     config/Xwindows/SESSION                SESSION
     config/Xwindows/xwrits                 xwrits
     config/Xwindows/fonts                  fonts
@@ -155,14 +155,14 @@ EOF
 }
 
 if (which('kdeinit') or which('kdeinit4')) {
-  secure_multi_register(<<EOF);
+  secure_multi_register('CVS', <<EOF);
     config/Xwindows/kde                    kde
 EOF
 }
 
 #############################################################
 register new Cfg::Section 'mail' => "Mail";
-secure_multi_register(<<EOF);
+secure_multi_register('CVS', <<EOF);
     config/shell-apps/mutt                 mutt
 
 # depends on shell-env for sort-by-filename
@@ -186,7 +186,7 @@ EOF
 
 #############################################################
 register new Cfg::Section std => "Getting more comfortable";
-secure_multi_register(<<EOF);
+secure_multi_register('CVS', <<EOF);
     config/shell-apps/lftp                 lftp
     config/shell-apps/ncftp                ncftp
     config/shell-apps/wscan                wscan
@@ -213,7 +213,7 @@ $ENV{PATH} = "/sbin:$ENV{PATH}";
 system("moosehall-connection-p 2>/dev/null");
 if ($? >> 8 == 0 || $ENV{MOOSEHALL}) {
   register new Cfg::Section 'moosehall' => "For moosehall only";
-  secure_multi_register(<<EOF);
+  secure_multi_register('CVS', <<EOF);
     personal/pub/config/moosehall/shell-env             moosehall+shell-env
     personal/pub/config/moosehall/xsession              moosehall+xsession
     personal/pub/config/moosehall/shell-apps/ssh        moosehall+ssh.pub
@@ -225,7 +225,7 @@ EOF
 
 #############################################################
 if (-e "$ENV{HOME}/roaming") {
-  secure_multi_register(<<EOF);
+  secure_multi_register('CVS', <<EOF);
     config/pim                             pim
     personal/sec/config/pim                pim.sec
 EOF
@@ -234,7 +234,7 @@ EOF
 #############################################################
 if (-e "$ENV{HOME}/ifolder" or hostdomain() =~ /lab\.novell\.com$/) {
   register new Cfg::Section 'novell' => "For work only";
-  secure_multi_register(<<EOF);
+  secure_multi_register('CVS', <<EOF);
     config/work-tools                      work-tools
     personal/pub/config/novell/shell-env   novell+shell-env.pub
     personal/pub/config/novell/shell-apps/emacs  novell+emacs.pub
@@ -248,7 +248,7 @@ EOF
 #############################################################
 if ($host_nickname =~ /^atlantic/) {
   register new Cfg::Section 'play' => "For play only";
-  secure_multi_register(<<EOF);
+  secure_multi_register('CVS', <<EOF);
     config/Xwindows/backgrounds            backgrounds
     config/Xwindows/xchat                  xchat
     config/shell-apps/namazu               namazu
@@ -259,7 +259,7 @@ EOF
 ## To obtain warnings requires a checkout, so you may want
 ## to leave these commented.
 if ($secure_machine) {
-    secure_multi_register(<<EOF);
+    secure_multi_register('CVS', <<EOF);
    config/personal-interest               personal-interest
 EOF
 }
@@ -272,7 +272,7 @@ if ($host_nickname =~ /^atlantic/) {
   # config/Xwindows/Eterm                  Eterm
   # config/Xwindows/sawfish                sawfish
 
-  secure_multi_register(<<EOF);
+  secure_multi_register('CVS', <<EOF);
     config/shell-apps/htmltidy             htmltidy
     config/shell-apps/palm                 palm
     config.RETIRED/Xwindows/galeon         galeon
@@ -295,9 +295,10 @@ register new Cfg::Pkg::Mercurial $hg_root, 'hgtest',
 #############################################################
 
 sub secure_multi_register {
-  my ($block) = @_;
+  my ($backend, $block) = @_;
   $block =~ s!^\s*personal/sec/.*!!m unless $secure_machine;
-  register multi Cfg::Pkg::CVS $cvsroot, $cvs_wd, $block;
+  my $class = "Cfg::Pkg::$backend";
+  register multi $class $cvsroot, $cvs_wd, $block;
 }
 
 
