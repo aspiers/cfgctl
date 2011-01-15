@@ -79,7 +79,9 @@ for dir in config/dev-tools/cvs \
            config/shell-env \
            config/shell-apps/{ssh,screen}
 do
-    if ! [ -d $dir ]; then
+    if [ -d $dir ]; then
+        echo "~/.cvs/$dir already exists; not checking out"
+    else
         cvs checkout $dir
     fi
 done
