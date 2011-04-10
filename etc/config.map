@@ -27,7 +27,7 @@ chomp(my $host_nickname = safe_cat($localhost_nick_file));
 warn "$localhost_nick_file empty; skipping some packages.\n"
   unless $host_nickname;
 
-my $secure_machine = $host_nickname =~ /^(arctic|atlantic|pacific|indian|southern|d600|coltrane)$/;
+my $secure_machine = $host_nickname =~ /^(arctic|atlantic|pacific|indian|southern|d600|coltrane|linuxmce|adriatic)$/;
 unless ($secure_machine) {
   debug(1, "# ! WARNING! Not on a secure machine; skipping secure packages");
 }
