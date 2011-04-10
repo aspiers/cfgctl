@@ -21,6 +21,7 @@ use Cfg::Cfg qw(%cfg);
 use Cfg::Section;
 use Cfg::Pkg::CVS;
 use Cfg::Pkg::Git;
+use Cfg::Pkg::Svn;
 use Cfg::Pkg::Mercurial;
 use Cfg::Pkg::Port;
 use Cfg::Pkg::Bzr;
