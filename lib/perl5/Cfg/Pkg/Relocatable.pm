@@ -46,17 +46,20 @@ point within the dedicated stow package tree...
 
 =head2 Strategy 1
 
-Relocate using a separate tree C<~/.baz-relocations>:
+Relocate using a separate tree C<~/.baz-relocations> which contains
+extra relocation directories:
 
-    ~/.baz-relocations/
-        arch@adamspiers.org--upstream-2006-d600/  <-- stow dir
-          muse--main--1.0/                        <-- symlink from ~/.cfg/muse
-            lib/                                  \
-              emacs/                              | 
-                major-modes/                      | <= $relocate
-                  muse/       <-- symlink to $src / 
-                    a/
-                      file
+                 ~/.baz-relocations/
+                   arch@adamspiers.org--upstream-2006-d600/  <= stow dir
+  ~/.cfg/muse ->     muse--main--1.0/                        
+                 /     lib/
+                 |       emacs/
+    $relocate => |         major-modes/
+                 \           muse/       -> $src
+                                              top-level-dir-upstream/
+  Key:                                          upstream-file
+    symlink -> target
+    comment => thing being commented on
 
 Pros:
 
@@ -71,7 +74,8 @@ Cons:
 
 =head2 Strategy 2
 
-Symlink:
+Put extra relocation directions directly in C<~/.cfg> and use a
+single symlink:
 
     ~/.cfg/muse/lib/emacs/major-modes/muse -> $src
 
@@ -85,7 +89,7 @@ Cons:
 
 =head2 Solution
 
-Strategy 1 wins (just).
+Strategy 1 wins - consistency is important.
 
 =cut
 
