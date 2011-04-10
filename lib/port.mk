@@ -14,99 +14,129 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
+# Different types of targets:
+#  - stage rules as defined in $(STAGES)
+#    + Determine dependency chain between stages - each stage depends
+#      on previous stage.
+#    + Can be overridden to change dependency chain (remove links).
+#    + Can mostly be left alone.
+#
+#  - $(status)/<stage>
+#    + Does the meat of the work for the stage
+#    + Determines dependencies except for on other stages
+#    + Expected to be overridden by copying from this file
+#    + Can depend on "function targets" (see below)
+#
+#  - Function targets act as helpers to perform common tasks
+#    + e.g. wget for downloading sources via wget
+#    + take parameters via variables
+#    + call like this:
+#         target: param1=myvalue
+#         target: helper
+#
+# N.B. No pre/body/post stage targets acting as "hooks" for
+# inheritance/overriding - they can be implemented with normal
+# dependencies via 
+#   foo : pre body post
+# I tried them before and they just cluttered up this file.
+
 include ~/etc/ports.conf
 
-default: install
-all: download prep patch configure build install
-force-all: clean-status all
+# Define a unique namespace for inheritance
+PKG=portmk
 
-setup:
+# Enable inheritance and overriding of $(PKG)-* targets.
+# If target 'foo' is defined in a rule in the port, it will use that.
+# Otherwise it will use $(PKG)-foo if it's defined in this file.
+% :: $(PKG)-*
+# This command is required since it's a "match anything" rule:
+	@# echo "(inherited $@ from port.mk)"
+
+STAGES = setup download prep patch configure build install package
+.PHONY: $(addprefix $(PKG)-,$(STAGES))
+.PHONY: $(addprefix $(PKG)-clean-,$(STAGES)) clean
+.PHONY: $(addprefix $(PKG)-force-,$(STAGES))
+
+.PHONY: $(PKG)-all force-all
+default all: install
+force-all: clean all
+
+$(PKG)-setup:
 	@mkdir -p $(status)
-
-#######################################################
-#          Empty pre-* and post-* targets             #
-#######################################################
-STAGES = pre post
-NAMES = download prep patch configure build install package clean
-
-ALL_TARGETS = $(foreach stage,$(STAGES),$(addprefix $(stage)-,$(NAMES)))
-
-.PHONY: $(ALL_TARGETS) $(addprefix do-,$(NAMES))
-
 
 #######################################################
 #                Download targets                     #
 #######################################################
-force-download: 
-	@echo $(DISTFILES) $(PATCHFILES) | xargs -r rm
-	@$(MAKE) download
+force-download: clean-download download
+clean-download:
+	@rm $(DISTFILES) $(PATCHFILES)
 
-download: setup pre-download $(DISTFILES) $(PATCHFILES) post-download
+download: setup $(status)/download
 
-$(DISTFILES) $(PATCHFILES):
+$(status)/download: $(DISTFILES) $(PATCHFILES)
+	@touch $@
+
+$(DISTFILES) $(PATCHFILES): wget_file=$@
+$(DISTFILES) $(PATCHFILES): wget
+
+wget:
 	@for k in ${MASTER_SITES}; do \
-		echo -n "===> Downloading $@ from $$k ... "; \
-		wget -P ./ ${WGET_OPTIONS} $${k%/}/$@; \
-		if [ -f $@ ]; then \
+		echo -n "===> Downloading $(wget_file) from $$k ... "; \
+		wget -P ./ $${k%/}/$(wget_file); \
+		if [ -f $(wget_file) ]; then \
 			echo "Success"; \
 			break; \
 		else \
 			echo "Failed, trying next site."; \
 		fi; \
 	done; 
-	@if [ -f $@ ]; then :; else \
-		echo "Sorry, unable to download $@."; \
+	@if [ -f $(wget_file) ]; then :; else \
+		echo "Sorry, unable to download $(wget_file)."; \
 	fi; 
 
 
 #######################################################
 #                 Prepare targets                     #
 #######################################################
-force-prep:
-	@rm $(status)/prep
-	@$(MAKE) prep
+force-prep: clean-prep prep
+clean-prep:
+	@rm -f $(status)/prep
 
-prep: download $(status)/prep 
-
-$(status)/prep: 
-	@$(MAKE) prep-message checksums pre-prep do-prep post-prep
-	@touch $(status)/prep
-
-pre-prep:
-	@[ -d "$(BUILD_DIR)" ] || mkdir -p "$(BUILD_DIR)"
+prep: download prep-message $(status)/prep 
 
 prep-message:
 	@echo "===> Preparing ${PORTNAME}"
 
+$(status)/prep: create-build-dir
+	@touch $@
+
+create-build-dir:
+	@[ -d "$(BUILD_DIR)" ] || mkdir -p "$(BUILD_DIR)"
+
 #######################################################
 #                  Patch targets                      #
 #######################################################
-force-patch:
-	@rm $(status)/patch
-	@$(MAKE) patch
+force-patch: clean-patch patch
+clean-patch:
+	@rm -f $(status)/patch
 
-patch: prep $(status)/patch
-
-$(status)/patch:
-	@$(MAKE) patch-message pre-patch do-patch post-patch
-	@touch $@
+patch: prep patch-message $(status)/patch
 
 patch-message:
 	@echo "===>  Patching ${PORTNAME}"
 
-ifndef NO_PATCH
-do-patch: 
+$(status)/patch:
 	@for i in $(patsubst %.bz2,%,${PATCHFILES}); do \
 		cd ${BUILD_DIR} && patch ${PATCH_OPTIONS} ../$$i; \
 	done
-endif
+	@touch $@
 
 #######################################################
 #               Configure targets                     #
 #######################################################
-force-configure:
-	@-rm $(status)/configure
-	@$(MAKE) configure
+force-configure: clean-configure configure
+clean-configure:
+	@rm -f $(status)/configure
 
 configure: patch $(status)/configure
 
@@ -126,7 +156,7 @@ endif
 #                 Build targets                       #
 #######################################################
 force-build:
-	@rm $(status)/build
+	@rm -f $(status)/build
 	@$(MAKE) build
 
 build: configure $(status)/build
@@ -213,17 +243,6 @@ versions:
       done;
 
 check-installed:
-
-checksums:
-ifndef NO_CLEAN
-	@-md5sum --check md5
-endif
-
-md5: download
-	@echo -n "" > md5
-	@for k in ${DISTFILES} ${PATCHFILES}; do \
-		md5sum -b $$k >> md5;\
-	done
 
 uninstall: FIXME
 
