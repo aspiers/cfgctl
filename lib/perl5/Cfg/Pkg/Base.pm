@@ -32,6 +32,26 @@ See derived classes.
 
 =cut
 
+sub multi {
+  my $self = shift;
+  my $class = ref($self) || $self;
+  my $block = pop @_;
+  my @common_args = @_;
+  debug(3, "# ${class}::multi(" . join(", ", @common_args) . ", [$block])");
+  my @new;
+  die unless $block;
+  my @lines = split /\n/, $block;
+  for my $line (@lines) {
+    debug(5, "     line [$line]");
+    $line =~ s/^\s+//;
+    $line =~ s/\s+$//;
+    next unless $line;
+    next if $line =~ /^#/;
+    push @new, $class->new(@_, split /\s+/, $line);
+  }
+  return @new;
+}
+
 sub deprecate {
   my $self = shift;
   my $description = $self->description;
@@ -121,9 +141,7 @@ sub install_symlink {
 
 sub src_local {
   my $self = shift;
-  $self->_not_implemented(<<EOF);
-ME should be overridden to return true if the source exists locally.
-EOF
+  return -d $self->src;
 }
 
 sub deinstall {

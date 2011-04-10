@@ -30,42 +30,27 @@ sub new {
   my $self = shift;
   my $class = ref($self) || $self;
   my ($root, $wd, $src, $dst) = @_;
-  debug(4, "#   CVS::new($root, $wd, $src, $dst)");
+  debug(4, "#   ${class}->new(" . join(", ", @_) . ")");
+
+  die "${class}->new() called without \$dst" unless $dst;
 
   my $pkg = bless {
     root => $root, # e.g. 'adam@f5.mandolinarchive.com:/home/adam/.CVSROOT'
-    wd   => $wd,   # e.g. "$ENV{HOME}/.cvs"            
-    src  => $src,  # e.g. config/dev-tools/perl/mine   
+    wd   => $wd,   # e.g. "$ENV{HOME}/.cvs"
+    src  => $src,  # e.g. config/dev-tools/perl/mine
     dst  => $dst,  # e.g. perl+mine
   }, $class;
 
-  unless (which('cvs')) {
-    my $reason = "cvs not found";
+  my $cmd = $class->CMD;
+  unless (which($cmd)) {
+    my $reason = "$cmd not found";
     $pkg->disable($reason);
   }
 
   return $pkg;
 }
 
-sub multi {
-  my $self = shift;
-  my $class = ref($self) || $self;
-  my ($cvsroot, $wd, $block) = @_;
-  debug(3, "# CVS::multi($cvsroot, $wd, [$block])");
-  my @new;
-  die unless $block;
-  my @lines = split /\n/, $block;
-  for my $line (@lines) {
-    debug(5, "     line [$line]");
-    $line =~ s/^\s+//;
-    $line =~ s/\s+$//;
-    next unless $line;
-    next if $line =~ /^#/;
-    my ($src, $dst) = split /\s+/, $line;
-    push @new, $class->new($cvsroot, $wd, $src, $dst);
-  }
-  return @new;
-}
+sub CMD { 'cvs' }
 
 =head1 METHODS
 
@@ -97,12 +82,13 @@ sub process_queue {
 
     my @modules = map $_->_src, @$pkgs;
 
+    my $cmd = $self->CMD;
     if (! for_real() && $op eq 'checkout') {
-      debug(1, "cvs -d $cvsroot $op @modules\n");
+      debug(1, "$cmd -d $cvsroot $op @modules\n");
     }
 
     my @cmd = (
-      'cvs',
+      $cmd,
       '-d', $cvsroot,
       $op eq 'update'      ? '-q' : (),
       for_real()           ?   () : '-n',
@@ -115,13 +101,8 @@ sub process_queue {
     print XARGS "$_\n" foreach @modules;
     close(XARGS) or die "close(| xargs @cmd) failed: $!\n";
     my $exit = $? >> 8;
-    die "cvs $op failed; aborting!\n" if $exit != 0;
+    die "$cmd $op failed; aborting!\n" if $exit != 0;
   }
-}
-
-sub src_local {
-  my $self = shift;
-  return -d $self->src;
 }
 
 # This is a nop, since we batch fetch instead.
