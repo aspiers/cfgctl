@@ -82,6 +82,7 @@ secure_multi_register('Cfg::Pkg::Git', $git_root, <<EOF);
   elisp-behave git://github.com/tomtt/elisp_behave.git         lib/emacs/major-modes/elisp-behave
   emacs-rails  git://github.com/remvee/emacs-rails.git         lib/emacs/major-modes/emacs-rails.remvee.git
   yasnippets-rails git://github.com/eschulte/yasnippets-rails.git lib/emacs/minor-modes/yasnippets-rails
+  remember     git://repo.or.cz/remember-el.git              lib/emacs/major-modes/remember.git
 EOF
 
 # register new Cfg::Pkg::Svn $svn_root,
