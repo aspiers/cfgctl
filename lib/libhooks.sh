@@ -15,12 +15,16 @@ rebuild_config () {
         return 1
     fi
 
-    if [ -e "$config" ] && ! grep -q "^$magic_string" "$config"; then
-        cat <<EOF >&2
+    if [ -e "$config" ]; then
+        if ! [ -s "$config" ]; then
+            echo "# $config is empty"
+        elif ! grep -q "^$magic_string" "$config"; then
+            cat <<EOF >&2
 Error: can't find '$magic_string' in $config
 Presumably hand-written so won't overwrite; please break into parts.
 EOF
-        return 1
+            return 1
+        fi
     fi
 
     echo "# Rebuilding $config ..."
