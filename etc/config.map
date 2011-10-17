@@ -94,20 +94,6 @@ if ($host_nickname) {
       'mwolson@gnu.org--2006',
       'muse--main--1.0',
       'lib/emacs/major-modes/$REV';
-
-#   register new Cfg::Pkg::Baz $baz_root,
-#     'muse-aspiers' =>
-#       "arch\@adamspiers.org--upstream-2006-$host_nickname",
-#       'muse--main--1.0',
-#       'lib/emacs/major-modes/$REV';
-
-  alias muse => qw(muse-mwolson emacs);
-
-#   register new Cfg::Pkg::Baz $baz_root,
-#     xkeycaps => 
-#     "arch\@adamspiers.org--upstream-2006-$host_nickname",
-#     'xkeycaps--aspiers--2.46',
-#     'lib/emacs/xkeycaps';
 }
 
 #############################################################
