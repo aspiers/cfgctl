@@ -38,18 +38,31 @@ sub multi {
   my $block = pop @_;
   my @common_args = @_;
   debug(3, "# ${class}::multi(" . join(", ", @common_args) . ", [$block])");
-  my @new;
-  die unless $block;
+  my @new_pkgs;
+  my @args = $class->pkg_args_from_block($block);
+  for my $pkg_args (@args) {
+    push @new_pkgs, $class->new(@common_args, @$pkg_args);
+  }
+  return @new_pkgs;
+}
+
+sub pkg_args_from_block {
+  my $self = shift;
+  my $class = ref($self) || $self;
+  my ($block) = @_;
+
+  confess "no block passed" unless $block;
   my @lines = split /\n/, $block;
+  my @args;
   for my $line (@lines) {
     debug(5, "     line [$line]");
     $line =~ s/^\s+//;
     $line =~ s/\s+$//;
     next unless $line;
     next if $line =~ /^#/;
-    push @new, $class->new(@_, split /\s+/, $line);
+    push @args, [ split /\s+/, $line ];
   }
-  return @new;
+  return @args;
 }
 
 sub deprecate {
