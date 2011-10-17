@@ -44,13 +44,8 @@ sub pull {
     sys_or_die(\@cmd);
   }
   else {
-    my @cmd = (
-      $self->DVCS_CMD,
-      'incoming',
-      $self->upstream,
-    );
-    debug(1, "@cmd");
-    sys_or_die(\@cmd);
+    die __PACKAGE__ . " backend doesn't support previews of incoming upstream changes
+because git requires you to fetch them first.\n";
   }
 }
 
