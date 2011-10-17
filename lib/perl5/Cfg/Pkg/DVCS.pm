@@ -134,7 +134,7 @@ sub params {
   return map $self->$_, qw(dst co_root upstream relocation);
 }
 
-# where to check out to, e.g. ~/.bzr/dvc
+# where to check out to, e.g. ~/.bzr/http:__bzr.xsteve.at_dvc_
 sub _co_to {
   my $self = shift;
   my $quoted_upstream = $self->upstream;
