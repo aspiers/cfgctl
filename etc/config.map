@@ -88,14 +88,6 @@ EOF
 # register new Cfg::Pkg::Svn $svn_root,
 #   'yasnippet-svn' => 'http://yasnippet.googlecode.com/svn/trunk/';
 
-if ($host_nickname) {
-  register new Cfg::Pkg::Baz $baz_root,
-    'muse-mwolson' =>
-      'mwolson@gnu.org--2006',
-      'muse--main--1.0',
-      'lib/emacs/major-modes/$REV';
-}
-
 #############################################################
 register new Cfg::Section 'dist' => "Distribution-specific";
 if (-e "/etc/SuSE-release") {
