@@ -136,6 +136,12 @@ sub src_local {
   return -d $self->src;
 }
 
+=head2 deinstall()
+
+Invoke stow to uninstall the package.
+
+=cut
+
 sub deinstall {
   my $self = shift;
   my $dst = $self->dst;
@@ -156,6 +162,12 @@ sub deinstall {
   my $is = $self->install_symlink;
   unlink($is) or die "unlink($is) failed: $!\n";
 }
+
+=head2 deinstall()
+
+Invoke stow to install the package.
+
+=cut
 
 sub install {
   my $self = shift;
@@ -208,17 +220,55 @@ sub install {
   }
 }
 
+=head2 fetch()
+
+Fetch (i.e. clone) the sources from upstream.  Used if C<src_local()>
+returns false.
+
+=cut
+
+sub fetch {
+  my $self = shift;
+  $self->_not_implemented(<<EOF);
+ME should be overridden - CLASS backend not yet finished?
+EOF
+}
+
+=head2 update()
+
+Retrieve the latest upstream sources.  When implemented by a
+distributed version control system, this requires first fetching them
+from upstream, and then merging them with the local branch.
+
+=cut
+
 sub update {
   my $self = shift;
   my $class = ref $self;
   debug(3, "# Skipping unimplemented per-instance update for $class");
 }
 
+=head2 pull()
+
+Pull the latest sources from upstream, but don't merge them locally
+(i.e. this uses Mercurial's definition of "pull", which corresponds to
+"fetch" in git).  Only implemented by distributed version control
+systems.
+
+=cut
+
 sub pull {
   my $self = shift;
   my $class = ref $self;
   debug(3, "# Skipping unimplemented per-instance pull for $class");
 }
+
+=head2 push_upstream()
+
+Push the latest sources upstream.  Only implemented by distributed
+version control systems.
+
+=cut
 
 sub push_upstream {
   my $self = shift;
