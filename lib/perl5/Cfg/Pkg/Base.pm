@@ -238,7 +238,8 @@ EOF
 
 Retrieve the latest upstream sources.  When implemented by a
 distributed version control system, this requires first fetching them
-from upstream, and then merging them with the local branch.
+from upstream, and then merging them with the local branch (i.e. "git
+pull" or "hg fetch").
 
 =cut
 
