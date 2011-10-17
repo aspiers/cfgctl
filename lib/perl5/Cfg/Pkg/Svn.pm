@@ -56,7 +56,7 @@ sub fetch {
   my $description = $self->description;
   debug(2, "#   Fetching $description");
   my @cmd = (
-    $self->DVCS_CMD, $self->DVCS_FETCH_CMD,
+    $self->CMD, $self->FETCH_CMD,
     $self->upstream, $self->_co_to,
   );
   debug(1, "@cmd");
