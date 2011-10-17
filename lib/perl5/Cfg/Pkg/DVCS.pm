@@ -36,7 +36,28 @@ EOF
 
 =head1 CONSTRUCTORS
 
-=head2 new($co_root, $upstream, $dst, $relocate)
+=head2 new($co_root, $dst, $upstream, $relocate)
+
+=over 4
+
+=item $co_root
+
+The local directory containing all repositories for this type of
+backend, e.g. F<~/.git>.
+
+=item $dst
+
+Package name, e.g. F<org-mode>.
+
+=item $upstream
+
+Path / URL to upstream sources
+
+=item $relocate (optional)
+
+The path under which to install package source files.
+
+=back
 
 =cut
 
@@ -45,12 +66,14 @@ sub new {
   my $class = ref($self) || $self;
   my ($co_root, $dst, $upstream, $relocate) = @_;
 
+  die "${class}->new() called without \$upstream" unless $upstream;
+
   $relocate =~ s/\$DST/$dst/g if $relocate;
 
   my $pkg = bless {
     co_root  => $co_root,  # e.g. ~/.bzr
     dst      => $dst,      # e.g. dvc (stow package name)
-    upstream => $upstream,
+    upstream => $upstream, # e.g. http://bzr.xsteve.at/dvc/
     relocate => $relocate, # e.g. lib/emacs/major-modes/dvc
   }, $class;
 
