@@ -95,22 +95,14 @@ sub process_fetch_queue  { shift->process_queue('fetch');  }
 sub process_push_queue   { shift->process_queue('push');   }
 
 sub enqueue_op {
-  my $self = shift;
-  my ($op) = @_;
-  my $plural = "${op}s";
-  $plural = 'fetches' if $op eq 'fetch';
-  die <<EOF;
-CLASS does not yet support $plural.
-
-To add support, override CLASS::enqueue_$op and 
-CLASS::process_${op}_queue.
-
-Note that it will also be responsible for checking out any
-non-existing sources, etc.
-EOF
+  not_yet_supported(@_);
 }
 
 sub process_queue {
+  not_yet_supported(@_);
+}
+
+sub not_yet_supported {
   my $self = shift;
   my ($op) = @_;
   my $plural = "${op}s";
