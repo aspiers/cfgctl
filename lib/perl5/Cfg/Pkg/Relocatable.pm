@@ -6,11 +6,13 @@ Cfg::Pkg::Relocatable - mix-in for relocatable source control mechanisms
 
 =head1 SYNOPSIS
 
-synopsis
+  use base qw(Cfg::Pkg::Relocatable);
 
 =head1 DESCRIPTION
 
-description
+Mix-in class for Cfg::Pkg::Base backend class hierarchy, providing
+methods for relocating install of packages to arbitrary places in the
+filesystem.
 
 =head1 TREE RELOCATION
 
