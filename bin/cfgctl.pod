@@ -115,7 +115,8 @@ but has a slightly different scope.
 =item * It is intended to be used by (many) non-root users.
 
 Yes, you can run C<rpm> and C<dpkg> non-root, and create relocatable
-packages, but ultimately they're designed for managing an OS install.
+packages, but ultimately they're designed for managing an OS install,
+and their quirks are distribution-specific.
 
 =item * It is intended for fluid environments.
 
