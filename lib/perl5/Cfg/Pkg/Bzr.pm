@@ -2,7 +2,7 @@ package Cfg::Pkg::Bzr;
 
 =head1 NAME
 
-Cfg::Pkg::Bzr - subclass for cfgctl configuration packages managed by tla/baz
+Cfg::Pkg::Bzr - subclass for cfgctl configuration packages managed by bzr
 
 =head1 SYNOPSIS
 
