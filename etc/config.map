@@ -32,11 +32,10 @@ unless ($secure_machine) {
   debug(1, "# ! WARNING! Not on a secure machine; skipping secure packages");
 }
 
-## register_cvs_pkgs arguments:
-##   1. Source repository label as defined above.
-##   2. Column 1: Source directory within the repository or working dir.
-##      Column 2: Target namespace as controlled by stow or similar
-##                (therefore must be unique).
+## secure_multi_register_cvs parameter block format:
+##   Column 1: Source directory within the repository or working dir.
+##   Column 2: Target namespace as controlled by stow or similar
+##             (therefore must be unique).
 
 #############################################################
 register new Cfg::Section 'boot' => "Bootstrapping";
