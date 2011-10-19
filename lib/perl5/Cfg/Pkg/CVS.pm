@@ -60,8 +60,8 @@ sub enqueue_op {
   my $self = shift;
   my ($op) = @_;
   die "batch operation '$op' not supported"
-    unless $op eq 'update' or $op eq 'fetch';
-  $op = 'checkout' if $op eq 'fetch';
+    unless $op eq 'update' or $op eq 'clone';
+  $op = 'checkout' if $op eq 'clone';
   push @{ $queues{$op}{$self->cvsroot} }, $self;
 }
 
@@ -69,8 +69,8 @@ sub process_queue {
   my $self = shift;
   my ($op) = @_;
   die "batch operation '$op' not supported"
-    unless $op eq 'update' or $op eq 'fetch';
-  $op = 'checkout' if $op eq 'fetch';
+    unless $op eq 'update' or $op eq 'clone';
+  $op = 'checkout' if $op eq 'clone';
 
   debug(1, "#   Processing CVS ${op}s...");
 
@@ -105,8 +105,8 @@ sub process_queue {
   }
 }
 
-# This is a nop, since we batch fetch instead.
-sub fetch { }
+# This is a nop, since we batch checkout instead.
+sub clone_if_upstream_exists { }
 
 sub install {
   my $self = shift;

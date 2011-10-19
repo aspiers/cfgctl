@@ -88,19 +88,19 @@ sub src_local {
   return -f File::Spec->join($self->_status_dir, 'install');
 }
 
-sub update { shift->update_or_fetch('update') }
-sub fetch  { shift->update_or_fetch('fetch')  }
+sub update { shift->update_or_clone('update') }
+sub clone  { shift->update_or_clone('clone')  }
 
-sub update_or_fetch {
+sub update_or_clone {
   my $self = shift;
   my ($op) = @_;
-  die unless $op eq 'update' or $op eq 'fetch';
+  die unless $op eq 'update' or $op eq 'clone';
 
   my $class = ref($self);
   my $description = $self->description;
   debug(2, "#   Package $description in ${class}'s $op queue");
   chdir($self->_port_dir) or die "chdir($self->_port_dir) failed: $!\n";
-  my $make_arg = $op eq 'fetch' ? 'install' : 'force-all';
+  my $make_arg = $op eq 'clone' ? 'install' : 'force-all';
   if (for_real()) {
     system $cfg{make}, $make_arg;
   }

@@ -24,10 +24,10 @@ use base qw(Cfg::Pkg::DVCS);
 sub update {
   my $self = shift;
 
-  $self->pull('-u');
+  $self->pull_from_upstream('-u');
 }
 
-sub pull {
+sub pull_from_upstream {
   my $self = shift;
   my @pull_options = @_;
 
@@ -82,7 +82,7 @@ sub push_upstream {
 }
 
 sub DVCS_CMD         { 'hg'    }
-sub DVCS_FETCH_CMD   { 'clone' }
+sub DVCS_CLONE_CMD   { 'clone' }
 
 =head1 BUGS
 

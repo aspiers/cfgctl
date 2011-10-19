@@ -49,9 +49,11 @@ backend, e.g. F<~/.git>.
 
 Package name, e.g. F<org-mode>.
 
-=item $upstream
+=item $upstream (optional)
 
-Path / URL to upstream sources
+Path / URL to upstream sources.  This can be left unspecified if there
+is no upstream and cfgctl is only being used to install the package
+locally via stow, e.g. my personal config on adamspiers.org.
 
 =item $relocate (optional)
 
@@ -95,7 +97,18 @@ sub src_local {
   return -d $self->_co_to;
 }
 
-sub fetch {
+sub clone_if_upstream_exists {
+  my $self = shift;
+
+  unless ($self->upstream) {
+    warn "Warning: ", $self->dst, " has no upstream to clone from\n";
+    return;
+  }
+
+  $self->clone_from_upstream(@_);
+}
+
+sub clone_from_upstream {
   my $self = shift;
 
   my $root = $self->co_root;
@@ -104,9 +117,9 @@ sub fetch {
   }
   my $class = ref($self) || $self;
   my $description = $self->description;
-  debug(2, "#   Fetching $description");
+  debug(2, "#   Cloning $description");
   my @cmd = (
-    $self->DVCS_CMD, $self->DVCS_FETCH_CMD,
+    $self->DVCS_CMD, $self->DVCS_CLONE_CMD,
     $self->upstream, $self->_co_to,
   );
   debug(1, "@cmd");
@@ -120,6 +133,28 @@ sub update {
 ME should be overridden to return a list of the public parameters
 to be output when generating a machine-readable package map.
 EOF
+}
+
+sub pull_if_upstream_exists {
+  my $self = shift;
+
+  unless ($self->upstream) {
+    warn "Warning: ", $self->dst, " has no upstream to pull from\n";
+    return;
+  }
+
+  $self->pull(@_);
+}
+
+sub push_if_upstream_exists {
+  my $self = shift;
+
+  unless ($self->upstream) {
+    warn "Warning: ", $self->dst, " has no upstream to push to\n";
+    return;
+  }
+
+  $self->push(@_);
 }
 
 sub co_root     { shift->{co_root}    }

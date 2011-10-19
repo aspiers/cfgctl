@@ -32,7 +32,7 @@ if ($opts{update}) {
   exit 0 if $opts{'dry-run'};
 }
 elsif ($opts{install} || $opts{erase}) {
-  Cfg->batch_fetch($queue->pkgs);
+  Cfg->batch_clone($queue->pkgs);
 }
 elsif ($opts{push}) {
   Cfg->batch_push($queue->pkgs);
@@ -60,17 +60,17 @@ foreach my $section_and_pkgs ($queue->sections_and_pkgs) {
     }
 
     if (! $pkg->src_local) {
-      $pkg->fetch;
+      $pkg->clone_from_upstream;
     }
     else {
       if ($opts{update}) {
         $pkg->update;
       }
       elsif ($opts{pull}) {
-        $pkg->pull;
+        $pkg->pull_if_upstream_exists;
       }
       elsif ($opts{push}) {
-        $pkg->push_upstream;
+        $pkg->push_if_upstream_exists;
       }
     }
 

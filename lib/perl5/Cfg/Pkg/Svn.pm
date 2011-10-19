@@ -45,7 +45,7 @@ sub new {
   return $pkg;
 }
 
-sub fetch {
+sub clone {
   my $self = shift;
 
   my $root = $self->co_root;
@@ -54,9 +54,9 @@ sub fetch {
   }
   my $class = ref($self) || $self;
   my $description = $self->description;
-  debug(2, "#   Fetching $description");
+  debug(2, "#   Cloning $description");
   my @cmd = (
-    $self->CMD, $self->FETCH_CMD,
+    $self->CMD, $self->CLONE_CMD,
     $self->upstream, $self->_co_to,
   );
   debug(1, "@cmd");
@@ -83,7 +83,7 @@ sub update {
 
 
 sub CMD         { 'svn'     }
-sub FETCH_CMD   { 'clone'   }
+sub CLONE_CMD   { 'clone'   }
 
 =head1 BUGS
 

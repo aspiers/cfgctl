@@ -10,10 +10,14 @@ use Sh qw(cat);
 
 ## Adam's config packages.  Listed in suggested installation order.
 
-## First we define the source repository or working directory.  We
-## only support cvs so far.
+## First we define the source repository or working directory.
 $ENV{CVSROOT} = 'adam@cvs.adamspiers.org:/home/adam/.CVSROOT';
-$ENV{CVSROOT} = '/home/adam/.CVSROOT' if hostname() eq 'arctic';
+my $git_upstream = 'ssh://adamspiers.org/home/adam/.git';
+if (hostname() eq 'arctic') {
+  $ENV{CVSROOT} = '/home/adam/.CVSROOT';
+  $git_upstream = '';
+}
+
 my $cvsroot  = $ENV{CVSROOT};
 my $cvs_wd   = "$ENV{HOME}/.cvs";
 my $git_root = "$ENV{HOME}/.git";
@@ -32,14 +36,14 @@ unless ($secure_machine) {
   debug(1, "# ! WARNING! Not on a secure machine; skipping secure packages");
 }
 
-## secure_multi_register_cvs parameter block format:
+## secure_multi_register_my_cvs parameter block format:
 ##   Column 1: Source directory within the repository or working dir.
 ##   Column 2: Target namespace as controlled by stow or similar
 ##             (therefore must be unique).
 
 #############################################################
 register new Cfg::Section 'boot' => "Bootstrapping";
-secure_multi_register_cvs(<<EOF);
+secure_multi_register_my_git(<<EOF);
     config/META                            META
 
     config/shell-env                       shell-env
@@ -62,26 +66,20 @@ EOF
 
 #############################################################
 register new Cfg::Section 'basics' => "Bare essentials";
-secure_multi_register_cvs(<<EOF);
+secure_multi_register_my_cvs(<<EOF);
     config/shell-apps/ssh                  ssh
     personal/sec/config/shell-apps/ssh     ssh.adam_spiers.sec
     config/shell-apps/screen               screen
     config/shell-apps/emacs                emacs
 EOF
 
-# FIXME: reference my local org-mode git repo instead ...
-#
-# register new Cfg::Pkg::Git $git_root,
-#   'orgmode' =>
-#     'git://repo.or.cz/org-mode.git',
-#     'lib/emacs/major-modes/org-mode.git';
-
-secure_multi_register('Cfg::Pkg::Git', $git_root, <<EOF);
-  cucumber-el  git://github.com/michaelklishin/cucumber.el.git lib/emacs/major-modes/cucumber
-  elisp-behave git://github.com/tomtt/elisp_behave.git         lib/emacs/major-modes/elisp-behave
-  emacs-rails  git://github.com/remvee/emacs-rails.git         lib/emacs/major-modes/emacs-rails.remvee.git
-  yasnippets-rails git://github.com/eschulte/yasnippets-rails.git lib/emacs/minor-modes/yasnippets-rails
-  remember     git://repo.or.cz/remember-el.git              lib/emacs/major-modes/remember.git
+secure_multi_register_git(<<EOF);
+  org-mode         git://repo.or.cz/org-mode.git                   lib/emacs/major-modes/org-mode.git
+  cucumber-el      git://github.com/michaelklishin/cucumber.el.git lib/emacs/major-modes/cucumber
+  elisp-behave     git://github.com/tomtt/elisp_behave.git         lib/emacs/major-modes/elisp-behave
+  emacs-rails      git://github.com/remvee/emacs-rails.git         lib/emacs/major-modes/emacs-rails.remvee.git
+  yasnippets-rails git://github.com/eschulte/yasnippets-rails.git  lib/emacs/minor-modes/yasnippets-rails
+  remember         git://repo.or.cz/remember-el.git                lib/emacs/major-modes/remember.git
 EOF
 
 # register new Cfg::Pkg::Svn $svn_root,
@@ -117,7 +115,7 @@ else {
 register new Cfg::Section 'X' => "X environment";
 
 if (which('xinit')) {
-  secure_multi_register_cvs(<<EOF);
+  secure_multi_register_my_cvs(<<EOF);
     config/Xwindows/SESSION                SESSION
     config/Xwindows/xwrits                 xwrits
     config/Xwindows/fonts                  fonts
@@ -129,14 +127,14 @@ EOF
 }
 
 if (which('kdeinit') or which('kdeinit4')) {
-  secure_multi_register_cvs(<<EOF);
+  secure_multi_register_my_cvs(<<EOF);
     config/Xwindows/kde                    kde
 EOF
 }
 
 #############################################################
 register new Cfg::Section 'mail' => "Mail";
-secure_multi_register_cvs(<<EOF);
+secure_multi_register_my_cvs(<<EOF);
     config/shell-apps/mutt                 mutt
 
 # depends on shell-env for sort-by-filename
@@ -160,7 +158,7 @@ EOF
 
 #############################################################
 register new Cfg::Section std => "Getting more comfortable";
-secure_multi_register_cvs(<<EOF);
+secure_multi_register_my_cvs(<<EOF);
     config/shell-apps/lftp                 lftp
     config/shell-apps/ncftp                ncftp
     config/shell-apps/wscan                wscan
@@ -187,7 +185,7 @@ $ENV{PATH} = "/sbin:$ENV{PATH}";
 system("moosehall-connection-p 2>/dev/null");
 if ($? >> 8 == 0 || $ENV{MOOSEHALL}) {
   register new Cfg::Section 'moosehall' => "For moosehall only";
-  secure_multi_register_cvs(<<EOF);
+  secure_multi_register_my_cvs(<<EOF);
     personal/pub/config/moosehall/shell-env             moosehall+shell-env
     personal/pub/config/moosehall/xsession              moosehall+xsession
     personal/pub/config/moosehall/shell-apps/ssh        moosehall+ssh.pub
@@ -199,7 +197,7 @@ EOF
 
 #############################################################
 if (-e "$ENV{HOME}/roaming") {
-  secure_multi_register_cvs(<<EOF);
+  secure_multi_register_my_cvs(<<EOF);
     config/pim                             pim
     personal/sec/config/pim                pim.sec
 EOF
@@ -208,7 +206,7 @@ EOF
 #############################################################
 if (-e "$ENV{HOME}/ifolder" or hostdomain() =~ /lab\.novell\.com$/) {
   register new Cfg::Section 'novell' => "For work only";
-  secure_multi_register_cvs(<<EOF);
+  secure_multi_register_my_cvs(<<EOF);
     config/work-tools                      work-tools
     personal/pub/config/novell/shell-env   novell+shell-env.pub
     personal/pub/config/novell/shell-apps/emacs  novell+emacs.pub
@@ -222,7 +220,7 @@ EOF
 #############################################################
 if ($host_nickname =~ /^atlantic/) {
   register new Cfg::Section 'play' => "For play only";
-  secure_multi_register_cvs(<<EOF);
+  secure_multi_register_my_cvs(<<EOF);
     config/Xwindows/backgrounds            backgrounds
     config/Xwindows/xchat                  xchat
     config/shell-apps/namazu               namazu
@@ -233,7 +231,7 @@ EOF
 ## To obtain warnings requires a checkout, so you may want
 ## to leave these commented.
 if ($secure_machine) {
-    secure_multi_register_cvs(<<EOF);
+    secure_multi_register_my_cvs(<<EOF);
    config/personal-interest               personal-interest
 EOF
 }
@@ -246,7 +244,7 @@ if ($host_nickname =~ /^atlantic/) {
   # config/Xwindows/Eterm                  Eterm
   # config/Xwindows/sawfish                sawfish
 
-  secure_multi_register_cvs(<<EOF);
+  secure_multi_register_my_cvs(<<EOF);
     config/shell-apps/htmltidy             htmltidy
     config/shell-apps/palm                 palm
     config.RETIRED/Xwindows/galeon         galeon
@@ -270,16 +268,34 @@ register new Cfg::Pkg::Mercurial $hg_root, 'hgtest',
 
 sub secure_multi_register {
   my ($backend, @args) = @_;
-  my $block = pop @args;
-  $block =~ s!^\s*personal/sec/.*!!m unless $secure_machine;
+  my $block = secure_block(pop @args);
   register multi $backend @args, $block;
 }
 
-sub secure_multi_register_git {
-  secure_multi_register 'Cfg::Pkg::Git', $git_root, @_;
+sub secure_block {
+  my ($block) = @_;
+  $block =~ s!^\s*personal/sec/.*!!m unless $secure_machine;
+  return $block;
 }
 
-sub secure_multi_register_cvs {
+sub secure_multi_register_git {
+  my $block = shift;
+  secure_multi_register 'Cfg::Pkg::Git', $git_root, $block;
+}
+
+sub secure_multi_register_my_git {
+  my $block = secure_block(shift);
+  my @common_args = ( $git_root );
+  my @args = Cfg::Pkg::Git->pkg_args_from_block($block);
+
+  foreach my $args (@args) {
+    my ($src, $dst) = @$args;
+    my $upstream = "$git_upstream/$src";
+    register new Cfg::Pkg::Git $git_root, $dst, $upstream;
+  }
+}
+
+sub secure_multi_register_my_cvs {
   secure_multi_register 'Cfg::Pkg::CVS', $cvsroot, $cvs_wd, @_;
 }
 

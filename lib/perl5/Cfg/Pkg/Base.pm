@@ -99,12 +99,12 @@ sub _not_implemented {
 }
 
 # Syntactic sugar, but some SCMs might not reuse code between update
-# and fetch operations, so we need to keep the interfaces separate.
+# and clone operations, so we need to keep the interfaces separate.
 sub enqueue_update       { shift->enqueue_op('update');    }
-sub enqueue_fetch        { shift->enqueue_op('fetch');     }
+sub enqueue_clone        { shift->enqueue_op('clone');     }
 sub enqueue_push         { shift->enqueue_op('push');      }
 sub process_update_queue { shift->process_queue('update'); }
-sub process_fetch_queue  { shift->process_queue('fetch');  }
+sub process_clone_queue  { shift->process_queue('clone');  }
 sub process_push_queue   { shift->process_queue('push');   }
 
 sub enqueue_op {
@@ -119,7 +119,7 @@ sub not_yet_supported {
   my $self = shift;
   my ($op) = @_;
   my $plural = "${op}s";
-  $plural = 'fetches' if $op eq 'fetch';
+  $plural = 'clones' if $op eq 'clone';
   die <<EOF;
 CLASS does not yet support $plural.
 
@@ -233,14 +233,14 @@ sub install {
   }
 }
 
-=head2 fetch()
+=head2 clone()
 
-Fetch (i.e. clone) the sources from upstream.  Used if C<src_local()>
+Clone the repository/sources from upstream.  Used if C<src_local()>
 returns false.
 
 =cut
 
-sub fetch {
+sub clone {
   my $self = shift;
   $self->_not_implemented(<<EOF);
 ME should be overridden - CLASS backend not yet finished?
@@ -334,7 +334,7 @@ sub batch    {
   my $self = shift;
   $self->_not_implemented(<<EOF);
 ME should be overridden to return true or false depending on whether
-updates/fetches should be batched or processed per package.
+updates/clones should be batched or processed per package.
 EOF
 }
 

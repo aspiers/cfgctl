@@ -167,12 +167,12 @@ sub _include_pkg {
 
 =head2 batch_update(@pkgs)
 
-Updates each package, or fetches it if not previously local.
+Updates each package, or clones it if not previously local.
 
 It's a class method in order to enable SCM classes to batch
 updates/checkouts together if desired, for efficiency over
 high-latency links.  First it groups the packages into per-class
-queues, per-operation (i.e. update or fetch) queues, then each queue
+queues, per-operation (i.e. update or clone) queues, then each queue
 is processed.
 
 =cut
@@ -185,28 +185,28 @@ sub batch_update {
   $class->_batch_get(
     sub {
       my $pkg = shift;
-      $pkg->src_local ? 'update' : 'fetch';
+      $pkg->src_local ? 'update' : 'clone';
     },
     @pkgs
   );
 }
 
-=head2 batch_fetch(@pkgs)
+=head2 batch_clone(@pkgs)
 
-Fetches each package if not previously local.
+Clones each package if not previously local.
 
 It's a class method in order to enable SCM classes to batch
 updates/checkouts together if desired, for efficiency over
 high-latency links.  First it groups the packages into per-class
-queues, per-operation (i.e. update or fetch) queues, then each queue
+queues, per-operation (i.e. update or clone) queues, then each queue
 is processed.
 
 =cut
 
-sub batch_fetch {
+sub batch_clone {
   my $class = shift;
   my @pkgs = @_;
-  debug(2, "# Batch fetch");
+  debug(2, "# Batch clone");
   $class->_batch_get(
     sub {
       my $pkg = shift;
@@ -215,7 +215,7 @@ sub batch_fetch {
               $pkg->src);
         return undef; # nop
       }
-      return 'fetch';
+      return 'clone';
     },
     @pkgs
   );
@@ -247,8 +247,8 @@ sub batch_push {
   );
 }
 
-# mode_calculator is a closure which returns 'fetch' if the package
-# needs to be fetched, 'update' if it needs to be updated, and undef
+# mode_calculator is a closure which returns 'clone' if the package
+# needs to be cloned, 'update' if it needs to be updated, and undef
 # if nothing needs to be done.
 sub _batch_get {
   my $class = shift;
@@ -282,7 +282,7 @@ sub _batch_enqueue {
       debug(3, "#   Not enqueueing disabled package $pkg for $pkg_class");
       next;
     }
-    next if $mode eq 'fetch' and $pkg->deprecated;
+    next if $mode eq 'clone' and $pkg->deprecated;
     $class_queues{$mode}{$pkg_class}++;
     my $method = "enqueue_$mode";
     debug(2, "#   Enqueueing ", $pkg->description, " for $mode");
