@@ -24,7 +24,7 @@ use base qw(Cfg::Pkg::DVCS);
 sub update {
   my $self = shift;
 
-  my $co_to = $self->_co_to;
+  my $co_to = $self->clone_to;
   chdir($co_to) or die "chdir($co_to) failed: $!\n";
 
   if (for_real()) {

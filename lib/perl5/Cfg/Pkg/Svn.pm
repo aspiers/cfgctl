@@ -57,7 +57,7 @@ sub clone {
   debug(2, "#   Cloning $description");
   my @cmd = (
     $self->CMD, $self->CLONE_CMD,
-    $self->upstream, $self->_co_to,
+    $self->upstream, $self->clone_to,
   );
   debug(1, "@cmd");
   sys_or_die(\@cmd) if for_real();
@@ -66,7 +66,7 @@ sub clone {
 sub update {
   my $self = shift;
 
-  my $co_to = $self->_co_to;
+  my $co_to = $self->clone_to;
   chdir($co_to) or die "chdir($co_to) failed: $!\n";
 
   if (for_real()) {

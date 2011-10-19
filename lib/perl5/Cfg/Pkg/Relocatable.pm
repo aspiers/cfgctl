@@ -140,7 +140,7 @@ sub ensure_relocation {
   
   ensure_correct_symlink(
     symlink => $path,
-    required_target => $self->_co_to, # FIXME shouldn't rely on private method
+    required_target => $self->clone_to, # FIXME shouldn't rely on private method
   );
 }
 

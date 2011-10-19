@@ -94,7 +94,7 @@ sub _cmd_ok {
 
 sub src_local {
   my $self = shift;
-  return -d $self->_co_to;
+  return -d $self->clone_to;
 }
 
 sub clone_if_upstream_exists {
@@ -120,7 +120,7 @@ sub clone_from_upstream {
   debug(2, "#   Cloning $description");
   my @cmd = (
     $self->DVCS_CMD, $self->DVCS_CLONE_CMD,
-    $self->upstream, $self->_co_to,
+    $self->upstream, $self->clone_to,
   );
   debug(1, "@cmd");
   sys_or_die(\@cmd) if for_real();
@@ -170,7 +170,7 @@ sub params {
 }
 
 # where to check out to, e.g. ~/.bzr/http:__bzr.xsteve.at_dvc_
-sub _co_to {
+sub clone_to {
   my $self = shift;
   my $quoted_upstream = $self->upstream;
   $quoted_upstream =~ tr,/,_,;
@@ -181,7 +181,7 @@ sub _co_to {
 #   or ~/.bzr-relocations/dvc
 sub src {
   my $self = shift;
-  return $self->_co_to unless $self->relocation;
+  return $self->clone_to unless $self->relocation;
   return File::Spec->join(
     $self->relocations_root,
     $self->dst,

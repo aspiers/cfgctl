@@ -126,7 +126,7 @@ sub params {
 }
 
 # where port installs to, e.g. ~/.ports/libtre/install
-sub _co_to { # FIXME wrong method name
+sub clone_to { # FIXME wrong method name
   my $self = shift;
   return $self->{install_dir};
 }
@@ -135,7 +135,7 @@ sub _co_to { # FIXME wrong method name
 #   or ~/.ports-relocations/libtre
 sub src {
   my $self = shift;
-  return $self->_co_to unless $self->relocation;
+  return $self->clone_to unless $self->relocation;
   return File::Spec->join(
     $self->relocations_root,
     $self->dst,

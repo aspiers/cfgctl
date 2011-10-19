@@ -31,7 +31,7 @@ sub pull_from_upstream {
   my $self = shift;
   my @pull_options = @_;
 
-  my $co_to = $self->_co_to;
+  my $co_to = $self->clone_to;
   chdir($co_to) or die "chdir($co_to) failed: $!\n";
 
   if (for_real()) {
@@ -58,7 +58,7 @@ sub push_upstream {
   my $self = shift;
   my @push_options = @_;
 
-  my $co_to = $self->_co_to;
+  my $co_to = $self->clone_to;
   chdir($co_to) or die "chdir($co_to) failed: $!\n";
 
   if (for_real()) {
