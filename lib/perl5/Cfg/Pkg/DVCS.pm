@@ -172,12 +172,10 @@ sub params {
   return map $self->$_, qw(dst co_root upstream relocation);
 }
 
-# where to check out to, e.g. ~/.bzr/http:__bzr.xsteve.at_dvc_
+# where to check out to, e.g. ~/.bzr/dvc
 sub clone_to {
   my $self = shift;
-  my $quoted_upstream = $self->upstream;
-  $quoted_upstream =~ tr,/,_,;
-  return File::Spec->join($self->co_root, $quoted_upstream);
+  return File::Spec->join($self->co_root, $self->dst);
 }
 
 # e.g. ~/.bzr/dvc
