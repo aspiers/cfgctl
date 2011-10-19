@@ -50,7 +50,7 @@ unless ($secure_machine) {
 
 #############################################################
 register new Cfg::Section 'boot' => "Bootstrapping";
-secure_multi_register_my_git(<<EOF);
+secure_multi_register_my_cvs(<<EOF);
     config/META                            META
 
     config/shell-env                       shell-env
@@ -73,7 +73,7 @@ EOF
 
 #############################################################
 register new Cfg::Section 'basics' => "Bare essentials";
-secure_multi_register_my_cvs(<<EOF);
+secure_multi_register_my_git(<<EOF);
     config/shell-apps/ssh                  ssh
     personal/sec/config/shell-apps/ssh     ssh.adam_spiers.sec
     config/shell-apps/screen               screen
