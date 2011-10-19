@@ -306,22 +306,24 @@ EOF
 
 sub dst {
   shift->_not_implemented(<<EOF);
-ME should be overridden to return the package name as used by stow.
-It is the symlink which lives under the stow directory (F<$cfg{PKGS_DIR}>
-typically).
+ME should be overridden to return the unique package name as used by stow,
+e.g. F<mutt> or F<emacs>.
+It is the name of symlink which lives under the stow directory
+(defined by C<$Cfg::Cfg::cfg{PKGS_DIR}>, typically F<~/.cfg>).
+Each package on the local system must return a unique value.
 EOF
 }
 
 sub src {
   shift->_not_implemented(<<EOF);
 ME should be overridden to return the path to the package source,
-which the symlink under $cfg{PKGS_DIR} points to, e.g. 
+which the symlink under C<$Cfg::Cfg::cfg{PKGS_DIR}> points to, e.g. 
 
    ~/.cvs/config/dev-tools/perl/mine
 
-is pointed to by
+which is pointed to by
 
-   $cfg{PKGS_DIR}/perl+mine
+   ~/.cfg/perl+mine
 EOF
 }
 
