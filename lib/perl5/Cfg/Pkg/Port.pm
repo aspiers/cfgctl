@@ -142,16 +142,6 @@ sub src {
   );
 }
 
-# e.g. ~/.ports-relocations/libtre/local
-sub relocation_path {
-  my $self = shift;
-  
-  return File::Spec->join(
-    $self->src,
-    $self->relocation
-  );
-}
-
 sub batch      { 0 }
 sub deprecated { 0 }
 
