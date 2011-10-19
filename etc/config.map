@@ -12,19 +12,26 @@ use Sh qw(cat);
 
 ## First we define the source repository or working directory.
 $ENV{CVSROOT} = 'adam@cvs.adamspiers.org:/home/adam/.CVSROOT';
-my $git_upstream = 'ssh://adamspiers.org/home/adam/.git';
+my $git_upstream = 'ssh://adamspiers.org/home/adam/.GIT';
 if (hostname() eq 'arctic') {
   $ENV{CVSROOT} = '/home/adam/.CVSROOT';
   $git_upstream = '';
 }
 
 my $cvsroot  = $ENV{CVSROOT};
+
+# DANGER!  These should not have the same name as the directory in
+# which the SCM in question stores its own metadata!  For example, git
+# repositories should not be stored under ~/.git, otherwise the home
+# directory itself will be perceived as under the control of git, and
+# even worse, the stow install action would cause the contents of each
+# package's .git subdirectory to be mixed into ~/.git via symlinks!
 my $cvs_wd   = "$ENV{HOME}/.cvs";
-my $git_root = "$ENV{HOME}/.git";
-my $svn_root = "$ENV{HOME}/.svn";
-my $hg_root  = "$ENV{HOME}/.hg";
-my $bzr_root = "$ENV{HOME}/.bzr";
-my $baz_root = "$ENV{HOME}/.baz";
+my $git_root = "$ENV{HOME}/.GIT";
+my $svn_root = "$ENV{HOME}/.SVN";
+my $hg_root  = "$ENV{HOME}/.HG";
+my $bzr_root = "$ENV{HOME}/.BZR";
+my $baz_root = "$ENV{HOME}/.BAZ";
 
 my $localhost_nick_file = "$ENV{HOME}/.localhost-nickname";
 chomp(my $host_nickname = safe_cat($localhost_nick_file));
