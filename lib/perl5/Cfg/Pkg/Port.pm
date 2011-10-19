@@ -131,17 +131,6 @@ sub clone_to { # FIXME wrong method name
   return $self->{install_dir};
 }
 
-# e.g. ~/.ports/libtre
-#   or ~/.ports-relocations/libtre
-sub src {
-  my $self = shift;
-  return $self->clone_to unless $self->relocation;
-  return File::Spec->join(
-    $self->relocations_root,
-    $self->dst,
-  );
-}
-
 sub batch      { 0 }
 sub deprecated { 0 }
 

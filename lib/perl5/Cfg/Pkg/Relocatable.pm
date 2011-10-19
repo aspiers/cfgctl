@@ -147,6 +147,17 @@ sub relocation_path {
   );
 }
 
+# e.g. ~/.bzr/dvc
+#   or ~/.bzr-relocations/dvc
+sub src {
+  my $self = shift;
+  return $self->clone_to unless $self->relocation;
+  return File::Spec->join(
+    $self->relocations_root,
+    $self->dst,
+  );
+}
+
 sub ensure_relocation {
   my $self = shift;
 
