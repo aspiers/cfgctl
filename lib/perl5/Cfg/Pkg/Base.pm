@@ -241,8 +241,7 @@ returns false.
 =cut
 
 sub clone {
-  my $self = shift;
-  $self->_not_implemented(<<EOF);
+  shift->_not_implemented(<<EOF);
 ME should be overridden - CLASS backend not yet finished?
 EOF
 }
@@ -291,8 +290,7 @@ sub push_upstream {
 }
 
 sub description {
-  my $self = shift;
-  $self->_not_implemented(<<EOF);
+  shift->_not_implemented(<<EOF);
 ME should be overridden to return a human-readable description
 of the package for use with debug lines like
   Installed: <description>
@@ -300,16 +298,14 @@ EOF
 }
 
 sub params {
-  my $self = shift;
-  $self->_not_implemented(<<EOF);
+  shift->_not_implemented(<<EOF);
 ME should be overridden to return a list of the public parameters
 to be output when generating a machine-readable package map.
 EOF
 }
 
 sub dst {
-  my $self = shift;
-  $self->_not_implemented(<<EOF);
+  shift->_not_implemented(<<EOF);
 ME should be overridden to return the package name as used by stow.
 It is the symlink which lives under the stow directory (F<$cfg{PKGS_DIR}>
 typically).
@@ -317,8 +313,7 @@ EOF
 }
 
 sub src {
-  my $self = shift;
-  $self->_not_implemented(<<EOF);
+  shift->_not_implemented(<<EOF);
 ME should be overridden to return the path to the package source,
 which the symlink under $cfg{PKGS_DIR} points to, e.g. 
 
@@ -331,8 +326,7 @@ EOF
 }
 
 sub batch    {
-  my $self = shift;
-  $self->_not_implemented(<<EOF);
+  shift->_not_implemented(<<EOF);
 ME should be overridden to return true or false depending on whether
 updates/clones should be batched or processed per package.
 EOF
@@ -353,8 +347,7 @@ sub disable {
 }
 
 sub deprecated  {
-  my $self = shift;
-  $self->_not_implemented(<<EOF);
+  shift->_not_implemented(<<EOF);
 ME should be overridden to return true if the package is deprecated.
 EOF
 }
