@@ -290,7 +290,7 @@ sub secure_multi_register_my_git {
 
   foreach my $args (@args) {
     my ($src, $dst) = @$args;
-    my $upstream = "$git_upstream/$src";
+    my $upstream = "$git_upstream/$dst";
     register new Cfg::Pkg::Git $git_root, $dst, $upstream;
   }
 }
