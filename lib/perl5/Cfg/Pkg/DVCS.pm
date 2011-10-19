@@ -57,7 +57,10 @@ locally via stow, e.g. my personal config on adamspiers.org.
 
 =item $relocate (optional)
 
-The path under which to install package source files.
+The path relative to C<$Cfg::Cfg::cfg{TARGET_DIR}> (F<~>) which should
+be the root of the hierarchy under which to install the package's
+source files, e.g. F<lib/emacs/major-modes/org-mode>.  If unspecified,
+uses C<$Cfg::Cfg::cfg{TARGET_DIR}>.
 
 =back
 
@@ -185,16 +188,6 @@ sub src {
   return File::Spec->join(
     $self->relocations_root,
     $self->dst,
-  );
-}
-
-# e.g. ~/.baz-relocations/dvc/lib/emacs/major-modes/dvc
-sub relocation_path {
-  my $self = shift;
-  
-  return File::Spec->join(
-    $self->src,
-    $self->relocation
   );
 }
 

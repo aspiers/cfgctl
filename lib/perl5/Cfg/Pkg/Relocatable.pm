@@ -105,33 +105,59 @@ use File::Spec;
 use Cfg::CLI qw(debug);
 use Sh qw(ensure_correct_symlink);
 
-sub relocation       { shift->{relocation}               }
-sub relocations_root { shift->{co_root} . "-relocations" }
+=head1 METHODS
+
+=head2 relocation()
+
+Should be overridden to provide the path relative to
+C<$Cfg::Cfg::cfg{TARGET_DIR}> (F<~>) which should be the root of the
+hierarchy under which to install the package's source files,
+e.g. F<lib/emacs/major-modes/org-mode>.
+
+=cut
+
+sub relocation {
+  shift->_not_implemented(<<EOF);
+ME should be overridden; see the pod for CLASS.
+EOF
+}
+
+=head2 relocations_root()
+
+The full path to the root of the relocations tree, e.g.
+F<~/.git-relocations>.
+
+=cut
+
+sub relocations_root { shift->co_root() . "-relocations" }
+
+=head2 relocation_path()
+
+The full path to the directory containing the source of the relocation
+symlink, e.g. F<~/.baz-relocations/dvc/lib/emacs/major-modes/dvc>
+
+=cut
 
 sub relocation_path {
   my $self = shift;
-  my $sub = (caller(0))[3];
-  $sub =~ s/.+:://;
-  my $me = ref($self) . "::$sub";
-  confess <<EOF;
-$me should be overridden to the full path to the
-directory containing the source of the relocation symlink.
-EOF
+  
+  return File::Spec->join(
+    $self->src,
+    $self->relocation
+  );
 }
 
 sub ensure_relocation {
   my $self = shift;
 
-  my $path = $self->relocation_path;
   debug(1, "# Relocating ", $self->description, " to .../",
            $self->relocation);
 
-  my @dirs = File::Spec->splitdir($path);
-  my $symlink = pop @dirs;
-  my $container_dir = File::Spec->join(@dirs);
+  my $rpath = $self->relocation_path;
+  my ($container_dir, $symlink) = $self->_split_relocation_path;
 
   if (-d $container_dir) {
-    debug(2, "#   relocation_prefix $path already exists");
+    debug(2, "#   relocation path $rpath already exists");
   }
   else {
     mkpath($container_dir);
@@ -139,9 +165,38 @@ sub ensure_relocation {
   }
   
   ensure_correct_symlink(
-    symlink => $path,
+    symlink => $self->relocation_path,
     required_target => $self->clone_to, # FIXME shouldn't rely on private method
   );
+}
+
+# Returns something like
+# ( "$ENV{HOME}/.git-relocations/cucumber-el/lib/emacs/major-modes",
+#   "cucumber" )
+sub _split_relocation_path {
+  my $self = shift;
+  my @dirs = File::Spec->splitdir($self->relocation_path);
+  my $symlink = pop @dirs;
+  my $container_dir = File::Spec->join(@dirs);
+  return ($container_dir, $symlink);
+}
+
+sub remove_relocation {
+  my $self = shift;
+
+  my $desc  = $self->description;
+  my $rpath = $self->relocation_path;
+
+  if (-l $rpath) {
+    debug(1, "# Removing relocation symlink for $desc: $rpath");
+    unlink $rpath or die "unlink($rpath) failed: $!\n";
+  }
+  elsif (-e $rpath) {
+    confess "ERROR: wanted to remove $rpath but it wasn't a relocation symlink";
+  }
+  else {
+    debug(3, "# No relocation symlink to remove for $desc ($rpath)");
+  }
 }
 
 =head1 BUGS
