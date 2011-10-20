@@ -39,14 +39,14 @@ sub multi {
   my @common_args = @_;
   debug(3, "# ${class}::multi(" . join(", ", @common_args) . ", [$block])");
   my @new_pkgs;
-  my @args = $class->pkg_args_from_block($block);
+  my @args = $class->pkg_arg_sets_from_block($block);
   for my $pkg_args (@args) {
     push @new_pkgs, $class->new(@common_args, @$pkg_args);
   }
   return @new_pkgs;
 }
 
-sub pkg_args_from_block {
+sub pkg_arg_sets_from_block {
   my $self = shift;
   my $class = ref($self) || $self;
   my ($block) = @_;

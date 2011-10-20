@@ -10,6 +10,17 @@ use Sh qw(cat);
 
 ## Adam's config packages.  Listed in suggested installation order.
 
+# Decide whether to register CVS and/or git versions of my packages.
+# Presence of the key causes that version to be registered; the value
+# specifies the extension (if any) of the stow package name.
+my %REGISTER_MY_PKGS = (
+  cvs => '',
+  #cvs => '.cvs',
+
+  #git => '',
+  git => '.git',
+);
+
 ## First we define the source repository or working directory.
 $ENV{CVSROOT} = 'adam@cvs.adamspiers.org:/home/adam/.CVSROOT';
 my $git_upstream = 'ssh://adamspiers.org/home/adam/.GIT';
@@ -43,14 +54,14 @@ unless ($secure_machine) {
   debug(1, "# ! WARNING! Not on a secure machine; skipping secure packages");
 }
 
-## secure_multi_register_my_cvs parameter block format:
+## secure_multi_register_my_pkgs parameter block format:
 ##   Column 1: Source directory within the repository or working dir.
 ##   Column 2: Target namespace as controlled by stow or similar
 ##             (therefore must be unique).
 
 #############################################################
 register new Cfg::Section 'boot' => "Bootstrapping";
-secure_multi_register_my_cvs(<<EOF);
+secure_multi_register_my_pkgs(<<EOF);
     config/META                            META
 
     config/shell-env                       shell-env
@@ -73,7 +84,7 @@ EOF
 
 #############################################################
 register new Cfg::Section 'basics' => "Bare essentials";
-secure_multi_register_my_git(<<EOF);
+secure_multi_register_my_pkgs(<<EOF);
     config/shell-apps/ssh                  ssh
     personal/sec/config/shell-apps/ssh     ssh.adam_spiers.sec
     config/shell-apps/screen               screen
@@ -122,7 +133,7 @@ else {
 register new Cfg::Section 'X' => "X environment";
 
 if (which('xinit')) {
-  secure_multi_register_my_cvs(<<EOF);
+  secure_multi_register_my_pkgs(<<EOF);
     config/Xwindows/SESSION                SESSION
     config/Xwindows/xwrits                 xwrits
     config/Xwindows/fonts                  fonts
@@ -134,14 +145,14 @@ EOF
 }
 
 if (which('kdeinit') or which('kdeinit4')) {
-  secure_multi_register_my_cvs(<<EOF);
+  secure_multi_register_my_pkgs(<<EOF);
     config/Xwindows/kde                    kde
 EOF
 }
 
 #############################################################
 register new Cfg::Section 'mail' => "Mail";
-secure_multi_register_my_cvs(<<EOF);
+secure_multi_register_my_pkgs(<<EOF);
     config/shell-apps/mutt                 mutt
 
 # depends on shell-env for sort-by-filename
@@ -165,7 +176,7 @@ EOF
 
 #############################################################
 register new Cfg::Section std => "Getting more comfortable";
-secure_multi_register_my_cvs(<<EOF);
+secure_multi_register_my_pkgs(<<EOF);
     config/shell-apps/lftp                 lftp
     config/shell-apps/ncftp                ncftp
     config/shell-apps/wscan                wscan
@@ -192,7 +203,7 @@ $ENV{PATH} = "/sbin:$ENV{PATH}";
 system("moosehall-connection-p 2>/dev/null");
 if ($? >> 8 == 0 || $ENV{MOOSEHALL}) {
   register new Cfg::Section 'moosehall' => "For moosehall only";
-  secure_multi_register_my_cvs(<<EOF);
+  secure_multi_register_my_pkgs(<<EOF);
     personal/pub/config/moosehall/shell-env             moosehall+shell-env
     personal/pub/config/moosehall/xsession              moosehall+xsession
     personal/pub/config/moosehall/shell-apps/ssh        moosehall+ssh.pub
@@ -204,7 +215,7 @@ EOF
 
 #############################################################
 if (-e "$ENV{HOME}/roaming") {
-  secure_multi_register_my_cvs(<<EOF);
+  secure_multi_register_my_pkgs(<<EOF);
     config/pim                             pim
     personal/sec/config/pim                pim.sec
 EOF
@@ -213,7 +224,7 @@ EOF
 #############################################################
 if (-e "$ENV{HOME}/ifolder" or hostdomain() =~ /lab\.novell\.com$/) {
   register new Cfg::Section 'novell' => "For work only";
-  secure_multi_register_my_cvs(<<EOF);
+  secure_multi_register_my_pkgs(<<EOF);
     config/work-tools                      work-tools
     personal/pub/config/novell/shell-env   novell+shell-env.pub
     personal/pub/config/novell/shell-apps/emacs  novell+emacs.pub
@@ -227,7 +238,7 @@ EOF
 #############################################################
 if ($host_nickname =~ /^atlantic/) {
   register new Cfg::Section 'play' => "For play only";
-  secure_multi_register_my_cvs(<<EOF);
+  secure_multi_register_my_pkgs(<<EOF);
     config/Xwindows/backgrounds            backgrounds
     config/Xwindows/xchat                  xchat
     config/shell-apps/namazu               namazu
@@ -238,7 +249,7 @@ EOF
 ## To obtain warnings requires a checkout, so you may want
 ## to leave these commented.
 if ($secure_machine) {
-    secure_multi_register_my_cvs(<<EOF);
+    secure_multi_register_my_pkgs(<<EOF);
    config/personal-interest               personal-interest
 EOF
 }
@@ -251,7 +262,7 @@ if ($host_nickname =~ /^atlantic/) {
   # config/Xwindows/Eterm                  Eterm
   # config/Xwindows/sawfish                sawfish
 
-  secure_multi_register_my_cvs(<<EOF);
+  secure_multi_register_my_pkgs(<<EOF);
     config/shell-apps/htmltidy             htmltidy
     config/shell-apps/palm                 palm
     config.RETIRED/Xwindows/galeon         galeon
@@ -290,20 +301,26 @@ sub secure_multi_register_git {
   secure_multi_register 'Cfg::Pkg::Git', $git_root, $block;
 }
 
-sub secure_multi_register_my_git {
+sub secure_multi_register_my_pkgs {
   my $block = secure_block(shift);
   my @common_args = ( $git_root );
-  my @args = Cfg::Pkg::Git->pkg_args_from_block($block);
+  my @arg_sets = Cfg::Pkg::Git->pkg_arg_sets_from_block($block);
 
-  foreach my $args (@args) {
-    my ($src, $dst) = @$args;
+  foreach my $pkg_args (@arg_sets) {
+    my ($src, $dst) = @$pkg_args;
     my $upstream = "$git_upstream/$dst";
-    register new Cfg::Pkg::Git $git_root, $dst, $upstream;
+    while (my ($scm, $ext) = each %REGISTER_MY_PKGS) {
+      if ($scm eq 'git') {
+        register new Cfg::Pkg::Git $git_root, $dst . $ext, $upstream;
+      }
+      elsif ($scm eq 'cvs') {
+        register new Cfg::Pkg::CVS $cvsroot, $cvs_wd, $dst . $ext, $upstream;
+      }
+      else {
+        die "Unrecognised SCM in %REGISTER_MY_PKGS";
+      }
+    }
   }
-}
-
-sub secure_multi_register_my_cvs {
-  secure_multi_register 'Cfg::Pkg::CVS', $cvsroot, $cvs_wd, @_;
 }
 
 1;
