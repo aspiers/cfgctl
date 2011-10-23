@@ -314,7 +314,7 @@ sub secure_multi_register_my_pkgs {
         register new Cfg::Pkg::Git $git_root, $dst . $ext, $upstream;
       }
       elsif ($scm eq 'cvs') {
-        register new Cfg::Pkg::CVS $cvsroot, $cvs_wd, $dst . $ext, $upstream;
+        register new Cfg::Pkg::CVS $cvsroot, $cvs_wd, $src, $dst;
       }
       else {
         die "Unrecognised SCM in %REGISTER_MY_PKGS";
