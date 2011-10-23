@@ -58,7 +58,7 @@ sub do_registration {
     # Let the config file register any packages we want.
     require $cfg{MAP_FILE};
   };
-  die "Compilation of $cfg{MAP_FILE} failed:\n$@\n" if $@;
+  die "Compilation of $cfg{MAP_FILE} failed:\n-----\n$@-----\n" if $@;
 
   foreach my $section (@sections) {
     alias($section->ident => map $_->dst, $section->pkgs);
