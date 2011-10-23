@@ -30,6 +30,11 @@ See derived classes.
 
 =head1 METHODS
 
+=head2 multi(@common_args, $block)
+
+Same as L<pkg_arg_sets_from_block()>, but prepends C<@common_args> to
+each line.
+
 =cut
 
 sub multi {
@@ -45,6 +50,14 @@ sub multi {
   }
   return @new_pkgs;
 }
+
+=head2 pkg_arg_sets_from_block($block)
+
+Takes a multi-line block and returns a list of arrayrefs, one per
+line, each containing the list of arguments given on that line in the
+block.
+
+=cut
 
 sub pkg_arg_sets_from_block {
   my $self = shift;
