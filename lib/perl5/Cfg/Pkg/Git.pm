@@ -21,7 +21,7 @@ use Sh qw(sys_or_die);
 
 use base qw(Cfg::Pkg::DVCS);
 
-# where to check out to, e.g. ~/.git/SESSION
+# where to check out to, e.g. ~/.GIT/SESSION
 sub clone_to {
   my $self = shift;
   return File::Spec->join($self->co_root, $self->dst);
