@@ -36,14 +36,14 @@ EOF
 
 =head1 CONSTRUCTORS
 
-=head2 new($co_root, $dst, $upstream, $relocate)
+=head2 new($clone_to, $dst, $upstream, $relocate)
 
 =over 4
 
-=item $co_root
+=item $clone_to
 
-The local directory containing all repositories for this type of
-backend, e.g. F<~/.git>.
+The local directory to which the upstream repository should be cloned,
+e.g. F<~/.GIT/emacs>.
 
 =item $dst
 
@@ -69,14 +69,14 @@ uses C<$Cfg::Cfg::cfg{TARGET_DIR}>.
 sub new {
   my $self = shift;
   my $class = ref($self) || $self;
-  my ($co_root, $dst, $upstream, $relocate) = @_;
+  my ($clone_to, $dst, $upstream, $relocate) = @_;
 
   die "${class}->new() called without \$upstream" unless $upstream;
 
   $relocate =~ s/\$DST/$dst/g if $relocate;
 
   my $pkg = bless {
-    co_root  => $co_root,  # e.g. ~/.bzr
+    clone_to => $clone_to, # e.g. ~/.bzr/dvc
     dst      => $dst,      # e.g. dvc (stow package name)
     upstream => $upstream, # e.g. http://bzr.xsteve.at/dvc/
     relocate => $relocate, # e.g. lib/emacs/major-modes/dvc
@@ -114,10 +114,6 @@ sub clone_if_upstream_exists {
 sub clone_from_upstream {
   my $self = shift;
 
-  my $root = $self->co_root;
-  if (! -d $root) {
-    mkdir $root or die "mkdir($root) failed: $!\n";
-  }
   my $class = ref($self) || $self;
   my $description = $self->description;
   debug(2, "#   Cloning $description");
@@ -160,22 +156,16 @@ sub push_if_upstream_exists {
   $self->push(@_);
 }
 
-sub co_root     { shift->{co_root}    }
-sub upstream    { shift->{upstream}   }
+sub clone_to    { shift->{clone_to}   }
 sub dst         { shift->{dst}        }
+sub upstream    { shift->{upstream}   }
 sub relocation  { shift->{relocate}   }
 
 sub description { shift->dst          }
 
 sub params {
   my $self = shift;
-  return map $self->$_, qw(dst co_root upstream relocation);
-}
-
-# where to check out to, e.g. ~/.bzr/dvc
-sub clone_to {
-  my $self = shift;
-  return File::Spec->join($self->co_root, $self->dst);
+  return map $self->$_, qw(dst clone_to upstream relocation);
 }
 
 sub batch      { 0 }

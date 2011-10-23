@@ -21,12 +21,6 @@ use Sh qw(sys_or_die);
 
 use base qw(Cfg::Pkg::DVCS);
 
-# where to check out to, e.g. ~/.GIT/SESSION
-sub clone_to {
-  my $self = shift;
-  return File::Spec->join($self->co_root, $self->dst);
-}
-
 sub update {
   my $self = shift;
 
@@ -37,8 +31,8 @@ sub pull_from_upstream {
   my $self = shift;
   my @pull_options = @_;
 
-  my $co_to = $self->clone_to;
-  chdir($co_to) or die "chdir($co_to) failed: $!\n";
+  my $clone_to = $self->clone_to;
+  chdir($clone_to) or die "chdir($clone_to) failed: $!\n";
 
   if (for_real()) {
     my @cmd = (
@@ -59,8 +53,8 @@ sub push_upstream {
   my $self = shift;
   my @push_options = @_;
 
-  my $co_to = $self->clone_to;
-  chdir($co_to) or die "chdir($co_to) failed: $!\n";
+  my $clone_to = $self->clone_to;
+  chdir($clone_to) or die "chdir($clone_to) failed: $!\n";
 
   if (for_real()) {
     my @cmd = (
