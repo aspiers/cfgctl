@@ -37,8 +37,8 @@ respect to the SCM involved.
 So first we check out to a predictable location indexed initially by
 the particular SCM being used:
 
-    ~/.baz/                                      <= $co_root  \
-        arch@adamspiers.org--upstream-2006-d600/ <= $archive  | <= _src()
+    ~/.baz/                                                   \
+        arch@adamspiers.org--upstream-2006-d600/ <= $archive  | <= src()
           muse--main--1.0/                       <= $revision /
             a/
               file 
@@ -129,7 +129,11 @@ F<~/.git-relocations>.
 
 =cut
 
-sub relocations_root { shift->co_root() . "-relocations" }
+sub relocations_root {
+  shift->_not_implemented(<<EOF);
+ME should be overridden; see the pod for CLASS.
+EOF
+}
 
 =head2 relocation_path()
 

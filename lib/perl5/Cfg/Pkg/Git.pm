@@ -21,6 +21,8 @@ use Sh qw(sys_or_die);
 
 use base qw(Cfg::Pkg::DVCS);
 
+sub relocations_root { "$ENV{HOME}/.GIT-relocations" }
+
 sub update {
   my $self = shift;
 
