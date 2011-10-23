@@ -182,7 +182,7 @@ sub ensure_relocation {
 }
 
 # Returns something like
-# ( "$ENV{HOME}/.git-relocations/cucumber-el/lib/emacs/major-modes",
+# ( "$ENV{HOME}/.GIT-relocations/cucumber-el/lib/emacs/major-modes",
 #   "cucumber" )
 sub _split_relocation_path {
   my $self = shift;
