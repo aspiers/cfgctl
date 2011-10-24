@@ -142,7 +142,7 @@ sub pull_if_upstream_exists {
     return;
   }
 
-  $self->pull(@_);
+  $self->pull_from_upstream(@_);
 }
 
 sub push_if_upstream_exists {
@@ -153,7 +153,7 @@ sub push_if_upstream_exists {
     return;
   }
 
-  $self->push(@_);
+  $self->push_upstream(@_);
 }
 
 sub clone_to    { shift->{clone_to}   }
