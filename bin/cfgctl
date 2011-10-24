@@ -37,6 +37,11 @@ elsif ($opts{clone} || $opts{install} || $opts{erase}) {
 elsif ($opts{push}) {
   Cfg->batch_push($queue->pkgs);
 }
+elsif ($opts{pull}) {
+  # Batch only makes sense for CVS which can't distinguish between
+  # update and pull.
+  #Cfg->batch_pull($queue->pkgs);
+}
 else {
   die "BUG";
 }
