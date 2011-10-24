@@ -59,8 +59,11 @@ sub CMD { 'cvs' }
 sub enqueue_op {
   my $self = shift;
   my ($op) = @_;
-  die "batch operation '$op' not supported"
-    unless $op eq 'update' or $op eq 'clone';
+  unless ($op eq 'update' or $op eq 'clone') {
+    my $class = ref $self;
+    warn "$class: skipping unsupported batch operation '$op' for ", $self->dst, "\n";
+    return;
+  }
   $op = 'checkout' if $op eq 'clone';
   push @{ $queues{$op}{$self->cvsroot} }, $self;
 }
@@ -68,8 +71,11 @@ sub enqueue_op {
 sub process_queue {
   my $self = shift;
   my ($op) = @_;
-  die "batch operation '$op' not supported"
-    unless $op eq 'update' or $op eq 'clone';
+  unless ($op eq 'update' or $op eq 'clone') {
+    my $class = ref $self;
+    warn "$class: skipping unsupported batch operation '$op' for ", $self->dst, "\n";
+    return;
+  }
   $op = 'checkout' if $op eq 'clone';
 
   debug(1, "#   Processing CVS ${op}s...");
