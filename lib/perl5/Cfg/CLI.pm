@@ -23,6 +23,7 @@ our @EXPORT_OK = qw(debug for_real %opts);
 
 our %opts = (
   verbose      => 1,
+  clone        => 0,
   install      => 0,
   freshen      => 0,
   update       => 0,
@@ -53,30 +54,32 @@ By default, installs the listed config packages, or all if none are
 specified.  PKG can be a package name, alias, or /regexp/.
 
 Options [defaults in square brackets]:
-  -i, --install              Ensure chosen package(s) are in the local
-                             package store, then install.
-  -U, --update               Ensure chosen packages are uptodate, then re-install.
-                             (This involves pulling/merging for DVC backends.)
-  -e, --erase                De-install the chosen packages
-  -p, --pull                 (DVC backends only) Pull latest changes but don't merge
-  -P, --push                 (DVC backends only) Push changes upstream
+  -c, --clone              Ensure chosen package(s) are in the local
+                           package store.
+  -i, --install            Ensure chosen package(s) are in the local
+                           package store, then install.
+  -U, --update             Ensure chosen packages are uptodate, then re-install.
+                           (This involves pulling/merging for DVC backends.)
+  -e, --erase              De-install the chosen packages
+  -p, --pull               (DVC backends only) Pull latest changes but don't merge
+  -P, --push               (DVC backends only) Push changes upstream
 
-  -l, --list                 List all packages in tab-delimited format
-  -s, --sources              Only list source packages
-  -d, --destinations         Only list destination packages
+  -l, --list               List all packages in tab-delimited format
+  -s, --sources            Only list source packages
+  -d, --destinations       Only list destination packages
 
-  -t, --test                 Dry run, don't touch the disk
-  -v, --verbose[=N]          Increase [specify] verbosity
+  -t, --test               Dry run, don't touch the disk
+  -v, --verbose[=N]        Increase [specify] verbosity
 
-      --pkg-dir=DIR          Change source package directory [$cfg{PKGS_DIR}]
-  -T, --target=TARGET-DIR    Change target directory [$cfg{TARGET_DIR}]
-  -M, --map=MAP-FILE         Change config map file [$cfg{MAP_FILE}]
-  -r, --remove-dangling      If conflicts with dangling symlinks
-                             are found, delete them.
-      --thorough             Don't prune subdirectories not in packages.
-                             This may leave symlinks pointing to old
-                             dirs which used to be in packages, but is
-                             a lot slower.
+      --pkg-dir=DIR        Change source package directory [$cfg{PKGS_DIR}]
+  -T, --target=TARGET-DIR  Change target directory [$cfg{TARGET_DIR}]
+  -M, --map=MAP-FILE       Change config map file [$cfg{MAP_FILE}]
+  -r, --remove-dangling    If conflicts with dangling symlinks
+                           are found, delete them.
+      --thorough           Don't prune subdirectories not in packages.
+                           This may leave symlinks pointing to old
+                           dirs which used to be in packages, but is
+                           a lot slower.
 EOUSAGE
 
   $usage =~ s!$ENV{HOME}!~!g;
@@ -87,7 +90,7 @@ sub process_options {
   Getopt::Long::Configure('no_ignore_case', 'bundling');
   GetOptions(
     \%opts,
-    'install|i', 'freshen|F', 'update|U', 'erase|e', 'pull|p', 'push|P',
+    'clone|c', 'install|i', 'freshen|F', 'update|U', 'erase|e', 'pull|p', 'push|P',
     'list|l', 'sources|s', 'destinations|d',
     'test|t', 'verbose|v:+',
     'pkg-dir=s', 'target|T=s', 'map|M=s',
@@ -105,12 +108,12 @@ sub process_options {
 sub check_options {
   my $total = 0;
   $total += ($opts{$_} || 0)
-    foreach qw(list sources destinations update pull push erase);
+    foreach qw(list sources destinations clone install update pull push erase);
   if ($total == 0) {
     $opts{install}++;
   }
   elsif ($total > 1) {
-    usage("Only one of -i/-U/-e/-p/-P/-l/-s/-d can be specified.\n");
+    usage("Only one of -c/-i/-U/-e/-p/-P/-l/-s/-d can be specified.\n");
   }
 }
 

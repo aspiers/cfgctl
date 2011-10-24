@@ -31,7 +31,7 @@ if ($opts{update}) {
   Cfg->batch_update($queue->pkgs);
   exit 0 if $opts{'dry-run'};
 }
-elsif ($opts{install} || $opts{erase}) {
+elsif ($opts{clone} || $opts{install} || $opts{erase}) {
   Cfg->batch_clone($queue->pkgs);
 }
 elsif ($opts{push}) {
