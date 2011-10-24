@@ -87,8 +87,7 @@ sub preempt_conflict {
         or die "readlink($src) failed: $!";
       my $error = "\n  $src\n\nhad dangling symlink to\n\n  $target";
       my $path = File::Spec->join(dirname($dst), $target);
-      $Stow::opts{stow} = $cfg{PKGS_DIR};
-      my $stowTargetSymlink = Stow::FindStowMember(dirname($dst), $target);
+      my $stowTargetSymlink = find_stow_member(dirname($dst), $target);
       if ($stowTargetSymlink) {
         $error .= <<EOF;
 
@@ -116,6 +115,11 @@ EOF
     }
   }
 
+  if (-l $src) {
+    # already dealt with dangling case above
+    die "$src is a symlink?!" ;
+  }
+
   my ($dst_dev, $dst_ino) = stat($dst);
   if (! $dst_dev || ! $dst_ino) {
     if (-l $dst) {
@@ -133,6 +137,18 @@ EOF
     else {
       die "stat($dst) failed ($!); can't preempt conflict!  Aborting.\n";
     }
+  }
+
+  if (-l $dst) {
+    # already dealt with dangling case above
+    my $target = readlink($dst)
+        or die "readlink($dst) failed: $!";
+    my $stowTargetSymlink = find_stow_member(dirname($dst), $target);
+    if ($stowTargetSymlink) {
+      my ($pkg, @rest) = File::Spec->splitdir($stowTargetSymlink);
+      die "$dst already points to $target; do you need to uninstall $pkg first?\n";
+    }
+    die "$dst is a symlink to $target outside $cfg{PKGS_DIR}; can't preempt conflict!  Aborting.\n";
   }
 
   if ($src_dev == $dst_dev and $src_ino == $dst_ino) {
@@ -169,6 +185,12 @@ EOF
       #move_with_subpath($cfg{TARGET_DIR}, $modified_dir, $sub_dst);
     }
   }
+}
+
+sub find_stow_member {
+  my ($abs_start_path, $relative_symlink) = @_;
+  $Stow::opts{stow} ||= $cfg{PKGS_DIR};
+  return Stow::FindStowMember($abs_start_path, $relative_symlink);
 }
 
 =head1 BUGS
