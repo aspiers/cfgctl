@@ -17,11 +17,15 @@ description
 use strict;
 use warnings;
 
+use File::Compare;
+use File::Basename;
+use File::Spec;
+use Net::Domain qw(hostname);
+
 use Cfg::Cfg qw(%cfg);
 use Cfg::CLI qw(%opts debug for_real);
-use File::Compare;
-use Net::Domain qw(hostname);
 use Sh qw(move_with_subpath);
+use Stow;
 
 use base 'Exporter';
 our @EXPORT_OK = qw(preempt_conflict);
@@ -76,9 +80,43 @@ sub preempt_conflict {
 #   my $tempdir = TempDir->get;
 #   die unless -d $tempdir;
 
-  my ($src_dev, $src_ino) = stat($src) or die "stat($src) failed: $!";
-  my ($dst_dev, $dst_ino) = stat($dst);
+  my ($src_dev, $src_ino) = stat($src);
+  if (! $src_dev || ! $src_ino) {
+    if (-l $src) {
+      my $target = readlink($src)
+        or die "readlink($src) failed: $!";
+      my $error = "\n  $src\n\nhad dangling symlink to\n\n  $target";
+      my $path = File::Spec->join(dirname($dst), $target);
+      $Stow::opts{stow} = $cfg{PKGS_DIR};
+      my $stowTargetSymlink = Stow::FindStowMember(dirname($dst), $target);
+      if ($stowTargetSymlink) {
+        $error .= <<EOF;
 
+
+This could be due to a previous faulty install of one stow
+package over another, where both wanted to install
+
+  $dst
+
+The first would have set up a symlink to
+
+  $target
+
+The second install would have caused a preempt_conflict()
+which would have resulted in the symlink being copied to
+the new stow package under:
+
+  $src
+EOF
+      }
+      die $error;
+    }
+    else {
+      die "stat($src) failed: $!";
+    }
+  }
+
+  my ($dst_dev, $dst_ino) = stat($dst);
   if (! $dst_dev || ! $dst_ino) {
     if (-l $dst) {
       if ($opts{'remove-dangling'}) {
