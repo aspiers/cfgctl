@@ -54,13 +54,13 @@ system.
 =cut
 
 sub preempt_conflict {
-  my ($src, $dst) = @_;
+  my ($human_src, $human_dst) = @_;
 
-  debug(2, "# Preempting conflict between $src and $dst");
+  debug(2, "# Preempting conflict between $human_src and $human_dst");
 
   # Shorter, human-readable versions of source and destination
-  (my $human_src = $src) =~ s!^$ENV{HOME}/!~/!;
-  (my $human_dst = $dst) =~ s!^$ENV{HOME}/!~/!;
+  (my $src = $human_src) =~ s!^~/!$ENV{HOME}/!;
+  (my $dst = $human_dst) =~ s!^~/!$ENV{HOME}/!;
   (my $sub_dst   = $dst) =~ s!^$cfg{TARGET_DIR}/!!
     or die "$dst didn't start with $cfg{TARGET_DIR}\n";
 
