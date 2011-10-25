@@ -87,7 +87,7 @@ foreach my $section_and_pkgs ($queue->sections_and_pkgs) {
         $pkg->remove_relocation if $pkg->relocation;
       }
       else {
-        die "Package sources are not present at ", $pkg->src, "; aborting uninstall\n";
+        die "Package sources are not present at ", $pkg->clone_to, "; aborting uninstall\n";
       }
     }
     elsif ($opts{install} || $opts{update}) {
