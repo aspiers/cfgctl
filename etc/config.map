@@ -241,7 +241,6 @@ if ($host_nickname =~ /^atlantic/) {
   secure_multi_register_my_pkgs(<<EOF);
     config/Xwindows/backgrounds            backgrounds
     config/Xwindows/xchat                  xchat
-    config/shell-apps/namazu               namazu
 EOF
 }
 
@@ -263,8 +262,9 @@ if ($host_nickname =~ /^atlantic/) {
   # config/Xwindows/sawfish                sawfish
 
   secure_multi_register_my_pkgs(<<EOF);
-    config/shell-apps/htmltidy             htmltidy
-    config/shell-apps/palm                 palm
+    config.RETIRED/shell-apps/htmltidy     htmltidy
+    config.RETIRED/shell-apps/namazu       namazu
+    config.RETIRED/shell-apps/palm         palm
     config.RETIRED/Xwindows/galeon         galeon
     config.RETIRED/Xwindows/gnome          gnome
     config.RETIRED/Xwindows/netscape       netscape
