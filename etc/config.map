@@ -92,6 +92,8 @@ secure_multi_register_my_pkgs(<<EOF);
 EOF
 
 secure_multi_register_git(<<EOF);
+  git-annex        git://git-annex.branchable.com/                 software/scm/git-annex
+  mr               git://git.kitenet.net/mr                        software/scm/mr
   org-mode         git://repo.or.cz/org-mode.git                   lib/emacs/major-modes/org-mode.git
   cucumber-el      git://github.com/michaelklishin/cucumber.el.git lib/emacs/major-modes/cucumber
   elisp-behave     git://github.com/tomtt/elisp_behave.git         lib/emacs/major-modes/elisp-behave
