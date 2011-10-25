@@ -157,9 +157,11 @@ sub install_symlink {
   return File::Spec->join($cfg{PKGS_DIR}, $self->dst);
 }
 
+sub clone_to { shift->src }
+
 sub src_local {
   my $self = shift;
-  return -d $self->src;
+  return -d $self->clone_to;
 }
 
 =head2 deinstall()
