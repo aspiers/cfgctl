@@ -50,8 +50,8 @@ sub usage {
   my $usage = <<EOUSAGE;
 $RealScript [options] [PKG [PKG...]]
 
-By default, installs the listed config packages, or all if none are
-specified.  PKG can be a package name, alias, or /regexp/.
+By default, installs the listed config packages.  PKG can be a package
+name, alias, or /regexp/.
 
 Options [defaults in square brackets]:
   -c, --clone              Ensure chosen package(s) are in the local
@@ -98,8 +98,6 @@ sub process_options {
   )
     or usage();
 
-  usage() unless @ARGV;
-
   $cfg{PKGS_DIR}    = $opts{'pkg-dir'} if $opts{'pkg-dir'};
   $cfg{TARGET_DIR}  = $opts{'target' } if $opts{'target' };
   $cfg{MAP_FILE}    = $opts{'map'    } if $opts{'map'    };
@@ -112,7 +110,12 @@ sub check_options {
   $total += ($opts{$_} || 0)
     foreach qw(list sources destinations clone install update pull push erase);
   if ($total == 0) {
-    $opts{install}++;
+    if (@ARGV) {
+      $opts{install}++;
+    }
+    else {
+      usage();
+    }
   }
   elsif ($total > 1) {
     usage("Only one of -c/-i/-U/-e/-p/-P/-l/-s/-d can be specified.\n");
