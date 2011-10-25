@@ -253,29 +253,25 @@ if ($secure_machine) {
 EOF
 }
 
-if ($host_nickname =~ /^atlantic/) {
-  register new Cfg::Section 'deprecated' =>
-    "Deprecated; warn if still using this stuff.";
+register new Cfg::Section 'deprecated' =>
+  "Deprecated; warn if still using this stuff.";
 
-  # TODO: retire these:
-  # config/Xwindows/Eterm                  Eterm
-  # config/Xwindows/sawfish                sawfish
-
-  secure_multi_register_my_pkgs(<<EOF);
-    config.RETIRED/shell-apps/htmltidy     htmltidy
-    config.RETIRED/shell-apps/namazu       namazu
-    config.RETIRED/shell-apps/palm         palm
-    config.RETIRED/Xwindows/galeon         galeon
-    config.RETIRED/Xwindows/gnome          gnome
-    config.RETIRED/Xwindows/netscape       netscape
-    config.RETIRED/term                    term
-    config.RETIRED/shell-apps/mh           mh
-    config.RETIRED/shell-apps/sdf          sdf
-    config.RETIRED/shell-apps/bk2site      bk2site
-    config.RETIRED/shell-apps/lynx         lynx
-    config.RETIRED/shell-apps/ytalk        ytalk
+secure_multi_register_my_pkgs(<<EOF);
+  config.RETIRED/shell-apps/htmltidy     htmltidy
+  config.RETIRED/shell-apps/namazu       namazu
+  config.RETIRED/shell-apps/palm         palm
+  config.RETIRED/Xwindows/Eterm          Eterm
+  config.RETIRED/Xwindows/sawfish        sawfish
+  config.RETIRED/Xwindows/galeon         galeon
+  config.RETIRED/Xwindows/gnome          gnome
+  config.RETIRED/Xwindows/netscape       netscape
+  config.RETIRED/term                    term
+  config.RETIRED/shell-apps/mh           mh
+  config.RETIRED/shell-apps/sdf          sdf
+  config.RETIRED/shell-apps/bk2site      bk2site
+  config.RETIRED/shell-apps/lynx         lynx
+  config.RETIRED/shell-apps/ytalk        ytalk
 EOF
-}
 
 #alias 'mail' => qw(mutt mutt.pub mutt.sec novell+mail.pub novell+mail.sec);
 
