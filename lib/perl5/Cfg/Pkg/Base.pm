@@ -187,6 +187,7 @@ sub deinstall {
   warn "$cfg{STOW} -c failed; aborting!\n" if $exit != 0;
   my $is = $self->install_symlink;
   unlink($is) or die "unlink($is) failed: $!\n";
+  debug(3, "delete: $is");
 }
 
 =head2 deinstall()
