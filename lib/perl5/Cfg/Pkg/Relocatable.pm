@@ -102,6 +102,7 @@ use Carp qw(carp cluck croak confess);
 use File::Path;
 use File::Spec;
 
+use Cfg::Cfg qw(%cfg);
 use Cfg::CLI qw(debug);
 use Sh qw(ensure_correct_symlink);
 
@@ -165,7 +166,7 @@ sub src {
 sub ensure_relocation {
   my $self = shift;
 
-  debug(1, "# Relocating ", $self->description, " to .../",
+  debug(1, "# Relocating ", $self->description, " to $cfg{TARGET_DIR}/",
            $self->relocation);
 
   my $rpath = $self->relocation_path;
