@@ -98,6 +98,8 @@ sub process_options {
   )
     or usage();
 
+  usage() unless @ARGV;
+
   $cfg{PKGS_DIR}    = $opts{'pkg-dir'} if $opts{'pkg-dir'};
   $cfg{TARGET_DIR}  = $opts{'target' } if $opts{'target' };
   $cfg{MAP_FILE}    = $opts{'map'    } if $opts{'map'    };
