@@ -297,7 +297,7 @@ sub secure_multi_register_git {
   my @arg_sets = Cfg::Pkg::Git->pkg_arg_sets_from_block($block);
   foreach my $pkg_args (@arg_sets) {
     my ($dst, $upstream, $relocate) = @$pkg_args;
-    my $clone_to = File::Spec->join($git_root, $dst);
+    my $clone_to = File::Spec->join($git_root, '3rd-party', $dst);
     register new Cfg::Pkg::Git $clone_to, $dst, $upstream, $relocate;
   }
 }
@@ -311,7 +311,7 @@ sub secure_multi_register_my_pkgs {
     my $upstream = "$git_upstream/$dst";
     while (my ($scm, $ext) = each %REGISTER_MY_PKGS) {
       if ($scm eq 'git') {
-        my $clone_to = File::Spec->join($git_root, $dst);
+        my $clone_to = File::Spec->join($git_root, 'adamspiers.org', $dst);
         register new Cfg::Pkg::Git $clone_to, $dst . $ext, $upstream;
       }
       elsif ($scm eq 'cvs') {
