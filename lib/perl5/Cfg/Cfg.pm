@@ -29,18 +29,18 @@ our %cfg;
 # corresponding to each level described in the architecture document:
 
 # (1) Where the all-important end-user symlinks go.
-$cfg{TARGET_DIR}  = $ENV{HOME};
+$cfg{TARGET_DIR} = $ENV{HOME};
 
 # (2) Packages directory ("stow directory" in stow terminology).
 #     stow requires all packages live immediately under this.
-$cfg{PKGS_DIR}     = "$ENV{HOME}/.cfg";
+$cfg{PKGS_DIR} = "$ENV{HOME}/.cfg";
 
 # We use a slightly hacked-up version of GNU stow which ignores CVS/
 # directories and anything in ~/.cvsignore.
-$cfg{STOW}        = "$RealBin/stow";
+chomp($cfg{STOW} = `which stow 2>/dev/null`);
 
 # This is where we configure which config packages we want installed locally.
-$cfg{MAP_FILE}    = abs_path("$RealBin/../etc/config.map");
+$cfg{MAP_FILE} = abs_path("$RealBin/../etc/config.map");
 
 
 sub check {
