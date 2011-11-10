@@ -16,7 +16,8 @@ use Cfg::CLI qw(debug %opts);
 
 Cfg::CLI->process_options;
 Cfg::CLI->check_options;
-Cfg::Cfg->check;
+my $error = Cfg::Cfg->check;
+Cfg::CLI::usage($error) if $error;
 Cfg->do_registration;
 
 if ($opts{list} || $opts{sources} || $opts{destinations}) {

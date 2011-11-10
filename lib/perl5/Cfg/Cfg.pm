@@ -45,19 +45,21 @@ $cfg{MAP_FILE}    = abs_path("$RealBin/../etc/config.map");
 
 sub check {
   -d $cfg{TARGET_DIR}
-    or usage("$cfg{TARGET_DIR} is not a valid directory; aborting.\n");
+    or return "$cfg{TARGET_DIR} is not a valid directory; aborting.\n";
   -e $cfg{MAP_FILE}
-    or usage("$cfg{MAP_FILE} does not exist; did you copy from $cfg{MAP_FILE}.template?\n");
+    or return "$cfg{MAP_FILE} does not exist; did you copy from $cfg{MAP_FILE}.template?\n";
   -e $cfg{STOW}
-    or usage("$cfg{STOW} not found!  Aborting.\n");
+    or return "$cfg{STOW} not found!  Aborting.\n";
 
   lstat($cfg{PKGS_DIR});
   if (-e _) {
-    -d _ or usage("$cfg{PKGS_DIR} must be a directory!  Aborting.\n");
+    -d _ or return "$cfg{PKGS_DIR} must be a directory!  Aborting.\n";
   }
   else {
     mkdir $cfg{PKGS_DIR} or die "mkdir($cfg{PKGS_DIR}) failed: $!\n";
   }
+
+  return undef; # no error
 }
 
 =head1 BUGS
