@@ -268,8 +268,8 @@ sub glob_to_unanchored_re {
 
 sub glob_to_anchored_re {
   local $_ = glob_to_unanchored_re(shift);
-  s/^/^/;
-  s/$/\$/;
+  s/^\.\*// or s/^/^/;
+  s/\.\*$// or s/$/\$/;
   return $_;
 }
 
