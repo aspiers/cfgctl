@@ -60,8 +60,10 @@ foreach my $section_and_pkgs ($queue->sections_and_pkgs) {
     }
 
     if ($pkg->deprecated) {
-      debug(1, "#! DEPRECATING: $description");
-      $pkg->deprecate;
+      if ($pkg->src_local) {
+        debug(1, "#! DEPRECATING: $description");
+        $pkg->deprecate;
+      }
       next;
     }
 
