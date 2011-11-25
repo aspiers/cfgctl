@@ -1,0 +1,243 @@
+#!/bin/bash
+
+me=`basename $0`
+
+usage () {
+    # Call as: usage [EXITCODE] [USAGE MESSAGE]
+    exit_code=1
+    if [[ "$1" == [0-9] ]]; then
+        exit_code="$1"
+        shift
+    fi
+    if [ -n "$1" ]; then
+        echo "$*" >&2
+        echo
+    fi
+
+    cat <<EOF >&2
+Usage: $me MODE [REGEXP]
+
+where MODE is one of
+  list        - just show matching packages
+  import      - do a git cvsimport (can be done repeatedly)
+  email       - set git's user.email config variable
+  add-origin  - add 'origin' as a git remote
+  rm-origin   - remove 'origin' as a git remote
+  diff        - recursively diff CVS package(s) against git package(s)
+  switch      - switch 
+
+and REGEXP is used by grep to further filter the output of cfgctl -l
+to determine which packages to operate on (it's already narrowed to
+my personal CVS packages).
+EOF
+    exit "$exit_code"
+}
+
+if [ "$1" == '-h' ] || [ "$1" == '--help' ]; then
+    usage 0
+fi
+
+if [ $# != 1 ] && [ $# != 2 ]; then
+    usage
+fi
+
+mode="$1"
+regexp="$2"
+
+[ -z "$regexp" ] && regexp="."
+
+if [ "$mode" = 'import' ]; then
+    rsync -avz --delete adamspiers.org:.CVSROOT ~
+fi
+
+src=~/.CVSROOT
+#src=adam@cvs.adamspiers.org:/home/adam/.CVSROOT
+
+git_clone_root=$HOME/.GIT/adamspiers.org
+git_import_root=$HOME/.GIT/adamspiers.org-import
+[ -d "$git_clone_root" ]  || mkdir -p "$git_clone_root"
+[ -d "$git_import_root" ] || mkdir -p "$git_import_root"
+
+ensure_git_cloned () {
+    if ! [ -d "$import_path" ]; then
+        echo "$import_path doesn't exist"
+        echo "FIXME: use mr to clone" >&2
+        exit 1
+        #cfgctl --clone "$dst.git"
+    fi
+}
+
+cd_git () {
+    ensure_git_cloned
+    cd "$clone_path"
+}
+
+filter_output () {
+    if [ "$mode" = 'diff' ]; then
+        diff-less
+    else
+        cat
+    fi
+}
+
+loop () {
+    # cfgctl -l | grep Cfg::Pkg::Git | \
+    # while read git dst upstream relocate; do
+    cfgctl -l | grep 'Cfg::Pkg::CVS.*adamspiers\.org' | grep "$regexp" | sort | \
+    while read backend dst module remote_root local_root wd; do
+        import_path="$git_import_root/$dst"  # e.g. ~/.GIT/adamspiers.org-import/mutt
+        clone_path="$git_clone_root/$dst"    # e.g. ~/.GIT/adamspiers.org/mutt
+        cfg_path="$HOME/.cfg/$dst"           # e.g. ~/.cfg/mutt
+        cvs_path="$HOME/.cvs/$module"        # e.g. ~/.cvs/config/shell-apps/mutt
+
+        case "$module" in
+            config.RETIRED/*)
+                case "$mode" in
+                    list|import)
+                        # Don't skip retired modules
+                        ;;
+                    *)
+                        # Skip retired modules
+                        continue
+                        ;;
+                esac
+                ;;
+        esac
+
+        "loop_$mode"
+    done #| filter_output
+}
+
+loop_import () {
+    echo "Importing $module -> $import_path"
+    if ! git cvsimport \
+        -a \
+        -d "$src" \
+        -r cvs-2011-10 \
+        -C "$import_path" \
+        -k \
+        -v \
+        $module; then
+        echo "Import to $import_path failed; aborting." >&2
+        exit 1
+    fi
+}
+
+loop_rsync () {
+    ensure_git_cloned
+    cd "$HOME/.cfg/"
+    rsync -Cavn --delete "$dst/" "$dst.git/"
+}
+
+loop_diff () {
+    #ensure_git_cloned
+    clear
+    echo "diff $dst"
+    echo "cp-merge $cvs_path $clone_path"
+    echo
+
+    #sleep 1
+    if ! [ -d "$cfg_path" ]; then
+        echo "$cfg_path doesn't exist; skipping diff"
+    elif ! [ -d "$clone_path" ]; then
+        echo "$clone_path doesn't exist; skipping diff"
+    else
+        #dl -X ~/.cvsignore -r "$cfg_path/" "$clone_path/" | cat
+        diff -ur --expand-tabs \
+            -X ~/.cvsignore \
+            -I '$\(Id\|Revision\|RCS version\|Header\|Source\|Date\|Author\).*$' \
+            -x .ports \
+            -x user-config \
+            -x .gkrellm2 \
+            -x .htoprc \
+            -x .grip \
+            "$cvs_path" "$clone_path" | \
+            grep -v "^Only in $clone_path" | \
+            gawk -f `which colour-diff-output` | \
+            less -S
+    fi
+}
+
+loop_add_origin () {
+    cd_git
+    git remote add origin ssh://adamspiers.org/home/adam/.GIT/mailcap
+    git config branch.master.remote origin
+    git config branch.master.merge refs/heads/master
+    echo "Set origin remote for $dst"
+}
+
+loop_rm_origin () {
+    ensure_git_cloned
+    cd "$clone_path"
+    git remote rm origin
+    echo "Removed origin remote for $dst"
+}
+
+loop_list () {    
+    echo "$dst $module"
+}
+
+# loop_clip () {
+#     ( cd "$cfg_path"; cvst ) | \
+#         awk '/^M / { print $2 }' | \
+#         xargs clip -v
+# }
+
+loop_email () {
+    cd_git
+    git config user.email dot-files@adamspiers.org
+    echo "Set user.email for $dst"
+}
+
+main () {
+    case "$mode" in
+        list|import|email|add-origin|rm-origin|diff|rsync)
+            loop
+            ;;
+        switch)
+            switch
+            ;;
+        *)
+            echo "ERROR: unrecognised mode $mode" >&2
+            exit 1
+            ;;
+    esac
+}
+
+switch () {
+    set -e
+    #rcup META
+
+    META=$HOME/.cvs/config/META
+    export MOOSEHALL=y
+    # echo "Press enter to edit config.map; make sure all installed repos are enabled (especially moosehall even when roaming)"
+    # read
+    # ${EDITOR:-vim} $META/etc/config.map
+    cd
+
+    # make sure we're online before tearing everything down
+    rm -f b.sh
+    wget http://adamspiers.org/b.sh
+
+    symlinks -rd ~/.cfg
+
+    cfgctl=$META/bin/cfgctl
+    $cfgctl -l | \
+        grep 'Cfg::Pkg::CVS.*adamspiers\.org' | \
+        awk '{print $2}' | \
+        egrep -v 'META|cvs|shell-env' | \
+        xargs echo $cfgctl -vv -e
+
+    $cfgctl -e cvs /shell-env/ META
+
+    if [ "`command ls ~/.cfg`" != "" ]; then
+        echo "~/.cfg isn't empty; aborting" >&2
+        exit 1
+    fi
+
+    rmdir ~/.cfg
+
+    bash ./b.sh    
+}
+
+main
