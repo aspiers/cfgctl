@@ -219,7 +219,7 @@ switch () {
     rm -f b.sh
     wget http://adamspiers.org/b.sh
 
-    symlinks -rd ~/.cfg
+    symlinks -rd ~/.cfg | grep -v '^absolute:' || true
 
     # No need to deinstall with cfgctl; we can just stow over ...
     #
