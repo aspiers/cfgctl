@@ -221,21 +221,26 @@ switch () {
 
     symlinks -rd ~/.cfg
 
-    cfgctl=$META/bin/cfgctl
-    $cfgctl -l | \
-        grep 'Cfg::Pkg::CVS.*adamspiers\.org' | \
-        awk '{print $2}' | \
-        egrep -v 'META|cvs|shell-env' | \
-        xargs echo $cfgctl -vv -e
+    # No need to deinstall with cfgctl; we can just stow over ...
+    #
+    # cfgctl=$META/bin/cfgctl
+    # $cfgctl -l | \
+    #     grep 'Cfg::Pkg::CVS.*adamspiers\.org' | \
+    #     awk '{print $2}' | \
+    #     egrep -v 'META|cvs|shell-env' | \
+    #     xargs echo $cfgctl -vv -e
+    #
+    # $cfgctl -e cvs /shell-env/ META
 
-    $cfgctl -e cvs /shell-env/ META
-
-    if [ "`command ls ~/.cfg`" != "" ]; then
-        echo "~/.cfg isn't empty; aborting" >&2
-        exit 1
+    cfg_contents="`command ls ~/.cfg`"
+    if [ -n "$cfg_contents" ] && [ "$cfg_contents" != '.stow' ]; then
+        echo "~/.cfg isn't empty; flagging as stow dir" >&2
+        touch ~/.cfg/.stow
+    else
+        rm -f ~/.cfg/.stow
+        echo "Removing ~/.cfg"
+        rmdir ~/.cfg
     fi
-
-    rmdir ~/.cfg
 
     bash ./b.sh    
 }
