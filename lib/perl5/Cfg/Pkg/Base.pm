@@ -89,7 +89,7 @@ sub deprecate {
                        # not using the deprecated package, there won't
                        # be any.
       ($opts{debug} ? '-vvv' : ()),
-      ($opts{thorough} ? () : '-p'),
+      ($opts{thorough} ? '-p' : ''),
       '-R',            # Remove any symlinks already there.
       '-t', $cfg{TARGET_DIR},
       '-d', $cfg{PKGS_DIR},
@@ -177,7 +177,7 @@ sub deinstall {
   my @args = (
     (for_real() ? () : ( '-n' )),
     ($opts{debug} ? '-vvv' : ()),
-    ($opts{thorough} ? () : '-p'),
+    ($opts{thorough} ? '-p' : ()),
     '-D',
     '-t', $cfg{TARGET_DIR},
     '-d', $cfg{PKGS_DIR},
@@ -206,7 +206,7 @@ sub install {
 
   my $stow_args = qq{-t "$cfg{TARGET_DIR}" -d "$cfg{PKGS_DIR}" "$dst"};
   $stow_args = "-vvv $stow_args" if $opts{debug};
-  $stow_args = "-p $stow_args"   if ! $opts{thorough};
+  $stow_args = "-p $stow_args"   if $opts{thorough};
   my $cmd       = "$cfg{STOW} -c -R $stow_args";
   (my $human_cmd = $cmd) =~ s!\b$ENV{HOME}/!~/!g;
   debug(3, "preempt: $cmd");
