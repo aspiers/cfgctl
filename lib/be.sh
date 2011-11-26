@@ -33,7 +33,7 @@ fi
 echo "exported PERL5LIB=$PERL5LIB"
 
 [ -d ~/.ssh ] || mkdir ~/.ssh
-chmod 755 ~/.ssh
+chmod 700 ~/.ssh
 
 if ! [ -f "$HOME/.ssh/config" ]; then
     echo "~/.ssh/config does not exist."
