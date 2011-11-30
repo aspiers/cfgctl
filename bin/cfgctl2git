@@ -222,27 +222,29 @@ switch () {
     rm -f b.sh
     wget http://adamspiers.org/b.sh
 
-    symlinks -rd ~/.cfg | grep -v '^absolute:' || true
+    if [ -d ~/.cfg ]; then
+	symlinks -rd ~/.cfg | grep -v '^absolute:' || true
 
-    # No need to deinstall with cfgctl; we can just stow over ...
-    #
-    # cfgctl=$META/bin/cfgctl
-    # $cfgctl -l | \
-    #     grep 'Cfg::Pkg::CVS.*adamspiers\.org' | \
-    #     awk '{print $2}' | \
-    #     egrep -v 'META|cvs|shell-env' | \
-    #     xargs echo $cfgctl -vv -e
-    #
-    # $cfgctl -e cvs /shell-env/ META
+	# No need to deinstall with cfgctl; we can just stow over ...
+	#
+	# cfgctl=$META/bin/cfgctl
+	# $cfgctl -l | \
+	#     grep 'Cfg::Pkg::CVS.*adamspiers\.org' | \
+	#     awk '{print $2}' | \
+	#     egrep -v 'META|cvs|shell-env' | \
+	#     xargs echo $cfgctl -vv -e
+	#
+	# $cfgctl -e cvs /shell-env/ META
 
-    cfg_contents="`command ls ~/.cfg`"
-    if [ -n "$cfg_contents" ] && [ "$cfg_contents" != '.stow' ]; then
-        echo "~/.cfg isn't empty; flagging as stow dir" >&2
-        touch ~/.cfg/.stow
-    else
-        rm -f ~/.cfg/.stow
-        echo "Removing ~/.cfg"
-        rmdir ~/.cfg
+	cfg_contents="`command ls ~/.cfg`"
+	if [ -n "$cfg_contents" ] && [ "$cfg_contents" != '.stow' ]; then
+	    echo "~/.cfg isn't empty; flagging as stow dir" >&2
+	    touch ~/.cfg/.stow
+	else
+	    rm -f ~/.cfg/.stow
+	    echo "Removing ~/.cfg"
+	    rmdir ~/.cfg
+	fi
     fi
 
     bash ./b.sh    
