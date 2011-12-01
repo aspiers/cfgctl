@@ -56,7 +56,6 @@ src=~/.CVSROOT
 git_clone_root=$HOME/.GIT/adamspiers.org
 git_import_root=$HOME/.GIT/adamspiers.org-import
 [ -d "$git_clone_root" ]  || mkdir -p "$git_clone_root"
-[ -d "$git_import_root" ] || mkdir -p "$git_import_root"
 
 ensure_git_cloned () {
     if ! [ -d "$import_path" ]; then
@@ -81,6 +80,10 @@ filter_output () {
 }
 
 loop () {
+    if [ "$mode" = 'import' ] && ! [ -d "$git_import_root" ]; then
+        mkdir -p "$git_import_root"
+    fi
+
     # cfgctl -l | grep Cfg::Pkg::Git | \
     # while read git dst upstream relocate; do
     cfgctl -l | grep 'Cfg::Pkg::CVS.*adamspiers\.org' | grep "$regexp" | sort | \
