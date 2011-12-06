@@ -222,8 +222,12 @@ switch () {
     rm -f b.sh
     wget http://adamspiers.org/b.sh
 
+    div
+
     if [ -d ~/.cfg ]; then
 	symlinks -rd ~/.cfg | grep -v '^absolute:' || true
+
+        div
 
 	# No need to deinstall with cfgctl; we can just stow over ...
 	#
@@ -246,6 +250,8 @@ switch () {
 	    rmdir ~/.cfg
 	fi
     fi
+
+    div
 
     bash ./b.sh    
 }
