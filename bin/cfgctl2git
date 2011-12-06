@@ -225,6 +225,11 @@ switch () {
     div
 
     if [ -d ~/.cfg ]; then
+        if ! which symlinks >/dev/null 2>&1; then
+            echo "Need symlinks to trim dangling symlinks" >&2
+            exit 1
+        fi
+
 	symlinks -rd ~/.cfg | grep -v '^absolute:' || true
 
         div
