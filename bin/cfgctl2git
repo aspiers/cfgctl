@@ -257,6 +257,9 @@ switch () {
 
     div
 
+    echo "Running bootstrap.sh ..."
+    echo
+
     bash ./b.sh    
 }
 
