@@ -25,7 +25,10 @@ use Net::Domain qw(hostname);
 use Cfg::Cfg qw(%cfg);
 use Cfg::CLI qw(%opts debug for_real);
 use Sh qw(move_with_subpath);
-use Stow;
+
+# This codepath shouldn't be used for uninstallation, which
+# is the only thing we still might need cfgctl for.
+eval { require Stow; };
 
 use base 'Exporter';
 our @EXPORT_OK = qw(preempt_conflict);
