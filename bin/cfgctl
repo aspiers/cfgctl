@@ -59,7 +59,7 @@ foreach my $section_and_pkgs ($queue->sections_and_pkgs) {
       next;
     }
 
-    if ($pkg->deprecated) {
+    if ($pkg->deprecated && ! $opts{erase}) {
       if ($pkg->src_local) {
         debug(1, "#! DEPRECATING: $description");
         $pkg->deprecate;
